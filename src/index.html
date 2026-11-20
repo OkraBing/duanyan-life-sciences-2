@@ -2735,8 +2735,8 @@ dialog{max-height:calc(100dvh - 32px);overflow-y:auto}
 <script>
 "use strict";
 /* ---------------- store ---------------- */
-const LS={get(k,d){try{const v=localStorage.getItem('dy_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
-          set(k,v){try{localStorage.setItem('dy_'+k,JSON.stringify(v))}catch(e){}}};
+const LS={get(k,d){try{const v=localStorage.getItem('dy2_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+          set(k,v){try{localStorage.setItem('dy2_'+k,JSON.stringify(v))}catch(e){}}};
 
 const DB={
   dls:[],                       // 本会话下载过的文件，由 dl() 统一记
@@ -15637,12 +15637,12 @@ function bSave(){
   const pack=()=>JSON.stringify(BJ().map(j=>({id:j.id,name:j.name,desc:j.desc,sid:j.sid,
     mdl:j.mdl,ds:j.ds,col:j.col,sys:j.sys,par:j.par,conc:j.conc,tmo:j.tmo,retry:j.retry,
     st:j.st,at:j.at,ms:j.ms,n:j.n,err:j.err,dropped:j.dropped,out:j.dropped?[]:j.out})));
-  try{localStorage.setItem('dy_bjobs',pack());return true}catch(e){}
+  try{localStorage.setItem('dy2_bjobs',pack());return true}catch(e){}
   const L=BJ();
   for(let i=L.length-1;i>=0;i--){
     if(L[i].dropped||!(L[i].out||[]).length)continue;
     L[i].dropped=1;
-    try{localStorage.setItem('dy_bjobs',pack());
+    try{localStorage.setItem('dy2_bjobs',pack());
       toast('这台机器的存储满了，丢掉了「'+L[i].name+'」的结果');return true}catch(e2){}
   }
   return false;
@@ -16328,7 +16328,7 @@ function go(r,o){
    另一个标签页改了之后本页还按旧值走，两边会对同一批数据给出不同结论。
    不自动覆盖本页状态——那会吞掉正在做的事；只提示，让人决定什么时候同步。 */
 window.addEventListener('storage',e=>{
-  if(!e.key||e.key.indexOf('dy_')!==0)return;
+  if(!e.key||e.key.indexOf('dy2_')!==0)return;
   const k=e.key.slice(3);
   if(['gate','sel','as'].indexOf(k)<0)return;
   const name={gate:'准入闸门',sel:'送检选中集',as:'查看身份'}[k];
@@ -18824,10 +18824,10 @@ document.querySelectorAll('#side [data-go]').forEach(b=>b.onclick=()=>go(b.datas
    还在往外放的回答、还在跑的运行卡不存：刷新会打断它们，存下来就是一张永远在转的卡。
    探针里（navigator.webdriver）默认不开：几十个探针共用一个浏览器上下文、
    每条检查前重载，开着的话上一条建的项目会漏进下一条。要测这一层的探针
-   自己写 localStorage.dy_keepTest='1'。 */
+   自己写 localStorage.dy2_keepTest='1'。 */
 const KEEP={ready:0,t:0,maxSess:40,maxBody:60000,maxLen:2600000,
   seed:DB.projects.map(x=>x.id),
-  on:(function(){try{return !navigator.webdriver||localStorage.getItem('dy_keepTest')==='1'}catch(e){return false}})()};
+  on:(function(){try{return !navigator.webdriver||localStorage.getItem('dy2_keepTest')==='1'}catch(e){return false}})()};
 function keepPack(o,lim,seen,d){
   if(o==null)return o;
   const t=typeof o;
@@ -18878,7 +18878,7 @@ function keepNow(){
   for(let i=0;i<tries.length;i++){
     try{const j=JSON.stringify(keepSnap(tries[i][0],tries[i][1]));
       if(j.length>KEEP.maxLen)continue;
-      localStorage.setItem('dy_keep',j);KEEP.fail=0;return}catch(e){}
+      localStorage.setItem('dy2_keep',j);KEEP.fail=0;return}catch(e){}
   }
   if(!KEEP.fail){KEEP.fail=1;toast('这台机器的存储空间不够，刷新后新建的项目和对话不会保留')}
 }
@@ -18887,7 +18887,7 @@ function keepLoad(){
   KEEP.ready=1;
   if(!KEEP.on)return;
   let k=null;
-  try{k=JSON.parse(localStorage.getItem('dy_keep')||'null')}catch(e){k=null}
+  try{k=JSON.parse(localStorage.getItem('dy2_keep')||'null')}catch(e){k=null}
   if(!k||typeof k!=='object'||k.v!==1)return;
   try{
     (Array.isArray(k.projects)?k.projects:[]).forEach(x=>{
