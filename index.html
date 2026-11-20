@@ -2725,6 +2725,50 @@ dialog{max-height:calc(100dvh - 32px);overflow-y:auto}
   .brief-t{flex:0 0 auto}
 }
 
+/* ===== 主线画布 =====
+   横着读：一列一轮。主线实线，支线挂在下面用虚线连，别组的结论虚线框。
+   颜色只承担状态：待验证空心、已验证实心、放弃走灰、别组的走虚线。 */
+.cvbar{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap;
+  padding:var(--s2) var(--s3);margin-bottom:var(--s4);
+  background:var(--surface-2);border:1px solid var(--line-2);border-radius:.625rem}
+.cvwrap{overflow-x:auto;padding-bottom:var(--s3);margin-bottom:var(--s4)}
+.cv{display:flex;align-items:flex-start;gap:0;min-width:min-content;padding:var(--s2) 0}
+.cvcol{display:flex;flex-direction:column;align-items:stretch;gap:var(--s3);
+  width:15rem;flex:0 0 15rem;position:relative;padding-right:1.75rem}
+/* 主线的连线：从这一列的结论卡右边拉到下一列 */
+.cvcol:not(:last-child)>.cvnode:first-child::after{content:'';position:absolute;
+  right:-1.75rem;top:2.25rem;width:1.75rem;height:2px;background:var(--line);z-index:0}
+.cvnode{display:flex;flex-direction:column;gap:6px;text-align:left;position:relative;z-index:1;
+  padding:var(--s3);border-radius:.625rem;border:1px solid var(--line);background:var(--surface);
+  cursor:pointer;transition:border-color .12s,box-shadow .12s}
+.cvnode:hover{border-color:var(--ink-4)}
+.cvnode.is-sel{border-color:var(--acc,#2563EB);box-shadow:0 0 0 2px var(--acc-soft,#E8EFFE)}
+.cv-h{display:flex;align-items:center;gap:6px}
+.cv-r{font-size:.75rem;font-weight:600;color:var(--ink)}
+.cv-st{font-size:.6875rem;padding:1px 6px;border-radius:.3125rem;
+  background:var(--surface-3);color:var(--ink-4)}
+.cv-t{font-size:.8125rem;line-height:1.5;color:var(--ink-2)}
+.cv-m{font-size:.75rem;color:var(--ink-4)}
+.cvnode.is-ok{border-color:var(--ok);background:var(--ok-soft)}
+.cvnode.is-ok .cv-st{background:var(--ok);color:#fff}
+.cvnode.is-hyp{border-style:dashed}
+.cvnode.is-empty{border-style:dashed;background:var(--surface-2)}
+.cvnode.is-empty .cv-t{color:var(--ink-4);font-style:italic}
+.cvnode.is-br{opacity:.72;border-color:var(--line-2)}
+.cvnode.is-br .cv-t{text-decoration:line-through;text-decoration-color:var(--ink-4)}
+.cvnode.is-ext{border-style:dashed;border-color:var(--ink-4);background:transparent}
+/* 支线与外部结论挂在本列下面，用一段竖的虚线连上去 */
+.cvbr,.cvex{position:relative;padding-top:var(--s3)}
+.cvbr::before,.cvex::before{content:'';position:absolute;left:1.25rem;top:0;width:0;height:var(--s3);
+  border-left:2px dashed var(--line)}
+.cvdet{display:flex;flex-direction:column;gap:var(--s3);
+  padding:var(--s4);border:1px solid var(--line);border-radius:.75rem;background:var(--surface);
+  margin-bottom:var(--s4)}
+.cvdet h3{margin:0;font-size:.9375rem}
+.cv-dt{margin:0;font-size:.9375rem;line-height:1.55;color:var(--ink)}
+.cv-ev{display:flex;flex-wrap:wrap;gap:var(--s4);font-size:.8125rem;color:var(--ink-3)}
+@media(max-width:640px){.cvcol{width:12.5rem;flex:0 0 12.5rem}}
+
 </style>
 
 <div id="app">
@@ -3669,7 +3713,7 @@ const NAV=[
      对话不再占首位——它从「你先开口」变成右上角随时能叫出来的一个按钮。 */
   ['A','',[
     ['today','今天',"M12 3.5a8.5 8.5 0 1 1 0 17a8.5 8.5 0 0 1 0-17zM12 7.5V12l3 2",'需要你知道和需要你拍板的'],
-    ['projects','课题',"M3.5 7.5a2 2 0 0 1 2-2h3.6l2 2.2h7.4a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2zM7.5 13.5h9",'走到哪了，哪里断了'],
+    ['canvas','课题',"M3.5 7.5a2 2 0 0 1 2-2h3.6l2 2.2h7.4a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2zM7.5 13.5h9",'走到哪了，哪里断了'],
     ['lab','实验',"M9.5 3.5v5.6L4.7 17.6A2.2 2.2 0 0 0 6.6 21h10.8a2.2 2.2 0 0 0 1.9-3.4L14.5 9.1V3.5M8 3.5h8M7.3 14.5h9.4",'设备和人手在做什么'],
     ['team','组里',"M9 11a3.2 3.2 0 1 1 0-6.4A3.2 3.2 0 0 1 9 11zM3.2 19.5a5.8 5.8 0 0 1 11.6 0M16.4 11.4a2.6 2.6 0 1 0 0-5.2M18 19.5a5 5 0 0 0-2.6-4.4",'谁在做什么，谁卡住了']]],
   ['B','',[
@@ -16563,11 +16607,65 @@ function render(){
     const x=inboxAll().find(y=>y.id===id); if(!x)return;
     const o=x.opts[+i]; if(!o)return;
     if(o.snooze){ibMark(id,'snooze');render();toast('先放一放，挪到「看看就好」里了');return}
+    /* 跨组申请：同意与否是你一个人的事。附加条件是勾出来的，不是一段合同文字。 */
+    if(o.req){
+      if(o.no){cvReqSet(o.req,'已拒绝');ibMark(id,o.t);render();toast('已拒绝');return}
+      if(!o.cond){cvReqSet(o.req,'已同意');ibMark(id,o.t);render();toast('已同意，对方会收到通知');return}
+      modal('附加条件',`<div class="col" style="gap:var(--s2)">
+        <p class="t-sm mut">勾上的条件会跟着这次授权一起发给对方。</p>
+        ${CV_COND.map((c,i)=>`<label class="pickr"><input type="checkbox" data-cvc="${i}"${i===0?' checked':''}>
+          <span>${esc(c)}</span></label>`).join('')}
+      </div>`,'同意并附上条件',()=>{
+        const on=[...document.querySelectorAll('#dlg [data-cvc]')].filter(x=>x.checked)
+          .map(x=>CV_COND[+x.dataset.cvc]);
+        cvReqSet(o.req,'已同意 · '+(on.length?on.join('；'):'没有附加条件'));
+        ibMark(id,o.t);render();toast('已同意，条件一并发出');
+      });
+      return;
+    }
+    if(o.conc){S.cvPick=o.conc}
     ibMark(id,o.t);
     if(o.pick){S.labPick=o.pick}
     if(o.pid){const p=DB.projects.find(y=>y.id===o.pid);if(p){S.pid=p.id;S.round=p.rounds.slice(-1)[0].i}}
     if(o.go){go(o.go)}else{render()}
     toast('记下了：'+o.t);
+  });
+  /* ---- 主线画布 ---- */
+  q('#cvprj',el=>el.onchange=()=>{const x=DB.projects.find(y=>y.id===el.value);
+    if(!x)return;S.pid=x.id;S.round=x.rounds.slice(-1)[0].i;S.cvPick=null;render()});
+  q('#cvperm',el=>el.onchange=()=>{cvSetPerm(S.pid,el.value);
+    const m=CV_PERM.find(x=>x[0]===el.value);render();toast('改成了：'+(m?m[1]:el.value))});
+  q('[data-cvpick]',b=>b.onclick=()=>{S.cvPick=S.cvPick===b.dataset.cvpick?null:b.dataset.cvpick;render()});
+  q('[data-cvbatch]',b=>b.onclick=()=>{S.labPick=b.dataset.cvbatch;go('labdet')});
+  /* 在画布上改结论，改的就是轮次里的那一句——同一个字段，不另存一份 */
+  q('[data-cvedit]',b=>b.onclick=()=>{
+    const p=PRJ(), i=+b.dataset.cvedit.slice(1), r=(p.rounds||[]).find(x=>x.i===i);
+    if(!r)return;
+    modal(`R${i} 的结论`,`<div class="col" style="gap:var(--s2)">
+      <p class="t-sm mut">一句话说清这一轮得出了什么。这句话同时就是轮次里的那一句。</p>
+      <textarea id="cvtx" class="input" rows="3" maxlength="120"
+        placeholder="例：R59 饱和突变。Tm 最好 +3.1℃，KD 掉一个量级">${esc(r.note||'')}</textarea>
+    </div>`,'记下来',()=>{
+      const v=(document.getElementById('cvtx').value||'').trim();
+      r.note=v;render();toast(v?'记下了，轮次那边也是这一句':'清空了这一轮的结论');
+    });
+  });
+  q('[data-cvask]',b=>b.onclick=()=>{
+    const x=(CV_EXT[S.pid]||[]).find(y=>y.id===b.dataset.cvask);if(!x)return;
+    modal(`向${x.group}申请复用`,`<div class="col" style="gap:var(--s2)">
+      <p class="t-sm mut">对方自己决定批不批，没有委员会。写清楚要用来做什么，对方更容易答应。</p>
+      <textarea id="cvuse" class="input" rows="3" maxlength="120"
+        placeholder="例：想用这条结论当起点，在我们的靶点上验一遍"></textarea>
+    </div>`,'发出申请',()=>{
+      const v=(document.getElementById('cvuse').value||'').trim();
+      if(!v){toast('写一句要用来做什么再发');return false}
+      const m=LS.get('cvout',{})||{};m[x.id]={use:v,st:'待处理'};LS.set('cvout',m);
+      render();toast('申请发出去了，等对方处理');
+    });
+  });
+  q('[data-cvcopy]',b=>b.onclick=()=>{
+    const m=LS.get('cvcopy',{})||{};m[b.dataset.cvcopy]=1;LS.set('cvcopy',m);
+    render();toast('取了一份副本。它和对方断开，之后对方改了不会影响你');
   });
   q('[data-ibjump]',b=>b.onclick=()=>{const el=document.getElementById('ibsec-'+b.dataset.ibjump);
     if(el)el.scrollIntoView({behavior:'smooth',block:'start'})});
@@ -19009,6 +19107,34 @@ function inboxAll(){
       opts:[{t:'去训一个',go:'trainnew'},{t:'先不训',snooze:7}]});
   });
 
+  /* 四之二、跨组申请：别的组要用你的结论。批不批是你一个人的事，没有委员会。 */
+  CV_REQ.forEach(r=>{
+    if(cvReqState(r.id))return;
+    const p2=DB.projects.find(x=>x.id===r.pid)||{};
+    push({id:'req:'+r.id,kind:'跨组申请',tier:'act',at:r.at,days:daysSince(r.at),
+      title:`${esc(r.from)}的${esc(r.who)}想复用「${esc(p2.name||'')}」${esc(r.node)} 的结论`,
+      body:esc(r.use),
+      sug:null,     /* 别人要不要用你的东西，系统没有依据可给，所以这里不给建议 */
+      opts:[{t:'附条件同意',req:r.id,cond:1},{t:'直接同意',req:r.id},
+            {t:'不同意',req:r.id,no:1}]});
+  });
+
+  /* 四之三、做完了却没写结论。记录成本要压到最低，就不能指望人想起来——
+     系统提醒，而且当场能写。 */
+  DB.projects.forEach(p=>{
+    const last=pjLast(p.id);
+    (p.rounds||[]).forEach(r=>{
+      if(r.note||r.state!=='done')return;
+      const d=daysSince(last);
+      push({id:'noconc:'+p.id+':'+r.i,kind:'没写结论',tier:'act',at:last||'',days:d,
+        title:`「${esc(p.name)}」R${r.i} 做完了，还没写结论`,
+        body:`送出 ${r.v} 条，回来 ${r.r} 条。一句话就够——下一轮要用的就是这句`,
+        sug:null,
+        opts:[{t:'写一句',go:'canvas',pid:p.id,conc:'R'+r.i},
+              {t:'这轮没什么好写的',snooze:30}]});
+    });
+  });
+
   /* 五、该你知道 / 看看就好：已经发生的事。来源是活动流本身，不另造。 */
   (DB.acts||[]).forEach((a,i)=>{
     push({id:'act:'+i,kind:a.k==='err'?'出问题了':(a.k==='wet'?'实验':'计算'),
@@ -19125,6 +19251,166 @@ V.team=()=>{
     <div class="tmlist">${rows}</div>
     <p class="qnote">这一屏只显示算得出来的时间差，不显示「状态良好」这类主观判断——
       调研里课题负责人对自己组的判断普遍比一线成员乐观，这里的用处正是纠偏。</p>
+  </div>`;
+};
+
+/* ================= 主线：课题的结论画在一张画布上 =================
+   最要紧的一条：结论不是新对象。轮次本来就有一句 note——
+   「R59 饱和突变。Tm 最好 +3.1℃，KD 掉一个量级」——那就是这一轮的结论，
+   现在它躺在表格里当说明文字。画布做的事是把它立起来，给它状态、证据和连线，
+   不是让人再写一遍。所以在画布上改结论，改的就是轮次的那个字段（R4）。
+
+   为什么这件事重要：中间结论的流失主要不在共享环节，在「根本没写出来」。
+   记录成本必须是零，画布才会不空着。 */
+
+/* 支线与外部结论是演示数据：前者是这个课题试过但没走通的岔路，
+   后者是别的组公开出来的一条结论。两者在真实系统里分别来自
+   「被放弃的轮次」和「别组的主线」，这里先种上，好让画布有东西可看。 */
+const CV_BR={
+  p1:[{id:'R2-a',after:2,t:'R59 换成更保守的取代基',
+       why:'Tm 没动，KD 反而掉得更多，这条放弃',by:'周'},
+      {id:'R3-a',after:3,t:'先放开亲和力约束、只追热稳',
+       why:'拿到 +4.2℃，但 KD 掉两个量级，超出判据能接受的范围',by:'周'}]};
+const CV_EXT={
+  p1:[{id:'X-01',after:4,t:'同一界面做二硫键稳定化，Tm 还能再推约 2℃',
+       group:'结构组',ver:'2026-03',share:'title',by:'结构组'}]};
+/* 别的组发来的复用申请。状态沿用产品已有的三档说法。 */
+const CV_COND=['复用需把我列为合作者','发表时须致谢本课题组','结果须回传给我',
+  '首次公开发表或会议呈现前两周给我一份副本'];
+const CV_REQ=[{id:'RQ-01',from:'代谢组',who:'孙',pid:'p1',node:'R4',
+  use:'想拿你们 R4 的双突变组合当底盘，验证换到我们的酶上还成不成立',
+  at:'2026-11-11 09:20'}];
+
+function cvPerm(pid){return LS.get('cvperm',{})[pid||S.pid]||'team'}
+function cvSetPerm(pid,v){const m=LS.get('cvperm',{});m[pid]=v;LS.set('cvperm',m)}
+const CV_PERM=[['team','只给组里','只有本组成员看得到'],
+               ['link','知道链接的人可见','结论可见，证据里的原始数据仍然不给'],
+               ['open','院内公开','出现在院内可检索的列表里']];
+function cvReqState(id){return (LS.get('cvreq',{})||{})[id]||null}
+function cvReqSet(id,v){const m=LS.get('cvreq',{})||{};m[id]=v;LS.set('cvreq',m)}
+
+/* 一个课题的主线：每一轮一个结论。状态只有三档，
+   而且是从这一轮自己的数据判出来的，不是另记一个字段。 */
+function cvNodes(pid){
+  const p=DB.projects.find(x=>x.id===(pid||S.pid));if(!p)return [];
+  return (p.rounds||[]).map(r=>{
+    const bs=BATCHES.filter(b=>b.pid===p.id&&b.round===r.i);
+    const back=bs.some(b=>b.status==='done')||r.r>0;
+    const st=!r.note?'empty':(back?'ok':'hyp');
+    return {id:'R'+r.i,round:r.i,t:r.note||'',st:st,
+      v:r.v,r:r.r,failed:r.failed,mb:r.mb,ma:r.ma,bs:bs,
+      by:(memOfPrj(p.id)||{}).name||'',rstate:r.state};
+  });
+}
+const CV_ST={empty:['还没写','is-empty'],hyp:['待验证','is-hyp'],
+             ok:['已验证','is-ok'],dead:['已放弃','is-dead'],ext:['别组的','is-ext']};
+
+function cvCard(n){
+  const [stn,cls]=CV_ST[n.st]||CV_ST.hyp;
+  const sel=S.cvPick===n.id?' is-sel':'';
+  return `<button class="cvnode ${cls}${sel}" type="button" data-cvpick="${esc(n.id)}">
+    <span class="cv-h"><span class="cv-r">R${n.round}</span>
+      <span class="cv-st">${stn}</span></span>
+    <span class="cv-t">${n.t?esc(n.t):'这一轮还没写结论'}</span>
+    <span class="cv-m">${n.v?`送出 ${n.v} 条`:'还没送检'}${n.r?` · 回来 ${n.r} 条`:''}</span>
+  </button>`;
+}
+function cvBrCard(b){
+  const sel=S.cvPick===b.id?' is-sel':'';
+  return `<button class="cvnode is-br${sel}" type="button" data-cvpick="${esc(b.id)}">
+    <span class="cv-h"><span class="cv-r">支线</span><span class="cv-st">已放弃</span></span>
+    <span class="cv-t">${esc(b.t)}</span></button>`;
+}
+function cvExtCard(x){
+  const sel=S.cvPick===x.id?' is-sel':'';
+  return `<button class="cvnode is-ext${sel}" type="button" data-cvpick="${esc(x.id)}">
+    <span class="cv-h"><span class="cv-r">${esc(x.group)}</span>
+      <span class="cv-st">别组的</span></span>
+    <span class="cv-t">${esc(x.t)}</span>
+    <span class="cv-m">${x.share==='title'?'数据未共享 · 可申请查看':'已共享'}</span>
+  </button>`;
+}
+
+/* 选中之后下面这块给的是「这条结论凭什么」：证据、谁做的、能不能被复用。
+   证据全部指回已有的页面，不另开一个详情页。 */
+function cvDetail(pid){
+  const id=S.cvPick;if(!id)return '';
+  const ns=cvNodes(pid), n=ns.find(x=>x.id===id);
+  const br=(CV_BR[pid]||[]).find(x=>x.id===id);
+  const ex=(CV_EXT[pid]||[]).find(x=>x.id===id);
+  if(br)return `<section class="cvdet"><h3>支线 · 已放弃</h3>
+    <p class="cv-dt">${esc(br.t)}</p>
+    <p class="qnote"><strong>为什么放弃：</strong>${esc(br.why)}</p>
+    <p class="t-sm mut2">放弃的岔路不删——下一次有人想走同一条，这里就是答案。</p></section>`;
+  if(ex)return `<section class="cvdet"><h3>${esc(ex.group)}的结论 · ${esc(ex.ver)} 那一版</h3>
+    <p class="cv-dt">${esc(ex.t)}</p>
+    <p class="qnote">${ex.share==='title'
+      ?'对方只共享了结论本身，证据里的原始数据没有共享。要看数据得先申请。'
+      :'对方已经共享了证据。'}</p>
+    <div class="row" style="gap:var(--s2)">
+      <button class="btn btn-pri" type="button" data-cvask="${esc(ex.id)}">申请复用</button>
+      <button class="btn" type="button" data-cvcopy="${esc(ex.id)}">取一份副本</button>
+    </div>
+    <p class="t-sm mut2">「申请复用」拿到的是引用，对方改了你这边会收到提示，由你决定接不接；
+      「取一份副本」是断开的，之后两边互不影响。</p></section>`;
+  if(!n)return '';
+  const reqs=CV_REQ.filter(r=>r.pid===pid&&r.node===n.id);
+  return `<section class="cvdet">
+    <h3>R${n.round} 的结论${n.by?` · ${esc(n.by)}`:''}</h3>
+    <p class="cv-dt">${n.t?esc(n.t):'这一轮还没写结论'}</p>
+    <div class="cv-ev">
+      <span>送出 <b class="num">${n.v||0}</b> 条</span>
+      <span>回来 <b class="num">${n.r||0}</b> 条</span>
+      ${n.failed?`<span>表达失败 <b class="num">${n.failed}</b> 条</span>`:''}
+      <span>模型 ${esc(n.mb||'—')} → ${esc(n.ma||'—')}</span>
+    </div>
+    ${n.bs.length?`<div class="row wrap" style="gap:var(--s2)">${n.bs.map(b=>
+      `<button class="btn btn-gh" type="button" data-cvbatch="${esc(b.id)}">${esc(b.id)} · ${esc(statusOf(b.status).n)}</button>`).join('')}</div>`
+      :`<p class="t-sm mut2">这一轮还没有批次，所以这条结论暂时只有计算侧的依据。</p>`}
+    <div class="row" style="gap:var(--s2)">
+      <button class="btn" type="button" data-cvedit="${esc(n.id)}">${n.t?'改一句':'写一句'}</button>
+    </div>
+    ${reqs.map(r=>{const st=cvReqState(r.id);
+      return `<p class="qnote"><strong>${esc(r.id)}</strong> ${esc(r.from)}的${esc(r.who)}申请复用这条结论${
+        st?`——${esc(st)}`:'，还没处理。到「今天」里定'}</p>`}).join('')}
+  </section>`;
+}
+
+V.canvas=()=>{
+  const p=PRJ(), pid=p.id;
+  const ns=cvNodes(pid), br=CV_BR[pid]||[], ex=CV_EXT[pid]||[];
+  const perm=cvPerm(pid), pm=CV_PERM.find(x=>x[0]===perm)||CV_PERM[0];
+  const col=n=>`<div class="cvcol">
+    ${cvCard(n)}
+    ${br.filter(b=>b.after===n.round).map(b=>`<div class="cvbr">${cvBrCard(b)}</div>`).join('')}
+    ${ex.filter(x=>x.after===n.round).map(x=>`<div class="cvex">${cvExtCard(x)}</div>`).join('')}
+  </div>`;
+  return `<div class="page">
+    <div class="pg-hd"><div class="row wrap" style="align-items:flex-end;gap:var(--s3)">
+      <div class="col grow" style="gap:6px">
+        <h1>${esc(p.name)}</h1>
+        <p class="mut t-md" style="margin:0">一轮一个结论。结论就是这一轮的那句话，在这儿改和在轮次里改是同一处</p>
+      </div>
+      <span class="ctl ctl-sel ctl-mdl">
+        <select id="cvprj" aria-label="看哪个课题" data-ic="proj">${DB.projects.map(x=>
+          `<option value="${esc(x.id)}"${x.id===pid?' selected':''}>${esc(x.name)}</option>`).join('')}</select>
+        <span class="car" aria-hidden="true"></span></span>
+      <button class="btn btn-gh" type="button" data-go="projects">清单</button>
+    </div></div>
+
+    <div class="cvbar">
+      <span class="t-sm mut2">谁能看到这条主线</span>
+      <span class="ctl ctl-sel ctl-mdl">
+        <select id="cvperm" aria-label="谁能看到这条主线" data-ic="person">${CV_PERM.map(([k,n])=>
+          `<option value="${esc(k)}"${k===perm?' selected':''}>${esc(n)}</option>`).join('')}</select>
+        <span class="car" aria-hidden="true"></span></span>
+      <span class="t-sm mut2 grow">${esc(pm[2])}</span>
+    </div>
+
+    <div class="cvwrap"><div class="cv">${ns.map(col).join('')}</div></div>
+    ${cvDetail(pid)}
+    <p class="qnote">实线是这个课题实际走的主线；挂在下面的是试过没走通的支线，放弃的岔路不删。
+      虚线框的是别的组公开出来的结论，看得到不等于拿得到数据。</p>
   </div>`;
 };
 
