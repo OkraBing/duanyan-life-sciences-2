@@ -2673,6 +2673,58 @@ dialog{max-height:calc(100dvh - 32px);overflow-y:auto}
 .research-home .research-footnote{align-self:flex-start}
 }
 
+/* ===== 今天（收件箱）与组里 =====
+   密度比别的页高一档：课题负责人是在两个会之间看 90 秒，不是坐下来读 20 分钟。
+   颜色在这两屏开始承担状态语义，所以除了语义色之外不再出现第二种蓝。 */
+.brief{display:flex;align-items:baseline;gap:var(--s3);flex-wrap:wrap;
+  padding:var(--s3) var(--s4);margin-bottom:var(--s5);
+  background:var(--surface-2);border:1px solid var(--line-2);border-radius:.75rem}
+.brief-d{font-weight:600;color:var(--ink)}
+.brief-t{color:var(--ink-2);flex:1 1 16rem;min-width:0}
+.brief-at{flex:0 0 auto}
+.ibsec{margin-bottom:var(--s6)}
+.ib-h{font-size:.875rem;font-weight:600;color:var(--ink-3);margin:0 0 var(--s3);
+  display:flex;align-items:center;gap:6px}
+.ib-h .num{font-weight:500}
+.dcgrid{display:grid;gap:var(--s3);grid-template-columns:repeat(auto-fill,minmax(min(100%,21rem),1fr))}
+.deccard{display:flex;flex-direction:column;gap:var(--s2);
+  padding:var(--s4);background:var(--surface);border:1px solid var(--line);border-radius:.75rem}
+.dc-h{display:flex;align-items:center;gap:var(--s2)}
+.dc-k{font-size:.6875rem;font-weight:600;letter-spacing:.02em;padding:2px 7px;border-radius:.375rem;
+  background:var(--surface-3);color:var(--ink-3)}
+.dc-t{font-size:.9375rem;font-weight:600;line-height:1.45;margin:0;color:var(--ink)}
+.dc-b{font-size:.8125rem;line-height:1.6;margin:0;color:var(--ink-3)}
+/* 建议这一段只在给得出依据时才出现。依据另起一行，和建议分开读。 */
+.dc-s{font-size:.8125rem;line-height:1.6;color:var(--ink-2);
+  padding:var(--s2) var(--s3);background:var(--surface-2);border-radius:.5rem}
+.dc-s strong{color:var(--ink)}
+.dc-why{display:block;margin-top:2px;color:var(--ink-4);font-size:.75rem}
+.dc-o{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s1)}
+.dc-o .btn{min-height:1.875rem;padding:0 .6875rem;font-size:.8125rem}
+.evlist{display:flex;flex-direction:column;border:1px solid var(--line-2);border-radius:.75rem;overflow:hidden}
+.evrow{display:flex;align-items:center;gap:var(--s3);padding:.5rem var(--s4);
+  border-bottom:1px solid var(--line-2);background:var(--surface);min-width:0}
+.evrow:last-child{border-bottom:0}
+.ev-k{flex:0 0 auto;font-size:.6875rem;color:var(--ink-4);min-width:3.5rem}
+.ev-t{font-size:.8125rem;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tmlist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:.75rem;overflow:hidden}
+.tmrow{display:flex;align-items:center;gap:var(--s3);padding:.625rem var(--s4);
+  border-bottom:1px solid var(--line-2);background:var(--surface)}
+.tmrow:last-child{border-bottom:0}
+.tm-av{flex:0 0 auto;width:2rem;height:2rem;border-radius:50%;display:grid;place-items:center;
+  background:var(--surface-3);color:var(--ink-2);font-size:.8125rem;font-weight:600}
+.tmst{flex:0 0 auto;font-size:.75rem;font-weight:600;padding:2px 8px;border-radius:.375rem}
+.tmst.is-on{background:var(--ok-soft);color:var(--ok-ink)}
+.tmst.is-stuck{background:var(--err-soft);color:var(--err)}
+.tmst.is-idle{background:var(--surface-3);color:var(--ink-4)}
+.tm-at{flex:0 0 auto;min-width:5rem;text-align:right}
+@media(max-width:640px){
+  .tm-at{display:none}
+  /* 窄屏下简报竖排：brief-t 的 flex-basis 在这里会把盒子撑出一大片空白，收掉 */
+  .brief{flex-direction:column;align-items:flex-start;gap:4px}
+  .brief-t{flex:0 0 auto}
+}
+
 </style>
 
 <div id="app">
@@ -2941,7 +2993,7 @@ function themeApply(){const t=LS.get('theme','auto');
   else document.documentElement.removeAttribute('data-theme')}
 themeApply();
 const S={
-  route:LS.get('route','chat'), pid:LS.get('pid','p1'), round:LS.get('round',4),
+  route:LS.get('route','today'), pid:LS.get('pid','p1'), round:LS.get('round',4),
   gate:LS.get('gate',.70), sort:LS.get('sort',{k:'dTm',dir:'desc'}),
   page:1, sel:new Set(LS.get('sel',[])), dom:'全部', use:'全部',
   flt:LS.get('flt',{noCys:false,devMin:0,src:'全部',passOnly:false}), fltOpen:0, detail:null,
@@ -3611,11 +3663,18 @@ function domOf(p){const x=p||PRJ();return DOMAINS.find(d=>d.k===(x&&x.dom))||DOM
 /* 子页面没有自己的导航项：亮它所属的那一项，不然进了项目或表单页，侧栏上一处都不亮 */
 const NAV_PARENT={project:'projects',labdet:'lab',labnew:'lab',dsnew:'dsets',trainnew:'mdl',bnew:'mdl'};
 const NAV=[
-  ['A','研究',[
+  /* 课题负责人的四个入口，各自对应一种时间尺度：
+     今天＝天，课题＝月到年，实验＝周，组里＝周。
+     资源与市场降到下面：没人会主动去逛资源，都是做某件事时才需要。
+     对话不再占首位——它从「你先开口」变成右上角随时能叫出来的一个按钮。 */
+  ['A','',[
+    ['today','今天',"M12 3.5a8.5 8.5 0 1 1 0 17a8.5 8.5 0 0 1 0-17zM12 7.5V12l3 2",'需要你知道和需要你拍板的'],
+    ['projects','课题',"M3.5 7.5a2 2 0 0 1 2-2h3.6l2 2.2h7.4a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2zM7.5 13.5h9",'走到哪了，哪里断了'],
+    ['lab','实验',"M9.5 3.5v5.6L4.7 17.6A2.2 2.2 0 0 0 6.6 21h10.8a2.2 2.2 0 0 0 1.9-3.4L14.5 9.1V3.5M8 3.5h8M7.3 14.5h9.4",'设备和人手在做什么'],
+    ['team','组里',"M9 11a3.2 3.2 0 1 1 0-6.4A3.2 3.2 0 0 1 9 11zM3.2 19.5a5.8 5.8 0 0 1 11.6 0M16.4 11.4a2.6 2.6 0 1 0 0-5.2M18 19.5a5 5 0 0 0-2.6-4.4",'谁在做什么，谁卡住了']]],
+  ['B','',[
     ['chat','科研对话',"M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4 3.5V16A2.5 2.5 0 0 1 5 13.5zM12 7.5v5M9.5 10h5",'用一句话发起任务'],
-    ['projects','项目管理',"M3.5 7.5a2 2 0 0 1 2-2h3.6l2 2.2h7.4a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2zM7.5 13.5h9",'按课题管理多轮的数据、模型与实验']]],
-  ['B','实验',[
-    ['lab','实验管理',"M9.5 3.5v5.6L4.7 17.6A2.2 2.2 0 0 0 6.6 21h10.8a2.2 2.2 0 0 0 1.9-3.4L14.5 9.1V3.5M8 3.5h8M7.3 14.5h9.4",'送出去的批次走到哪了，哪一步在等你']]],
+    ]],
   /* 资源是「我自己攒下来的」：我的数据集、我训的模型。
      市场是「外面有什么、接没接」：公共工具、公共数据库。
      两件事混在一组里，同一个词（数据集／数据库）指两样东西。 */
@@ -16492,7 +16551,26 @@ function render(){
   if(S._anim!==false){const f=view.firstElementChild;if(f)f.classList.add('enter');S._anim=false}
   playCardIn(view);
   const q=(s,f)=>view.querySelectorAll(s).forEach(f);
-  q('[data-go]',b=>b.onclick=e=>{e.preventDefault();go(b.dataset.go)});
+  q('[data-go]',b=>b.onclick=e=>{e.preventDefault();
+    /* 带 data-pid 的跳转先把课题切过去，否则点「看这条线」会落在上一个课题上 */
+    if(b.dataset.pid){const p=DB.projects.find(x=>x.id===b.dataset.pid);
+      if(p){S.pid=p.id;S.round=p.rounds.slice(-1)[0].i}}
+    go(b.dataset.go)});
+  /* 收件箱：点一个选项＝做了一个决定。决定本身记在这台机器上，
+     条目下一次是算出来的，所以这里只记「处理过」，不改底下的数据。 */
+  q('[data-ibdo]',b=>b.onclick=()=>{
+    const [id,i]=b.dataset.ibdo.split('|');
+    const x=inboxAll().find(y=>y.id===id); if(!x)return;
+    const o=x.opts[+i]; if(!o)return;
+    if(o.snooze){ibMark(id,'snooze');render();toast('先放一放，挪到「看看就好」里了');return}
+    ibMark(id,o.t);
+    if(o.pick){S.labPick=o.pick}
+    if(o.pid){const p=DB.projects.find(y=>y.id===o.pid);if(p){S.pid=p.id;S.round=p.rounds.slice(-1)[0].i}}
+    if(o.go){go(o.go)}else{render()}
+    toast('记下了：'+o.t);
+  });
+  q('[data-ibjump]',b=>b.onclick=()=>{const el=document.getElementById('ibsec-'+b.dataset.ibjump);
+    if(el)el.scrollIntoView({behavior:'smooth',block:'start'})});
   q('[data-projdw]',b=>b.onclick=()=>{S.projDw=b.dataset.projdw;render()});
   q('[data-proj]',b=>b.onclick=()=>{const p=DB.projects.find(x=>x.id===b.dataset.proj);S.projDw=null;
     /* 进项目就折起导航：项目页自己有一整套二级导航（概览／假设／设计／结果／送检），
@@ -17791,7 +17869,7 @@ function act(a,el){
     return}
   if(a==='outtoggle'){S.outOpen=!S.outOpen;render();return}
   if(a==='toolpick'){toolMenu(el);return}
-  if(a==='gohome'){go('chat');return}
+  if(a==='gohome'){go('today');return}
   if(a==='chatclear'){S.cq='';S.cf='全部';render();return}
   if(a==='pclear'){S.pq='';S.pf='全部';render();return}
   if(a==='regds'){regDataset();return}
@@ -17856,6 +17934,7 @@ function act(a,el){
     TASKS.unshift(t);JOBV.design='launch';DF.name='';DF._n=null;render();
     toast(`已建任务 ${t.n}，排队中`);return}
   if(a==='capclear'){S.capPick=null;S.ask='';render();return}
+  if(a==='ibfyi'){S.ibFyi=!S.ibFyi;render();return}
   if(a==='kbclose'){S.kbPick=null;render();return}
   if(a==='kbadd'){const el=document.getElementById('kbfile');if(el)el.click();return}
   if(a==='newproj'){
@@ -18815,6 +18894,240 @@ document.querySelectorAll('#side [data-go]').forEach(b=>b.onclick=()=>go(b.datas
   });
   S.pid=was;
 })();
+/* ================= 组里：成员是一等对象 =================
+   课题负责人管的是人：谁在跟哪条线、谁卡住了、谁还空着。
+   一线研究员那一版不需要这一层，负责人版缺了它就不成立。
+   成员不另起一套事实：他跟的是哪个课题由 TEAM_OF 指，
+   「最近更新」「卡没卡住」全部从那个课题自己的批次日志算出来。 */
+const TEAM=[
+ {id:'m1',name:'周',role:'博士生 · 三年级'},
+ {id:'m2',name:'吴',role:'博士后'},
+ {id:'m3',name:'郑',role:'硕士生 · 二年级'},
+ {id:'m4',name:'许',role:'研究助理'}];
+const TEAM_OF={p1:'m1',p2:'m2',p3:'m3'};      /* 许还没分配，这是真会有的状态 */
+const memOf=id=>TEAM.find(m=>m.id===id)||null;
+const memOfPrj=pid=>memOf(TEAM_OF[pid]);
+const prjOfMem=mid=>DB.projects.filter(p=>TEAM_OF[p.id]===mid);
+
+/* 这个课题最近一次真的发生了什么，是哪天：取它所有批次日志里最晚的一条。
+   一个批次都没有就算不出来——算不出就说算不出，不拿项目创建时间冒充活动。 */
+function pjLast(pid){
+  const ts=[];
+  BATCHES.forEach(b=>{if(b.pid===pid)(b.log||[]).forEach(x=>ts.push(x[1]))});
+  return ts.length?ts.sort().pop():null;
+}
+function daysSince(s){
+  if(!s)return null;
+  const t=new Date(String(s).replace(' ','T')+'+08:00');
+  if(isNaN(t.getTime()))return null;
+  return Math.floor((NOW-t)/86400000);
+}
+const STUCK_DAYS=14;      /* 多久没动算卡住。照 SciNote 的 7/14/30 取中间那档 */
+
+/* ---- 处理过的条目记在这台机器上 ----
+   收件箱的条目是算出来的，不是存出来的：底下的数据变了，条目自己就变。
+   所以这里只记「哪条被我处理过、怎么处理的」，不记条目本身。 */
+function ibDone(){return LS.get('ibdone',{})||{}}
+function ibMark(id,v){const d=ibDone();d[id]=v;LS.set('ibdone',d)}
+
+/* ================= 收件箱：三档 =================
+   等你定：没有你的决定就推不下去
+   该你知道：已经发生、不用你动手、但你该知道
+   看看就好：系统的推测，可能有用也可能没用
+   哪条进哪一档由系统定，人只能调呈现——照 Linear 的做法。
+   每一条都必须能指出它是从哪条数据算出来的，指不出就不生成。 */
+function inboxAll(){
+  const out=[], done=ibDone();
+  const push=o=>{o.state=done[o.id]||null;out.push(o)};
+
+  /* 一、等你签：批次停在「等你」的那一步上。who 由 nextStep 判定，不另立口径 */
+  BATCHES.forEach(b=>{
+    const ns=nextStep(b);
+    if(!ns||ns.who!=='你')return;
+    const p=DB.projects.find(x=>x.id===b.pid)||{};
+    const last=(b.log||[]).slice(-1)[0], d=last?daysSince(last[1]):null;
+    const back=b.status==='done';
+    if(back){
+      /* 二、回传了：数据回来了，要不要并进下一轮。
+         依据取这一轮自己的数（送出多少、回来多少、几条表达失败），
+         不要拿项目总命中率充数——那个数对每个批次都一样，等于没说。 */
+      const rd=(p.rounds||[]).find(r=>r.i===b.round);
+      const why=rd?`R${b.round} 送出 ${rd.v} 条，回来 ${rd.r} 条`
+        +(rd.failed?`，${rd.failed} 条表达失败`:'')
+        +(rd.ctrl?`，含 ${rd.ctrl} 个对照`:''):null;
+      const part=b.results!=='all';
+      push({id:'back:'+b.id,kind:'回传了',tier:'act',at:last?last[1]:'',days:d,
+        title:`${esc(b.id)} 的 ${b.n} 条测完了，结果${part?'部分':'全部'}回来了`,
+        body:`课题「${esc(p.name||'')}」R${b.round} · ${esc((b.ctx&&b.ctx.assay||[]).join(' / '))}`
+          +(d!=null&&d>0?` · 放了 ${d} 天了`:''),
+        sug:why?{t:part?'先把回来的部分并进去，剩下的单独决定要不要重测'
+                      :'把这批结果并入下一轮的起点',why:why}:null,
+        opts:part?[{t:'导入已回的',go:'labdet',pick:b.id},
+                   {t:'去挑要重测的',go:'labdet',pick:b.id},
+                   {t:'我再看看',snooze:1}]
+                 :[{t:'导入结果',go:'labdet',pick:b.id},
+                   {t:'只看数据',go:'labdet',pick:b.id},
+                   {t:'我再看看',snooze:1}]});
+    }else{
+      push({id:'sign:'+b.id,kind:'等你签',tier:'act',at:last?last[1]:'',days:d,
+        title:`${esc(b.id)} 等你：${esc(ns.act)}`,
+        body:`课题「${esc(p.name||'')}」R${b.round}${d!=null?` · 已经等了 ${d} 天`:''}`,
+        sug:ns.money?{t:'先确认排期再提交',why:'这一步之后会产生费用，提交前把排期和参数一起核一遍'}:null,
+        opts:[{t:ns.act,go:'labdet',pick:b.id},{t:'我再看看',snooze:1}]});
+    }
+  });
+
+  /* 三、卡住了：某个课题超过 STUCK_DAYS 天没有任何批次动静。
+     只对还没结题的课题算——已归档的不该再提醒。 */
+  DB.projects.forEach(p=>{
+    if(p.state==='done')return;
+    const last=pjLast(p.id), d=daysSince(last);
+    if(d==null||d<STUCK_DAYS)return;
+    const m=memOfPrj(p.id);
+    push({id:'stuck:'+p.id,kind:'卡住了',tier:'act',at:last,days:d,
+      title:`「${esc(p.name)}」${d} 天没有动静了`,
+      body:`最近一次是 ${esc(last)}${m?` · 这条线跟的人是${esc(m.name)}`:' · 这条线还没有人跟'}`,
+      sug:{t:m?`问一下${esc(m.name)}卡在哪`:'先指派一个人',
+           why:`本项目上一次有动静是 ${d} 天前，超过了 ${STUCK_DAYS} 天`},
+      opts:[{t:'看这个课题',go:'project',pid:p.id},
+            {t:m?'去组里':'去指派',go:'team'},
+            {t:'我再看看',snooze:1}]});
+  });
+
+  /* 四、新线索：只从这台机器上已有的数据推，而且必须说得出「你手上有什么能验它」。
+     说不出就不生成——宁可少一条，也不给一个没法动手的点子。 */
+  DB.projects.forEach(p=>{
+    const all=CANDS(p.id), st=hitStats(all,p);
+    if(st.measured<20)return;                       /* 数据太少，推不出什么 */
+    const trained=(p.models||[]).length;
+    if(trained)return;                                   /* 已经训过了就不提 */
+    push({id:'lead:train:'+p.id,kind:'新线索',tier:'act',at:'',days:null,
+      title:`「${esc(p.name)}」的实测数据够训一个打分器了`,
+      body:`训出来之后，下一轮的候选可以先打分再送检，不用整批都测`,
+      sug:{t:'用这个课题的实测数据训一个打分器',
+           why:`手上已经有 ${st.measured} 条带实测结果的候选，这就是现成的训练集`},
+      opts:[{t:'去训一个',go:'trainnew'},{t:'先不训',snooze:7}]});
+  });
+
+  /* 五、该你知道 / 看看就好：已经发生的事。来源是活动流本身，不另造。 */
+  (DB.acts||[]).forEach((a,i)=>{
+    push({id:'act:'+i,kind:a.k==='err'?'出问题了':(a.k==='wet'?'实验':'计算'),
+      tier:a.k==='err'?'know':'know',at:a.at,days:null,
+      title:esc(a.t),body:`${esc(a.p)} · R${a.r} · ${esc(a.by)}`,sug:null,opts:[]});
+  });
+
+  return out;
+}
+/* 分档。处理过的从「等你定」里撤下来，当天还留在「该你知道」里，第二天自己消失。 */
+function inboxTier(k){
+  const L=inboxAll();
+  if(k==='act') return L.filter(x=>x.tier==='act'&&!x.state);
+  if(k==='know')return L.filter(x=>x.tier==='know'||(x.tier==='act'&&x.state&&x.state!=='snooze'));
+  return L.filter(x=>x.tier==='fyi'||(x.state==='snooze'));
+}
+
+/* ---- 简报条：每天清晨算一次，一句话，里面的短语都可点 ----
+   它不是一段叙述，是下面三档的目录。数全部来自下面真实的条目数，
+   对不上就是算错了，不另写一套。 */
+function brief(){
+  const act=inboxTier('act'), know=inboxTier('know');
+  const stuck=act.filter(x=>x.kind==='卡住了').length;
+  const back=act.filter(x=>x.kind==='回传了').length;
+  const bits=[];
+  if(act.length)bits.push(`<button class="lnk" type="button" data-ibjump="act">${act.length} 件事等你拍板</button>`);
+  if(stuck)bits.push(`<button class="lnk" type="button" data-ibjump="act">${stuck} 条线卡了超过两周</button>`);
+  if(back)bits.push(`<button class="lnk" type="button" data-ibjump="act">${back} 批数据回来了</button>`);
+  if(!bits.length)bits.push('没有需要你的事');
+  return `<div class="brief"><span class="brief-d">今天</span>
+    <span class="brief-t">${bits.join('，')}。</span>
+    <span class="brief-at mut2 t-sm">${esc(NOW.toISOString().slice(0,10))} 06:00 生成</span></div>`;
+}
+
+/* ---- 决定卡：五段，缺一段就不画那一段 ----
+   没有依据就不给建议：给不出可指认的依据时，整个「建议」段不出现，
+   只留背景和选项，让人自己判断。这条是硬规矩。 */
+function decCard(x){
+  const opt=(o,i)=>`<button class="btn${i===0?' btn-pri':''}" type="button"
+    data-ibdo="${esc(x.id)}|${i}">${esc(o.t)}</button>`;
+  return `<article class="deccard" data-ibid="${esc(x.id)}">
+    <div class="dc-h"><span class="dc-k">${esc(x.kind)}</span>
+      <span class="grow"></span>
+      <span class="t-sm mut2">${esc(x.at||'')}</span></div>
+    <h3 class="dc-t">${x.title}</h3>
+    <p class="dc-b">${x.body}</p>
+    ${x.sug?`<div class="dc-s"><strong>建议：</strong>${esc(x.sug.t)}
+      <span class="dc-why">依据：${esc(x.sug.why)}</span></div>`:''}
+    <div class="dc-o">${x.opts.map(opt).join('')}</div>
+  </article>`;
+}
+function eventRow(x){
+  return `<div class="evrow"><span class="ev-k">${esc(x.kind)}</span>
+    <span class="ev-t">${x.title}</span>
+    <span class="grow"></span><span class="t-sm mut2">${esc(x.at||'')}</span></div>`;
+}
+
+V.today=()=>{
+  const act=inboxTier('act'), know=inboxTier('know'), fyi=inboxTier('fyi');
+  const open=S.ibFyi?1:0;
+  return `<div class="page">
+    <div class="pg-hd"><div class="row wrap" style="align-items:flex-end">
+      <div class="col grow" style="gap:6px"><h1>今天</h1></div>
+      <button class="btn btn-gh" type="button" data-go="chat">问一句</button>
+    </div></div>
+    ${brief()}
+    ${act.length?`<section class="ibsec" id="ibsec-act">
+      <h2 class="ib-h">等你定 <span class="num mut2">${act.length}</span></h2>
+      <div class="dcgrid">${act.map(decCard).join('')}</div></section>`:''}
+    ${know.length?`<section class="ibsec">
+      <h2 class="ib-h">该你知道 <span class="num mut2">${know.length}</span></h2>
+      <div class="evlist">${know.map(eventRow).join('')}</div></section>`:''}
+    ${fyi.length?`<section class="ibsec">
+      <h2 class="ib-h"><button class="lnk" type="button" data-act="ibfyi">看看就好
+        <span class="num mut2">${fyi.length}</span> ${open?'▴':'▾'}</button></h2>
+      ${open?`<div class="evlist">${fyi.map(eventRow).join('')}</div>`:''}</section>`:''}
+    ${!act.length&&!know.length?`<div class="empty" style="padding:var(--s6)">
+      <div class="col" style="gap:4px"><strong class="t-md" style="color:var(--ink)">今天没有需要你的事</strong>
+      <span class="t-sm">看看课题走到哪了，或者问一句</span></div>
+      <button class="btn" type="button" data-go="projects">看课题</button></div>`:''}
+  </div>`;
+};
+
+V.team=()=>{
+  const rows=TEAM.map(m=>{
+    const ps=prjOfMem(m.id);
+    const last=ps.map(p=>pjLast(p.id)).filter(Boolean).sort().pop()||null;
+    const d=daysSince(last);
+    const stuck=d!=null&&d>=STUCK_DAYS;
+    /* 没有任何批次记录的那条线，算不出它在不在动——就说算不出，
+       不要拿「在做」去断言一件没有数据支撑的事。 */
+    const st=!ps.length?{c:'is-idle',t:'待分配'}
+      :last==null?{c:'is-idle',t:'没有记录'}
+      :stuck?{c:'is-stuck',t:`卡住 ${d} 天`}:{c:'is-on',t:'在做'};
+    return `<div class="tmrow">
+      <span class="tm-av">${esc(m.name)}</span>
+      <span class="col grow" style="gap:2px;min-width:0">
+        <span class="row" style="gap:8px;align-items:baseline">
+          <strong class="t-md">${esc(m.name)}</strong>
+          <span class="t-sm mut2">${esc(m.role)}</span></span>
+        <span class="t-sm mut ell">${ps.length?ps.map(p=>esc(p.name)).join('、'):'还没有跟任何一条线'}</span>
+      </span>
+      <span class="tmst ${st.c}">${esc(st.t)}</span>
+      <span class="t-sm mut2 tm-at">${last?esc(last.slice(0,10)):'—'}</span>
+      ${ps.length?`<button class="btn btn-gh" type="button" data-go="project" data-pid="${esc(ps[0].id)}">看这条线</button>`
+                 :`<button class="btn btn-gh" type="button" data-go="projects">去指派</button>`}
+    </div>`;
+  }).join('');
+  const idle=TEAM.filter(m=>!prjOfMem(m.id).length).length;
+  return `<div class="page">
+    <div class="pg-hd"><div class="col" style="gap:6px"><h1>组里</h1>
+      <p class="mut t-md" style="margin:0">${TEAM.length} 个人${idle?`，${idle} 个还没分配`:''}。
+        「卡住」按这条线最近一次有动静算起，超过 ${STUCK_DAYS} 天就标出来</p></div></div>
+    <div class="tmlist">${rows}</div>
+    <p class="qnote">这一屏只显示算得出来的时间差，不显示「状态良好」这类主观判断——
+      调研里课题负责人对自己组的判断普遍比一线成员乐观，这里的用处正是纠偏。</p>
+  </div>`;
+};
+
 /* ================= 留存：新建的项目与对话，刷新后还在 =================
    存什么：用户自己建的项目（内置的三个不存，代码里的种子变了要能跟上）、
    对话列表、每段对话的消息。存在这台机器的 localStorage 里，键 dy_keep。
