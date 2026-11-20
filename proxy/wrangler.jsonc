@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "duanyan-life-sciences-proxy",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-11-14",
+  "workers_dev": true,
+  "ratelimits": [
+    {
+      "name": "PER_IP_LIMITER",
+      "namespace_id": "2026111401",
+      "simple": { "limit": 10, "period": 60 }
+    },
+    {
+      "name": "SERVICE_LIMITER",
+      "namespace_id": "2026111402",
+      "simple": { "limit": 60, "period": 60 }
+    }
+  ],
+  "observability": { "enabled": false }
+}

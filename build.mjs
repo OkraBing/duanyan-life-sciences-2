@@ -1,0 +1,12 @@
+import { copyFile, mkdir } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+const root = path.dirname(fileURLToPath(import.meta.url));
+execFileSync(process.execPath, [path.join(root, 'wrap.js'), path.join(root, 'src/index.html'), path.join(root, 'index.html')], { stdio: 'inherit' });
+await mkdir(path.join(root, 'docs'), { recursive: true });
+await copyFile(path.join(root, 'index.html'), path.join(root, 'docs/index.html'));
+await copyFile(path.join(root, 'site-config.js'), path.join(root, 'docs/site-config.js'));
+await mkdir(path.join(root, 'docs/assets'), { recursive: true });
+await copyFile(path.join(root, 'assets/research-chat-bg.png'), path.join(root, 'docs/assets/research-chat-bg.png'));
+console.log('GitHub Pages 发布文件已同步到 docs/');
