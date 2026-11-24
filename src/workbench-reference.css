@@ -100,3 +100,5 @@ body[data-route=workbench] #view{padding-block:0 var(--s8);padding-inline:max(va
 .rh-activity-copy small span{white-space:nowrap}
 .rh-activity-copy small span:first-child{overflow:hidden;text-overflow:ellipsis;min-width:0}
 @media(max-width:1100px){.rh-activity+.rh-activity{padding-left:0!important;border-left:0!important;border-top:1px solid var(--line-2)!important}}
+/* 定时任务产出的动态：时间后面一个「定时」小标签 */
+.rh-activity .rh-tag{font-size:10px;padding:0 6px;border-radius:999px;background:var(--dry-soft);color:var(--dry-ink);line-height:16px}

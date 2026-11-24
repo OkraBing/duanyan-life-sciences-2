@@ -3083,6 +3083,8 @@ body[data-route=workbench] #view{padding-block:0 var(--s8);padding-inline:max(va
 .rh-activity-copy small span{white-space:nowrap}
 .rh-activity-copy small span:first-child{overflow:hidden;text-overflow:ellipsis;min-width:0}
 @media(max-width:1100px){.rh-activity+.rh-activity{padding-left:0!important;border-left:0!important;border-top:1px solid var(--line-2)!important}}
+/* 定时任务产出的动态：时间后面一个「定时」小标签 */
+.rh-activity .rh-tag{font-size:10px;padding:0 6px;border-radius:999px;background:var(--dry-soft);color:var(--dry-ink);line-height:16px}
 
 body[data-route="materials"] #view,body[data-route="files"] #view,body[data-route="shared"] #view{padding:0;background:var(--surface)}
 .ms-shell{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:calc(100vh - 48px);color:var(--ink)}
@@ -3142,6 +3144,24 @@ html[data-theme=dark] .st-icon,html[data-theme=dark] .st-intro>img{filter:invert
 @media(max-width:600px){.st-dialog{width:calc(100vw - 20px);max-height:calc(100dvh - 20px);border-radius:14px}.st-modal-body{padding:20px 18px}.st-dialog .st-actions{bottom:0;margin:0 -18px -20px;padding:14px 18px 20px}.st-content-main{padding:22px 18px}.st-content-head{flex-wrap:wrap}.st-content-head h2{font-size:24px}.st-close{min-height:44px}.st-summary{padding:20px}}
 .st-sample{font-size:14px;line-height:1.8;overflow-wrap:anywhere}.st-sample-label{display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink-3);font-size:12px;margin-bottom:16px}.st-sample h4{font-size:21px;font-weight:600;line-height:1.5;margin:0 0 14px}.st-sample>p{margin:0 0 20px}.st-sample h5{font-size:15px;margin:24px 0 10px}.st-sample ul{padding-left:20px;margin:0 0 20px}.st-sample li{margin:6px 0}.st-sample-table{width:100%;overflow:auto;border:1px solid var(--line);border-radius:10px}.st-sample table{width:100%;border-collapse:collapse;font-size:13px}.st-sample th{text-align:left;background:var(--paper);font-weight:500;color:var(--ink-3)}.st-sample th,.st-sample td{padding:12px 14px;vertical-align:top;min-width:90px}.st-sample td{border-top:1px solid var(--line)}.st-sample td:last-child{min-width:180px}.st-sample .st-sample-note{font-size:12px;color:var(--ink-3);line-height:1.8;padding:14px 16px;background:var(--paper);border-radius:8px;margin-top:20px}.st-sample-library,.st-sample-option{border-top:1px solid var(--line);padding:16px 0}.st-sample-library>summary,.st-sample-option>summary{cursor:pointer;font-size:14px;color:var(--ink-2);padding:4px 0}.st-sample-option .st-sample{padding-top:20px}.st-sample-library>summary:focus-visible,.st-sample-option>summary:focus-visible{outline:2px solid var(--dry);outline-offset:4px}
 @media(max-width:600px){.st-sample h4{font-size:19px}.st-sample th,.st-sample td{padding:10px;min-width:75px}.st-sample td:last-child{min-width:145px}}
+
+/* 课题详情「定时」页签 */
+.pjx-tab-c{margin-left:4px;font-size:11px;color:var(--ink-4);font-weight:400}
+.stp-row{align-items:center}
+.stp-dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;margin:0 2px 0 4px;background:var(--ok,#336950)}
+.stp-dot.is-off{background:var(--ink-4)}
+.stp-dot.is-err{background:var(--err,#B34236)}
+.stp-flag{font-size:11px;padding:1px 7px;border-radius:999px;color:var(--err,#B34236);border:1px solid currentColor;flex:0 0 auto}
+.stp-all{display:block;width:100%;margin-top:10px;padding:8px;border:1px dashed var(--line);border-radius:8px;background:none;font:inherit;font-size:12px;color:var(--ink-3);cursor:pointer}
+.stp-all:hover{color:var(--ink);border-color:var(--ink-4)}
+.stp-empty{display:flex;flex-direction:column;gap:8px;padding:16px 4px}
+.stp-tpl{display:flex;flex-direction:column;gap:2px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font:inherit;cursor:pointer;color:var(--ink)}
+.stp-tpl strong{font-size:13px;font-weight:600}
+.stp-tpl span{font-size:12px;color:var(--ink-3);line-height:1.5}
+.stp-tpl:hover{border-color:var(--ink-4);background:var(--surface-2)}
+/* 对话回答下方的「设为定时任务」 */
+.st-offer{margin-top:10px}
+.st-offer-b{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;font-size:12px;border-radius:8px}
 
 /* Navigation v2: keep the existing theme tokens and small-screen navigation. */
 .settings-layout{display:grid;grid-template-columns:10rem minmax(0,1fr);gap:var(--s6);max-width:73.75rem;margin-inline:auto}
@@ -3903,6 +3923,55 @@ body[data-route="chat"] .research-top .outbar-hist,body[data-route="chat"] .outb
 .al-origin{border:0;padding:0;margin:0;min-inline-size:0}
 .al-origin>legend{padding:0}
 
+/* 全局搜索（第二版）：侧栏顶部的触发器 + ⌘K 面板。
+   触发器的尺寸和导航项同一把尺子：高 34、左右 12、图标 x=24，所以折叠前后位置不动。 */
+.gs-trigger{display:flex;align-items:center;gap:8px;margin:0 12px 6px;height:34px;padding:0 10px 0 11px;
+  border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink-3);
+  font:inherit;font-size:13px;cursor:pointer;text-align:left;flex:0 0 auto;width:calc(100% - 24px)}
+.gs-trigger svg{flex:0 0 auto}
+.gs-trigger .gs-ph{flex:1;min-width:0}
+.gs-trigger .gs-kbd{font-family:var(--mono,ui-monospace,monospace);font-size:11px;color:var(--ink-4);
+  border:1px solid var(--line);border-radius:4px;padding:0 5px;line-height:18px;background:var(--surface-2)}
+.gs-trigger:hover{border-color:var(--ink-4);color:var(--ink-2)}
+.gs-trigger:focus-visible{outline:2px solid var(--dry);outline-offset:2px}
+#side[data-collapsed="1"] .gs-trigger{width:40px;padding:0 0 0 11px;gap:0}
+#side[data-collapsed="1"] .gs-trigger .nav-tx{display:none}
+
+/* 面板 */
+.gs-dlg{padding:0;border:0;background:transparent;width:min(600px,calc(100vw - 32px));max-width:none;margin:12vh auto auto;overflow:visible}
+.gs-dlg::backdrop{background:rgba(14,17,22,.28)}
+.gs-box{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh-3);overflow:hidden;color:var(--ink)}
+.gs-bar{display:flex;align-items:center;gap:10px;padding:0 14px;height:52px;border-bottom:1px solid var(--line-2);color:var(--ink-3)}
+.gs-input{flex:1;min-width:0;height:100%;border:0;outline:0;background:transparent;font:inherit;font-size:15px;color:var(--ink)}
+.gs-input::placeholder{color:var(--ink-4)}
+.gs-dlg kbd{font-family:var(--mono,ui-monospace,monospace);font-size:11px;color:var(--ink-4);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface-2)}
+.gs-list{max-height:min(420px,56vh);overflow-y:auto;padding:6px}
+.gs-group{font-size:11px;font-weight:500;color:var(--ink-4);padding:10px 10px 4px}
+.gs-row{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;cursor:pointer;min-height:40px}
+.gs-row.is-on{background:var(--dry-soft)}
+.gs-ic{display:grid;place-items:center;width:26px;height:26px;border-radius:6px;background:var(--surface-2);color:var(--ink-3);flex:0 0 auto}
+.gs-row.is-on .gs-ic{color:var(--dry-ink)}
+.gs-tx{display:flex;flex-direction:column;min-width:0;flex:1}
+.gs-label{font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gs-sub{font-size:11px;color:var(--ink-4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gs-enter{font-size:12px;color:var(--ink-4)}
+.gs-empty{padding:28px 16px;text-align:center;color:var(--ink-3);font-size:13px}
+.gs-empty p{margin:0 0 10px}
+.gs-ask{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;color:var(--dry-ink);cursor:pointer}
+.gs-ask:hover{background:var(--surface-2)}
+.gs-foot{display:flex;gap:16px;padding:8px 14px;border-top:1px solid var(--line-2);font-size:11px;color:var(--ink-4)}
+.gs-foot kbd{margin-right:2px}
+@media(max-width:600px){.gs-dlg{margin-top:8vh}.gs-foot{display:none}}
+@media(max-width:760px){#side .gs-trigger{width:auto;margin:0 8px;flex:0 0 auto}}
+/* 整条搜索栏就是输入框，不再给里面的 input 套一圈全站的焦点环 */
+.gs-dlg .gs-input,.gs-dlg .gs-input:focus,.gs-dlg .gs-input:focus-visible{outline:none!important;box-shadow:none!important;border:0!important;background:transparent!important;padding:0!important;min-height:0!important}
+.gs-dlg .gs-bar:focus-within{box-shadow:inset 0 -2px 0 var(--dry)}
+/* 情境入口的小控件 */
+.ce-inline{font-size:12px;padding:0;border:0;background:none;color:var(--dry-ink);cursor:pointer}
+.ce-inline:hover{text-decoration:underline}
+.ce-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--line-2);padding-top:10px}
+.ce-dev{margin-top:4px}
+
 /* ====== 皮肤层：结构与分量的微调；颜色沿用最初的墨砚 token ======
    依据：impeccable（Operate 模式：壳有颜色、一套字族、紧凑刻度、带偏移的软阴影、浏览器默认面也要上色、不许单侧色条）
          + ui-ux-pro-max（研究/数据类产品：Minimal Swiss，冷静蓝 + 中性灰，清晰优先）。
@@ -4273,8 +4342,19 @@ body[data-route="chat"]:has(.chat-history:not([hidden])) .research-home .researc
   justify-content:flex-start!important;padding:0 12px!important}
 #side[data-collapsed="1"] .nav-group{padding:0 12px 10px!important;gap:3px!important;align-items:flex-start!important}
 #side[data-collapsed="1"] .nav-group.is-sep{padding:12px 0 10px!important;margin:0 12px!important}
-#side[data-collapsed="1"] .brand{justify-content:flex-start!important;padding-left:10px!important}
+#side[data-collapsed="1"] .brand{justify-content:flex-start!important;align-items:flex-start!important;padding-left:11px!important;padding-top:12px!important}  /* logo 与展开态同一个点：x=16 y=17 */
 #side[data-collapsed="1"] .side-toggle{left:12px!important;transform:none!important}
+
+/* 折叠态的展开按钮：不再单占一行（会压在搜索框上），而是叠在 logo 上。
+   平时看到的是 logo，鼠标移到品牌行或键盘聚焦时换成展开按钮；触屏没有悬停，直接显示按钮。
+   这样展开按钮在两种状态下都在品牌行里，折叠前后不跳位。 */
+#side[data-collapsed="1"] .brand{position:relative}
+#side[data-collapsed="1"] .side-toggle{top:16px!important;left:17px!important;opacity:0;z-index:2;
+  background:var(--surface)!important;transition:opacity .12s ease}
+#side[data-collapsed="1"] .brand:hover .side-toggle,#side[data-collapsed="1"] .side-toggle:focus-visible{opacity:1}
+#side[data-collapsed="1"] .brand:hover .brand-mark,#side[data-collapsed="1"] .brand:focus-within .brand-mark{opacity:0}
+@media (hover:none){#side[data-collapsed="1"] .side-toggle{opacity:1}#side[data-collapsed="1"] .brand-mark{opacity:0}}
+@media (prefers-reduced-motion:reduce){#side[data-collapsed="1"] .side-toggle{transition:none}}
 
 
 /* 项目卡标题被挤成两行、断在「结合界 / 面」：标题被写死 max-width:calc(100% - 55px)，
@@ -4701,7 +4781,7 @@ function mdlBtn(){
     : ps.map(x=>`<option value="${esc(x.sid+'|'+x.name)}"${(x.sid===a.sid&&x.name===a.name)?' selected':''}
         >${esc(x.name)}${h.pre?'（未适配）':''}</option>`).join('');
   return `<span class="ctl ctl-sel ctl-mdl">
-    <select id="askmdl" aria-label="这一句用哪个模型" data-ic="model">${body}</select>
+    <select id="askmdl" aria-label="这一句用哪个模型" data-ic="model">${body}<option value="__manage">管理模型接入…</option></select>
     <span class="car" aria-hidden="true"></span></span>`;
 }
 function projBtn(explicit=false){
@@ -8037,7 +8117,7 @@ V.trainnew=()=>{
   <section class="fsec">
     <div class="fsec-h">数据配置</div>
     <div class="fsec-b">
-      <div class="field"><label class="label" for="trds">训练数据 <i style="color:var(--err);font-style:normal">*</i></label>
+      <div class="field"><div class="row" style="align-items:baseline"><label class="label" for="trds">训练数据 <i style="color:var(--err);font-style:normal">*</i></label><span class="grow"></span><button class="lv-link ce-inline" type="button" data-ce-new-ds="train">＋ 新建数据集</button></div>
         <span class="ctl ctl-sel"><select id="trds" class="input">
           <option value="self" ${NEWTR.ds==='self'?'selected':''}>本课题实测（${nSelf} 条有实测值）</option>
           ${DS.map(x=>`<option value="${esc(x.id)}" ${NEWTR.ds===x.id?'selected':''}
@@ -8292,7 +8372,7 @@ V.chat=()=>{
   return `<div class="page chat">
     ${outBar()}
     <div class="chat-flow">
-      ${L.map(m=>m.role==='me'
+      ${L.map((m,i)=>m.role==='me'
         ? `<div class="turn turn-me"><span class="turn-g" aria-hidden="true">›</span>
             <div class="turn-b">${esc(m.text)}</div></div>`
         : `<div class="turn turn-ai"><span class="turn-g" aria-hidden="true"></span>
@@ -8301,6 +8381,8 @@ V.chat=()=>{
               ${m.text||m._live?`<p class="turn-p${m._live&&m.text.length<(m._full||'').length?' is-live':''}"
                 >${m.html||esc(m.text)}</p>`:''}
               ${(m.cards||[]).map(cardHTML).join('')}
+              ${m.fix==='set'?'<div class="st-offer"><button class="btn st-offer-b" type="button" data-go="set">去配置模型接入</button></div>':''}
+              ${!m._live&&L[i-1]?.role==='me'&&typeof stChatOffer==='function'?stChatOffer(L[i-1].text,typeof gsCurrentPid==='function'?gsCurrentPid():''):''}
             </div></div>`).join('')}
     </div>
     <div class="chat-ask">${composer()}</div>
@@ -10673,7 +10755,9 @@ function agentSend(){
   }).catch(e=>{
     const L=convOf();L.pop();
     TRACE.cur=tr0;
-    say((stray?'已选的「'+stray+'」不属于当前任务。':'')+modelErr(e));
+    const em=say((stray?'已选的「'+stray+'」不属于当前任务。':'')+modelErr(e));
+    /* 没填密钥、凭证被拒：错误下方直接给去模型接入的按钮，不让人自己找 */
+    {const raw=String(e&&e.message||e);if(em&&(raw==='NOKEY'||/HTTP (401|403)/.test(raw)))em.fix='set';}
   });
 }
 
@@ -10735,7 +10819,9 @@ function freeAsk(txt,stray){
   }).catch(e=>{
     const L=convOf();L.pop();
     TRACE.cur=tr0;
-    say((stray?'已选的「'+stray+'」不属于当前任务。':'')+modelErr(e));
+    const em=say((stray?'已选的「'+stray+'」不属于当前任务。':'')+modelErr(e));
+    /* 没填密钥、凭证被拒：错误下方直接给去模型接入的按钮，不让人自己找 */
+    {const raw=String(e&&e.message||e);if(em&&(raw==='NOKEY'||/HTTP (401|403)/.test(raw)))em.fix='set';}
   });
 }
 
@@ -11128,9 +11214,11 @@ V.project=()=>{
         aria-orientation="vertical" aria-label="拖动调整知识库宽度"
         title="拖动调整宽度，双击还原"></button>
       <div class="pjx-tabs">
-        ${[['kb','知识库'],['tool','工具'],['exp','实验']].map(([k,n])=>
-        `<button class="pjx-tab${tab===k?' is-on':''}" type="button" data-pjtab="${k}"
-          aria-current="${tab===k?'page':'false'}">${n}</button>`).join('')}
+        ${[['kb','知识库'],['tool','工具'],['exp','实验'],['st','定时']].map(([k,n])=>{
+        /* 定时：第二版把定时任务放回课题里；有计划时页签后带个数 */
+        const c=k==='st'&&typeof stForProject==='function'?stForProject(p.id).length:0;
+        return `<button class="pjx-tab${tab===k?' is-on':''}" type="button" data-pjtab="${k}"
+          aria-current="${tab===k?'page':'false'}">${n}${c?`<span class="pjx-tab-c num">${c}</span>`:''}</button>`}).join('')}
       </div>
       ${tab==='kb'?`
       <div class="pjx-side-h"><span class="lbl">全部文件</span><span class="grow"></span>
@@ -11170,7 +11258,8 @@ V.project=()=>{
             <span class="pjx-empty-ic">${fileIc('')}</span>
             <strong class="t-md" style="color:var(--ink)">还没有资料</strong>
             <span class="t-sm mut">点右上角的 ＋ 添加资料</span></div>`}
-      </div>`:tab==='exp'?'':`
+        <button class="stp-all" type="button" data-ce-mat-pid="${esc(p.id)}">在资料空间打开</button>
+      </div>`:tab==='exp'||tab==='st'?'':`
       <div class="pjx-side-h"><span class="lbl">已启用</span><span class="grow"></span>
         <span class="t-xs mut2 num">${ENABLED().length + dsSrcEnabled().length}</span>
         <!-- 这一页只能开关已经接进来的。要添新的得去市场，所以开一个新标签页，
@@ -11202,6 +11291,7 @@ V.project=()=>{
         ||'<span class="t-sm mut" style="padding:var(--s3) 0">一个数据源都没启用。</span>'}
       </div>`}
       ${tab==='exp'?pjExpTab(p):''}
+      ${tab==='st'&&typeof pjSchedTab==='function'?pjSchedTab(p):''}
     </aside>
 
     <section class="pjx-chat">
@@ -11217,7 +11307,7 @@ V.project=()=>{
       </div>
       ${docCur?`<div class="pjx-doc">${docPreview(docCur)}</div>`:''}
       ${L.length?`<div class="pjx-flow">
-        ${L.map(m=>m.role==='me'
+        ${L.map((m,i)=>m.role==='me'
           ? `<div class="turn turn-me"><span class="turn-g" aria-hidden="true">›</span>
               <div class="turn-b">${esc(m.text)}</div></div>`
           : `<div class="turn turn-ai"><span class="turn-g" aria-hidden="true"></span>
@@ -11226,6 +11316,8 @@ V.project=()=>{
                 ${m.text||m._live?`<p class="turn-p${m._live&&m.text.length<(m._full||'').length?' is-live':''}"
                   >${m.html||esc(m.text)}</p>`:''}
                 ${(m.cards||[]).map(cardHTML).join('')}
+                ${m.fix==='set'?'<div class="st-offer"><button class="btn st-offer-b" type="button" data-go="set">去配置模型接入</button></div>':''}
+                ${!m._live&&L[i-1]?.role==='me'&&typeof stChatOffer==='function'?stChatOffer(L[i-1].text,p.id):''}
               </div></div>`).join('')}
       </div>`
       :`<div class="pjx-flow">${pjOpener(p)}</div>`}
@@ -15166,6 +15258,7 @@ function tpBody(){
       ${bad.length?`<div class="lbl" style="padding:var(--s4) 0 var(--s2)">不适配这个节点　${bad.length}</div>
         ${bad.map(t=>tpRow(t,false)).join('')}`:''}
     </div>
+    <div class="ce-foot"><span class="t-xs mut">找不到自己的工具？</span><button class="lv-link ce-inline" type="button" data-ce-tools>管理我的工具</button></div>
   </div>`;
 }
 function tpPaint(){
@@ -18372,7 +18465,7 @@ function render(){
     mUse(fit[0].sid,fit[0].name);
     LS.set('mstat',null);          // 跟着换了模型，上一次的连通结论不再代表现在
     render();toast('已切换到 '+h.n+'，模型换成适配的 '+fit[0].name)});
-  q('#askmdl',el=>el.onchange=()=>{const v=el.value.split('|'),nm=v.slice(1).join('|');
+  q('#askmdl',el=>el.onchange=()=>{if(el.value==='__manage'){go('set');return}const v=el.value.split('|'),nm=v.slice(1).join('|');
     mUse(v[0],nm);
     LS.set('mstat',null);          // 换了模型，上一次的连通结论不再代表现在
     render();toast('已切换到 '+nm)});
@@ -19647,7 +19740,17 @@ function act(a,el){
       S.pid=id;S.round=1;S.collapsed=1;LS.set('collapsed',1);
       go('pw');toast(`已创建「${n}」`);
     });return}
-  if(a==='askfile'){const el=document.getElementById('askfile');if(el)el.click();return}
+  if(a==='askfile'){
+    /* 第二版：附件不只是「从电脑上传」。资料空间里已有的文件、要拿去训练的表格，都从这里进 */
+    const html='<button class="menu-i is-go" type="button" data-go="__up"><span class="ck"></span><span><span class="nm">上传文件</span><span class="sb">从这台电脑选</span></span></button>'
+      +'<button class="menu-i is-go" type="button" data-go="__mat"><span class="ck"></span><span><span class="nm">从资料空间选</span><span class="sb">已上传过的文献与数据</span></span></button>'
+      +'<button class="menu-i is-go" type="button" data-go="__ds"><span class="ck"></span><span><span class="nm">上传数据集</span><span class="sb">表格整理成可训练的数据集</span></span></button>';
+    menu(el,html,v=>{
+      if(v==='__up'){const f=document.getElementById('askfile');if(f)f.click();return}
+      if(v==='__ds'){ceNewDataset(gsCurrentPid&&gsCurrentPid());return}
+      if(v==='__mat')ceMaterialsMenu(el);
+    });
+    return}
   if(a==='side'){S.collapsed=S.collapsed?0:1;LS.set('collapsed',S.collapsed);S._sideOnly=1;render();return}
   if(a==='mdlimport'){
     modal('导入模型',`<div class="col" style="gap:var(--s4)">
@@ -21477,7 +21580,7 @@ V.devices=()=>{
 function labFlowHTML(steps,mode,assays,frozen=true){
  const labels=labStepLabels;
  const stateIcon=state=>'<svg viewBox="0 0 16 16" aria-hidden="true">'+(state==='done'?'<path d="m3 8 3 3 7-7"/>':state==='exception'?'<circle cx="8" cy="8" r="6"/><path d="M8 4.5v4M8 11.5h.01"/>':state==='running'?'<circle cx="8" cy="8" r="6" stroke-dasharray="23 15"/><path d="M8 4.5V8l2 1.5"/>':'<circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2 1.5"/>')+'</svg>';
- const node=s=>{const state=s.state||'pending';return `<div class="lv-flow-node lab-map-node is-${esc(state)}" data-lab-flow-step="${esc(s.id)}"><span class="lab-map-port is-input" aria-hidden="true"></span><strong>${esc(s.title)}</strong><small>${esc(s.stage==='review'?'人工复核':(frozen&&s.deviceSnapshot?.model)||labDevice(s.deviceId)?.model||'未选择设备')}</small><span class="lab-map-status is-${esc(state)}">${stateIcon(state)}${esc(labels[state]||state)}</span><span class="lab-map-port is-output" aria-hidden="true"></span></div>`;};
+ const node=s=>{const state=s.state||'pending';return `<div class="lv-flow-node lab-map-node is-${esc(state)}" data-lab-flow-step="${esc(s.id)}"><span class="lab-map-port is-input" aria-hidden="true"></span><strong>${esc(s.title)}</strong><small>${esc(s.stage==='review'?'人工复核':(frozen&&s.deviceSnapshot?.model)||labDevice(s.deviceId)?.model||'未选择设备')}</small><span class="lab-map-status is-${esc(state)}">${stateIcon(state)}${esc(labels[state]||state)}</span>${state==='exception'&&s.deviceId&&labDevice(s.deviceId)?`<button class="lv-link ce-inline ce-dev-link" type="button" data-ce-device="${esc(s.deviceId)}">查看设备</button>`:''}<span class="lab-map-port is-output" aria-hidden="true"></span></div>`;};
  const connector=(kind='line',count=1)=>{
   const end=(x)=>`<path d="M${x-8} 84l8 9 8-9"/>`,xs=Array.from({length:count},(_,i)=>(i+.5)*1000/count);
   let paths='';
@@ -21516,7 +21619,7 @@ V.lab=()=>{
 const labLegacyDetail=V.labdet;
 V.labdet=()=>{
  const b=BATCHES.find(b=>b.id===S.labPick);if(!b?.workflow)return labLegacyDetail();const w=b.workflow,s=labSummary(b),c=w.conclusion;
- return `<div class="page lv lab-experiment-detail"><header class="lv-head"><div><button class="lv-link" type="button" data-go="lab">← 实验管理</button><h1>${esc(b.name||(b.ctx.assay.join(' / ')+' · Round '+b.round))}</h1><p>${esc(b.id)} · ${esc(pnOf(b.pid))} · ${b.n} 个样本</p></div><div class="lv-actions">${labBadge(s.status)}<button class="btn" type="button" data-lv-export="${esc(b.id)}">导出实验记录</button>${w.phase==='draft'?`<button class="btn btn-pri" type="button" data-lv-edit="${esc(b.id)}">编辑草稿</button>`:''}</div></header><div class="lv-note"><strong>${esc(s.current)} · 已完成 ${s.done}/${s.total} 个环节</strong>${esc(s.detail)}<br>${w.source==='demo'?'这是演示流程：阶段状态与结论用于体验设计，不代表真实样品、测量或设备执行。':'本机人工记录：方案和进度不会自动下发到设备。'}</div><div class="lv-plan"><div><section class="lv-panel"><h2>环节进展</h2>${w.steps.map(st=>`<section class="lv-stage-detail" data-lv-stage="${esc(st.id)}"><div class="lv-stage-head"><strong>${esc(st.title)}</strong>${labBadge(st.state,labStepLabels[st.state])}</div><p class="lv-small">${st.stage==='review'?'人工数据复核':esc(st.deviceSnapshot?.model||labDevice(st.deviceId)?.model||'未选择设备')} ${st.resource?' · 实例 '+esc(st.resource):''}${st.sop?' · SOP '+esc(st.sop):''}<br>前置：${st.after.map(k=>esc(labStage(k).title)).join('、')||'样品交接'} · 第 ${st.attempt||1} 次记录</p>${st.result?`<div class="lv-stage-result is-${st.state}">${esc(st.result)}</div>`:''}${st.evidence?`<p class="lv-small">证据位置：${esc(st.evidence)}</p>`:''}<details class="lv-config"><summary>输入输出与历史记录</summary><div class="lv-config-body"><p class="lv-small">来源：${(st.inputFrom||[]).map(k=>k==='source'?'样本交接':esc(labStage(k).title)).join('、')}</p>${labIO(st.stage,st.contract)}${st.history?.length?`<div class="lv-log">${st.history.slice().reverse().map(h=>`<p>${esc(h.at)} · 第 ${h.attempt} 次 · ${esc(h.state==='invalidated'?'重试后失效':labStepLabels[h.state]||h.state)}<br>${esc(h.result||'')} ${h.evidence?' · '+esc(h.evidence):''}</p>`).join('')}</div>`:'<p class="lv-small">暂无历史记录</p>'}</div></details>${st.stage!=='review'&&w.phase!=='draft'?`<div class="lv-actions">${['exception','done'].includes(st.state)?`<button class="lv-link" type="button" data-lv-retry="${esc(st.id)}">重试此环节</button>`:`<button class="btn" type="button" data-lv-record="${esc(st.id)}" ${labCanRecord(b,st)?'':'disabled'}>记录环节进展</button>${!labCanRecord(b,st)?'<span class="lv-small">等待前置环节完成</span>':''}`}</div>`:''}</section>`).join('')}</section><section class="lv-panel${c?.published?' lv-conclusion':''}"><h2>实验结论</h2>${c?.published?`<div class="lv-eyebrow">${esc(c.verdict)}</div><div class="lv-stage-result">${esc(c.text)}</div><p class="lv-small">证据索引：${esc(c.evidence)}<br>${esc(c.by||'')} ${esc(c.at||'')}</p>`:`<p class="lv-small">${s.ready?'各实验环节已完成，请复核数据并填写结论。':'完成所有前处理和表征环节后，再复核证据并发布结论。'} 有结论可以是支持假设、不支持假设或证据不足。</p><button class="btn btn-pri" data-lv-publish="${esc(b.id)}" type="button" ${s.ready&&w.phase!=='draft'?'':'disabled'}>复核并发布结论</button>`}</section><section class="lv-panel"><h2>实验事件</h2><div class="lv-log">${w.events?.length?w.events.slice().reverse().map(e=>`<p>${esc(e.at)} · ${esc(e.by)}<br>${esc(e.text)}</p>`).join(''):'<p>演示流程尚无人工操作记录</p>'}</div></section></div><aside class="lv-panel lv-preview lab-workflow-panel"><div class="lab-workflow-head"><h2>流程与样品交接</h2><p class="lv-small">${esc(LAB_TEMPLATES[w.template]?.name||'自定义流程')} · ${w.mode==='parallel'?'分支并行':'依次执行'}</p></div>${labFlowHTML(w.steps,w.mode,w.assays||[])}<details class="lv-config lab-flow-source"><summary>样本与数据来源</summary><div class="lv-config-body"><p class="lv-small">${esc(w.sampleSource||'未记录')}</p><p class="lv-small">样本：${esc(w.sampleIds?.join('、')||'未记录')}</p><p class="lv-small">分样：${esc(w.aliquot||'未记录')}</p></div></details></aside></div></div>`;
+ return `<div class="page lv lab-experiment-detail"><header class="lv-head"><div><button class="lv-link" type="button" data-go="lab">← 实验管理</button><h1>${esc(b.name||(b.ctx.assay.join(' / ')+' · Round '+b.round))}</h1><p>${esc(b.id)} · ${esc(pnOf(b.pid))} · ${b.n} 个样本</p></div><div class="lv-actions">${labBadge(s.status)}<button class="btn" type="button" data-lv-export="${esc(b.id)}">导出实验记录</button>${c?.published?`<button class="btn" type="button" data-ce-batch-ds="${esc(b.id)}">整理成数据集</button>`:''}${w.phase==='draft'?`<button class="btn btn-pri" type="button" data-lv-edit="${esc(b.id)}">编辑草稿</button>`:''}</div></header><div class="lv-note"><strong>${esc(s.current)} · 已完成 ${s.done}/${s.total} 个环节</strong>${esc(s.detail)}<br>${w.source==='demo'?'这是演示流程：阶段状态与结论用于体验设计，不代表真实样品、测量或设备执行。':'本机人工记录：方案和进度不会自动下发到设备。'}</div><div class="lv-plan"><div><section class="lv-panel"><h2>环节进展</h2>${w.steps.map(st=>`<section class="lv-stage-detail" data-lv-stage="${esc(st.id)}"><div class="lv-stage-head"><strong>${esc(st.title)}</strong>${labBadge(st.state,labStepLabels[st.state])}</div><p class="lv-small">${st.stage==='review'?'人工数据复核':esc(st.deviceSnapshot?.model||labDevice(st.deviceId)?.model||'未选择设备')} ${st.resource?' · 实例 '+esc(st.resource):''}${st.sop?' · SOP '+esc(st.sop):''}<br>前置：${st.after.map(k=>esc(labStage(k).title)).join('、')||'样品交接'} · 第 ${st.attempt||1} 次记录</p>${st.result?`<div class="lv-stage-result is-${st.state}">${esc(st.result)}</div>`:''}${st.evidence?`<p class="lv-small">证据位置：${esc(st.evidence)}</p>`:''}<details class="lv-config"><summary>输入输出与历史记录</summary><div class="lv-config-body"><p class="lv-small">来源：${(st.inputFrom||[]).map(k=>k==='source'?'样本交接':esc(labStage(k).title)).join('、')}</p>${labIO(st.stage,st.contract)}${st.history?.length?`<div class="lv-log">${st.history.slice().reverse().map(h=>`<p>${esc(h.at)} · 第 ${h.attempt} 次 · ${esc(h.state==='invalidated'?'重试后失效':labStepLabels[h.state]||h.state)}<br>${esc(h.result||'')} ${h.evidence?' · '+esc(h.evidence):''}</p>`).join('')}</div>`:'<p class="lv-small">暂无历史记录</p>'}</div></details>${st.stage!=='review'&&w.phase!=='draft'?`<div class="lv-actions">${['exception','done'].includes(st.state)?`<button class="lv-link" type="button" data-lv-retry="${esc(st.id)}">重试此环节</button>`:`<button class="btn" type="button" data-lv-record="${esc(st.id)}" ${labCanRecord(b,st)?'':'disabled'}>记录环节进展</button>${!labCanRecord(b,st)?'<span class="lv-small">等待前置环节完成</span>':''}`}</div>`:''}</section>`).join('')}</section><section class="lv-panel${c?.published?' lv-conclusion':''}"><h2>实验结论</h2>${c?.published?`<div class="lv-eyebrow">${esc(c.verdict)}</div><div class="lv-stage-result">${esc(c.text)}</div><p class="lv-small">证据索引：${esc(c.evidence)}<br>${esc(c.by||'')} ${esc(c.at||'')}</p>`:`<p class="lv-small">${s.ready?'各实验环节已完成，请复核数据并填写结论。':'完成所有前处理和表征环节后，再复核证据并发布结论。'} 有结论可以是支持假设、不支持假设或证据不足。</p><button class="btn btn-pri" data-lv-publish="${esc(b.id)}" type="button" ${s.ready&&w.phase!=='draft'?'':'disabled'}>复核并发布结论</button>`}</section><section class="lv-panel"><h2>实验事件</h2><div class="lv-log">${w.events?.length?w.events.slice().reverse().map(e=>`<p>${esc(e.at)} · ${esc(e.by)}<br>${esc(e.text)}</p>`).join(''):'<p>演示流程尚无人工操作记录</p>'}</div></section></div><aside class="lv-panel lv-preview lab-workflow-panel"><div class="lab-workflow-head"><h2>流程与样品交接</h2><p class="lv-small">${esc(LAB_TEMPLATES[w.template]?.name||'自定义流程')} · ${w.mode==='parallel'?'分支并行':'依次执行'}</p></div>${labFlowHTML(w.steps,w.mode,w.assays||[])}<details class="lv-config lab-flow-source"><summary>样本与数据来源</summary><div class="lv-config-body"><p class="lv-small">${esc(w.sampleSource||'未记录')}</p><p class="lv-small">样本：${esc(w.sampleIds?.join('、')||'未记录')}</p><p class="lv-small">分样：${esc(w.aliquot||'未记录')}</p></div></details></aside></div></div>`;
 };
 function labRecordDialog(id){
  const b=BATCHES.find(b=>b.id===S.labPick),s=b?.workflow?.steps.find(s=>s.id===id);if(!s)return;
@@ -23213,10 +23316,14 @@ function researchActivities(){
   const hit=p?tasks.find(t=>t.pid===p.id&&t.at&&a.at&&t.at===a.at):null;
   return {id:'activity-'+i,title:a.t||'研究记录已更新',by:a.by||'我',at:a.at,pid:p?.id,project:p?.name||a.p||'研究记录',
    key:hit?.key||null,list:a.k==='dry'?'train':'experiment'};}).filter(a=>a.pid);
+ /* 定时任务的真实运行记录也算一条动态，带「定时」标记，点进去是那个计划。
+    后台调度还没接入时 runs 是空的，这里就一条都不加，不拿示例冒充运行结果。 */
+ try{if(typeof stLoad==='function'){stLoad();(ST.items||[]).forEach(t=>{const runs=Array.isArray(t.runs)?t.runs.filter(r=>r&&typeof r.content==='string'&&r.at):[];const r=runs[runs.length-1];const p=projects.find(p=>p.id===t.pid);
+  if(r&&p)entries.push({id:'schedule-'+t.id,title:t.name+'：'+String(r.content).replace(/\s+/g,' ').slice(0,30),by:'定时',at:r.at,pid:p.id,project:p.name,schedule:t.id});});}}catch(e){}
  if(entries.length){const rank=a=>{const m=String(a.at||'').match(/(今天|昨天)\s*(\d{1,2}):(\d{2})/);return m?(m[1]==='今天'?1440:0)+Number(m[2])*60+Number(m[3]):0;};return entries.sort((a,b)=>rank(b)-rank(a));}
  return tasks.filter(t=>t.at&&t.isTask!==false).slice(0,8).map(t=>({id:t.key,title:t.name+' · '+t.statusText,by:'记录',at:t.at,pid:t.pid,project:t.projectName,key:t.key,list:t.kind==='experiment'?'experiment':'train'}));
 }
-function researchActivityHTML(a,i){return '<button class="rh-activity" type="button" data-rh-act-key="'+esc(a.key||'')+'" data-rh-act-list="'+esc(a.list||'experiment')+'" data-rh-act-pid="'+esc(a.pid)+'"><span class="rh-avatar color-'+i%3+'" title="'+esc(a.by)+'">'+esc(a.by.slice(0,1))+'</span><span class="rh-activity-copy"><strong title="'+esc(a.title)+'">'+esc(a.title)+'</strong><small><span>'+esc(a.project)+'</span><span>'+esc(researchTime(a.at))+'</span></small></span></button>';}
+function researchActivityHTML(a,i){return '<button class="rh-activity'+(a.schedule?' is-schedule':'')+'" type="button" data-rh-act-key="'+esc(a.key||'')+'" data-rh-act-list="'+esc(a.list||'experiment')+'" data-rh-act-pid="'+esc(a.pid)+'"'+(a.schedule?' data-rh-act-schedule="'+esc(a.schedule)+'"':'')+'><span class="rh-avatar color-'+i%3+'" title="'+esc(a.by)+'">'+esc(a.by.slice(0,1))+'</span><span class="rh-activity-copy"><strong title="'+esc(a.title)+'">'+esc(a.title)+'</strong><small><span>'+esc(a.project)+'</span><span>'+esc(researchTime(a.at))+'</span>'+(a.schedule?'<span class="rh-tag">定时</span>':'')+'</small></span></button>';}
 function researchResources(projects){
  return researchPublished(projects).concat(researchCatalog(projects));
 }
@@ -23256,6 +23363,7 @@ wbBind=function(root){
  root.querySelector('[data-rh-projects]')?.addEventListener('click',()=>go('projects'));
  /* 研究动态点进去看的是任务本身，不是课题的对话流 */
  root.querySelectorAll('[data-rh-act-list]').forEach(b=>b.onclick=()=>{
+  if(b.dataset.rhActSchedule){ST.pick=b.dataset.rhActSchedule;LS.set('scheduled_pick',ST.pick);go('scheduledetail');return;}
   const k=b.dataset.rhActKey;
   if(k&&workbenchOpenTask(k))return;
   workbenchOpenList(b.dataset.rhActList,'all',b.dataset.rhActPid||null);
@@ -23416,7 +23524,7 @@ function stDetail(){
  const project=DB.projects.find(p=>p.id===t.pid),runs=Array.isArray(t.runs)?t.runs.filter(r=>r&&typeof r.content==='string'):[];
  return '<main class="st-main st-content-main"><header class="st-content-head"><div><h2>'+esc(t.name)+'</h2><p class="st-subtitle">'+(t.enabled?'已开启':'已暂停')+(t.example?' · 示例计划':' · 本机计划')+'</p></div><button class="btn" data-st-action="edit" aria-label="设置任务：'+esc(t.name)+'">'+stIcon('filter')+'任务设置</button></header><div class="st-content-columns"><section class="st-output" aria-label="任务内容"><h3>任务内容</h3><p class="st-instruction">'+esc(t.content)+'</p><h3>输出内容</h3>'+(runs.length?runs.map(r=>'<article class="st-run"><time>'+esc(r.at||'未记录时间')+'</time><p>'+esc(r.content)+'</p></article>').join(''):stSampleOutput(t))+'</section><aside class="st-summary" aria-label="任务摘要"><h3>定时任务</h3><p class="st-summary-plan">'+stIcon('clock')+esc(stPlan(t))+'</p><p class="st-note">'+esc(t.zone)+' · '+(t.enabled?'下次计划 '+esc(stWhen(stNext(t),t.zone)):'已暂停')+'</p><h3>关联课题</h3><p>'+esc(project?.name||'课题不可用，请在设置中重新选择')+'</p><h3>来源</h3><p>'+esc(t.sources||'未指定')+'</p><h3>结果保存至</h3><p>'+(t.destination==='report'?'关联课题 / 研究报告':'关联课题 / 数据与文献')+'</p><div class="st-summary-actions"><button class="btn" data-st-action="edit">编辑任务</button><button class="btn" data-st-action="toggle">'+(t.enabled?'暂停任务':'恢复任务')+'</button><button class="btn st-danger" data-st-action="delete">删除计划</button></div></aside></div></main>';
 }
-function stCloseDialog(){const d=document.getElementById('st-dialog');if(d){d.close();d.remove();}ST.form=null;ST.errors=[];if(S.route==='schedulenew')go(ST.pick?'scheduledetail':'schedules');}
+function stCloseDialog(){const d=document.getElementById('st-dialog');if(d){d.close();d.remove();}ST.form=null;ST.errors=[];ST.stay=false;if(S.route==='schedulenew')go(ST.pick?'scheduledetail':'schedules');}
 function stOpenDialog(){
  let d=document.getElementById('st-dialog');if(d){stRenderDialog();return;}
  d=document.createElement('dialog');d.id='st-dialog';d.className='st-dialog';d.setAttribute('aria-labelledby','st-dialog-title');document.body.appendChild(d);
@@ -23442,7 +23550,7 @@ function stSave(){const f={...ST.form,name:ST.form.name.trim(),content:ST.form.c
  if(ST.errors.length){stRenderDialog();document.querySelector('#st-dialog .st-errors')?.focus();return;}
  const old=ST.items.find(t=>t.id===f.id),item={...f,id:f.id||'schedule-'+crypto.randomUUID(),example:false,enabled:old?old.enabled:true,updatedAt:new Date().toISOString()};
  if(!stPersist(old?ST.items.map(t=>t.id===item.id?item:t):[item,...ST.items]))return;
- ST.pick=item.id;LS.set('scheduled_pick',item.id);stCloseDialog();go('scheduledetail');toast(old?'计划修改已保存':'已保存本机计划，后台调度还没接入');
+ ST.pick=item.id;LS.set('scheduled_pick',item.id);if(ST.stay&&!old){ST.stay=false;stCloseDialog();render();toast('已设为定时任务：'+item.name+'（本机计划，后台调度还没接入）');return;}ST.stay=false;stCloseDialog();go('scheduledetail');toast(old?'计划修改已保存':'已保存本机计划，后台调度还没接入');
 }
 function schedulesBind(root){
  if(!['schedules','schedulenew','scheduledetail'].includes(S.route))return;
@@ -23463,6 +23571,77 @@ function schedulesBind(root){
  if(S.route==='schedulenew'&&!document.getElementById('st-dialog'))queueMicrotask(()=>{if(S.route==='schedulenew')stOpenDialog();});
 }
 ST.pick=LS.get('scheduled_pick',null);
+
+/* ---------- 第二版：定时任务回到课题里 ----------
+   定时任务必须关联课题、结果也写回课题，所以课题详情左栏多一个「定时」页签，只列本课题的计划。
+   状态全部由计划本身推出来，不编运行结果：后台调度还没接入，原型里没有真实运行记录，
+   所以「本次失败」只在 runs 里真有一条失败记录时才会出现。 */
+function stState(t){
+ if(!DB.projects.some(p=>p.id===t.pid))return {k:'orphan',label:'课题已删除',tone:'err'};
+ const runs=Array.isArray(t.runs)?t.runs:[],last=runs[runs.length-1];
+ if(t.period==='once'&&!stNext(t)&&runs.length)return {k:'done',label:'已结束',tone:'off'};
+ if(!t.enabled)return {k:'paused',label:'已暂停',tone:'off'};
+ if(last&&(last.ok===false||last.status==='failed'))return {k:'failed',label:'本次失败',tone:'err'};
+ const next=stNext(t);
+ if(!next)return {k:'stale',label:'没有下一次执行时间',tone:'off'};
+ return {k:'on',label:'下次 '+stWhen(next,t.zone),tone:'on'};
+}
+function stForProject(pid){stLoad();return ST.items.filter(t=>t.pid===pid);}
+/* 三个模板：每日文献追踪、实验数据周报、课题进展汇总 */
+const ST_PROJECT_TEMPLATES=[0,1,3];
+function stTemplateFor(i,pid){const T=ST_TEMPLATES[i];return {...stBlank(),pid,name:T[1],content:T[2],period:i===1||i===3?'weekly':'daily'};}
+function pjSchedTab(p){
+ const rows=stForProject(p.id);
+ const head='<div class="pjx-side-h"><span class="lbl">本课题的计划</span><span class="grow"></span><span class="t-xs mut2 num">'+rows.length+'</span>'
+  +'<button class="pjx-add" type="button" data-stp-new="'+esc(p.id)+'" aria-label="新建定时任务" title="新建定时任务"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg></button></div>';
+ if(!rows.length)return head+'<div class="pjx-side-b"><div class="stp-empty"><strong class="t-md">这个课题还没有定时任务</strong><span class="t-sm mut">从常用的开始：</span>'
+  +ST_PROJECT_TEMPLATES.map(i=>'<button class="stp-tpl" type="button" data-stp-tpl="'+i+'" data-stp-pid="'+esc(p.id)+'"><strong>'+esc(ST_TEMPLATES[i][1])+'</strong><span>'+esc(ST_TEMPLATES[i][2])+'</span></button>').join('')+'</div></div>';
+ return head+'<div class="pjx-side-b">'+rows.map(t=>{const s=stState(t);
+  return '<button class="pjx-f stp-row" type="button" data-stp-pick="'+esc(t.id)+'" title="'+esc(t.name)+'"><span class="stp-dot is-'+s.tone+'" aria-hidden="true"></span><span class="col grow" style="gap:1px;min-width:0"><span class="pjx-f-n">'+esc(t.name)+'</span><span class="t-xs mut2">'+esc(stPlan(t))+' · '+esc(s.label)+'</span></span>'+(s.tone==='err'?'<span class="stp-flag">'+esc(s.k==='failed'?'失败':'失效')+'</span>':'')+'</button>';
+ }).join('')+'<button class="stp-all" type="button" data-go="schedules">全部课题的定时任务</button></div>';
+}
+/* 课题页、对话里的入口都走这里：带好课题与内容打开同一张表单。
+   ST.stay=true 时保存后留在原地，不把人从课题或对话里带走。 */
+function stStartHere(task){ST.stay=true;stStart(null,task);}
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-stp-new],[data-stp-tpl],[data-stp-pick],[data-st-from-chat]');if(!el)return;
+ if(el.dataset.stpNew!=null){stStartHere({...stBlank(),pid:el.dataset.stpNew});return;}
+ if(el.dataset.stpTpl!=null){stStartHere(stTemplateFor(Number(el.dataset.stpTpl),el.dataset.stpPid));return;}
+ if(el.dataset.stpPick!=null){ST.pick=el.dataset.stpPick;LS.set('scheduled_pick',ST.pick);go('scheduledetail');return;}
+ if(el.dataset.stFromChat!=null){try{stStartHere(JSON.parse(el.dataset.stFromChat));}catch(err){stStartHere({...stBlank()});}}
+});
+
+/* ---------- 第二版：在对话里设定时 ----------
+   用户的话里有周期，回答下方给一个「设为定时任务」。识别用本机规则，不交给模型：
+   同一句话每次结果一样；识别不出周期就不出按钮。 */
+const ST_WD={'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'日':0,'天':0,'末':6};
+function stParsePeriod(text){
+ const s=String(text||'');let period=null,weekday=1,monthday=1;
+ let m;
+ if(/每(天|日)|天天|每个?工作日/.test(s))period='daily';
+ else if((m=s.match(/每(?:个)?(?:周|星期|礼拜)([一二三四五六日天末])/)))period='weekly',weekday=ST_WD[m[1]];
+ else if(/每(?:个)?(?:周|星期|礼拜)/.test(s))period='weekly';
+ else if((m=s.match(/每(?:个)?月(?:的)?(\d{1,2})\s*[号日]/)))period='monthly',monthday=Math.min(31,Math.max(1,+m[1]));
+ else if(/每(?:个)?月/.test(s))period='monthly';
+ else if(/定期|有新的?(?:论文|文献|数据|结果)?就(?:告诉|提醒|通知)我|持续(?:追踪|跟踪|关注)/.test(s))period='daily';
+ if(!period)return null;
+ let time='08:30';
+ if((m=s.match(/(早上|上午|中午|下午|傍晚|晚上)?\s*(\d{1,2})\s*(?:点|:|：)\s*(半|\d{1,2})?/))){
+  let h=+m[2],mi=m[3]==='半'?30:m[3]?+m[3]:0;
+  if(/下午|傍晚|晚上/.test(m[1]||'')&&h<12)h+=12;
+  if(h<=23&&mi<=59)time=String(h).padStart(2,'0')+':'+String(mi).padStart(2,'0');
+ }
+ return {period,weekday,monthday,time};
+}
+function stChatOffer(userText,pid){
+ const r=stParsePeriod(userText);if(!r)return '';
+ const text=String(userText).trim();
+ const task={...stBlank(),pid:pid||stBlank().pid,name:text.replace(/\s+/g,' ').slice(0,24),content:text.slice(0,5000),
+  period:r.period,weekday:r.weekday,monthday:r.monthday,time:r.time};
+ return '<div class="st-offer"><button class="btn st-offer-b" type="button" data-st-from-chat="'+esc(JSON.stringify(task))+'">'
+  +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/></svg>'
+  +'设为定时任务 · '+esc(stPlan(task))+'</button></div>';
+}
 
 /* Deliberately fictional UI examples. Never persisted as actual task runs. */
 const ST_SAMPLES=[
@@ -24219,7 +24398,7 @@ function alSamplePanel(f,readonly=false){
 }
 function alMethodFields(f,stage,values){
  const choices=alDeviceChoices(stage.id);
- const device=choices.length?alSelect('deviceId','参考设备型号',values.deviceId||AL_DEFAULT_DEVICES[stage.id],choices.map(item=>[item.id,item.model])):'';
+ const device=(choices.length?alSelect('deviceId','参考设备型号',values.deviceId||AL_DEFAULT_DEVICES[stage.id],choices.map(item=>[item.id,item.model])):'')+'<p class="al-help ce-dev">没有合适的设备？<a class="lv-link" href="#devices" target="_blank" rel="noopener">管理设备</a>（新标签页打开，正在填的方案不受影响）</p>';
  const controls=stage.id==='qc'?
   alInput('purity','纯度检测方法与 SOP *',values.purity)+
   alInput('aggregation','聚集状态检测方法与 SOP *',values.aggregation)+
@@ -24512,6 +24691,263 @@ rsBind=function(root){
  });
  on('[data-al-export]','click',el=>{const b=BATCHES.find(b=>b.id===el.dataset.alExport),url=URL.createObjectURL(new Blob([JSON.stringify(b,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=b.id+'-方案.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 };
+
+/* 全局搜索（第二版）
+   侧栏收到七个入口之后，用户主动找东西的兜底就是这里：功能、课题、对话、任务、数据集、资料、定时任务。
+   规则：
+   - 只读本机已有的列表，不发任何请求，不写任何数据（「最近打开」存在 LS 里，是本机偏好）。
+   - 功能按名字和别称匹配；别称写在功能旁边，加功能时一起加。
+   - 功能排在最前；其余按类型分组，每组最多 5 条。 */
+const GS_FEATURES=[
+ {id:'workbench',name:'工作台',where:'研究',alias:['首页','待处理','研究动态','主页'],go:()=>go('workbench')},
+ {id:'chat',name:'科研对话',where:'研究',alias:['对话','提问','助手','新对话','聊天'],go:()=>go('chat')},
+ {id:'projects',name:'课题项目',where:'研究',alias:['课题','项目','我的课题'],go:()=>go('projects')},
+ {id:'lab',name:'实验管理',where:'实验',alias:['实验','批次','湿实验','实验记录'],go:()=>go('lab')},
+ {id:'mdl',name:'模型制备',where:'资源',alias:['模型','模型库','模型训练','模型评测','模型推理','训练','评测','推理'],go:()=>{S.mtab='cur';go('mdl')}},
+ {id:'shelf',name:'科研工具',where:'资源',alias:['工具','工具市场'],go:()=>{RS.marketTab='catalog';go('shelf')}},
+ {id:'data',name:'数据库',where:'资源',alias:['公共数据库','数据源'],go:()=>{RS.marketTab='catalog';go('data')}},
+ {id:'schedules',name:'定时任务',where:'工作台右上 · 课题详情「定时」',alias:['定时','周报','每天','每周','每月','计划','提醒','自动','定期','追踪'],go:()=>go('schedules')},
+ {id:'materials',name:'资料空间',where:'课题项目右上',alias:['资料','文件','文献','上传文件','知识库','与你共享','附件'],go:()=>go('materials')},
+ {id:'devices',name:'设备管理',where:'实验管理右上',alias:['设备','仪器','接入设备','申请接入'],go:()=>go('devices')},
+ {id:'dsets',name:'数据集',where:'模型制备 · 数据集页签',alias:['训练数据','训练集','数据集列表'],go:()=>go('dsets')},
+ {id:'tools',name:'我的工具',where:'科研工具 · 我的',alias:['自建工具','接入工具','管理工具'],go:()=>go('tools')},
+ {id:'mydata',name:'我的数据库',where:'数据库 · 我的',alias:['自建数据库','接入数据库'],go:()=>{RS.marketTab='mine';go('data')}},
+ {id:'set',name:'模型接入',where:'账户 · 设置',alias:['密钥','API Key','apikey','key','模型配置','接入模型','大模型','凭证'],go:()=>go('set')},
+ {id:'settings',name:'设置',where:'账户',alias:['偏好','系统设置'],go:()=>go('settings')},
+ {id:'me',name:'个人中心',where:'账户',alias:['账户','账号','我的信息'],go:()=>go('me')},
+ {id:'shared',name:'共享课题',where:'课题详情 · 资料空间「与你共享」',alias:['共享','协作','申请','审批','共享给我'],go:()=>go('shared')},
+ {id:'new-schedule',name:'新建定时任务',where:'带当前课题',alias:['设定时','新计划','定时提醒'],go:()=>gsNewSchedule()},
+ {id:'new-project',name:'新建课题',where:'课题项目',alias:['创建课题','新课题'],go:()=>{go('projects');const b=document.querySelector('[data-act="newproj"]');if(b)act('newproj',b)}},
+ {id:'new-dataset',name:'新建数据集',where:'模型制备 · 数据集',alias:['上传数据集','导入数据集','创建数据集'],go:()=>go('dsnew')},
+ {id:'new-lab',name:'发起实验',where:'实验管理',alias:['新建实验','新实验'],go:()=>go('labnew')},
+];
+const GS={open:false,q:'',i:0,rows:[]};
+function gsCurrentPid(){
+ if(S.route==='project'&&S.pid)return S.pid;
+ const sess=typeof SESSIONS!=='undefined'?SESSIONS.find(x=>x.id===S.sid):null;
+ return sess?.pid||S.pid||DB.projects[0]?.id||'';
+}
+function gsNewSchedule(prefill){
+ if(typeof stStart!=='function')return go('schedules');
+ if(typeof stLoad==='function')stLoad();
+ const pid=prefill?.pid||gsCurrentPid();
+ stStart(null,Object.assign(stBlank(),{pid},prefill||{}));
+}
+function gsRecent(){try{const v=LS.get('gs_recent',[]);return Array.isArray(v)?v:[]}catch(e){return []}}
+function gsRemember(row){
+ if(!row||!row.key)return;
+ const list=gsRecent().filter(x=>x.key!==row.key);
+ list.unshift({key:row.key,kind:row.kind,label:row.label,sub:row.sub||''});
+ LS.set('gs_recent',list.slice(0,6));
+}
+/* 一条结果：key 唯一，kind 决定分组，open 是点了以后做什么 */
+function gsIndex(){
+ const out=[];
+ const add=(kind,key,label,sub,open,extra)=>out.push({kind,key,label,sub,open,hay:[label,sub,...(extra||[])].join(' ').toLowerCase()});
+ GS_FEATURES.forEach(f=>out.push({kind:'功能',key:'f:'+f.id,label:f.name,sub:f.where,open:f.go,feature:f,hay:[f.name,...f.alias].join(' ').toLowerCase()}));
+ (DB.projects||[]).forEach(p=>add('课题','p:'+p.id,p.name||p.id,p.target||p.desc||'',()=>workbenchOpenProject(p.id),[p.dom||'']));
+ if(typeof SESSIONS!=='undefined')SESSIONS.forEach(x=>{const p=DB.projects.find(p=>p.id===x.pid);
+  add('对话','s:'+x.id,x.title||'未命名对话',[p?.name,x.at].filter(Boolean).join(' · '),()=>{go('chat');openSession(x)},[x.q||'']);});
+ try{workbenchData().tasks.forEach(t=>add(t.kind==='experiment'?'实验':'模型任务','t:'+t.key,t.name,[t.projectName,t.statusText].filter(Boolean).join(' · '),()=>workbenchOpenTask(t.key)));}catch(e){}
+ try{(typeof ALL_DSETS==='function'?ALL_DSETS():[]).forEach(d=>add('数据集','d:'+d.id,d.n||d.name||d.id,d.id,()=>{S.dsPick=d.id;go('dsets')}));}catch(e){}
+ try{if(typeof stLoad==='function')stLoad();(ST.items||[]).forEach(t=>{const p=DB.projects.find(p=>p.id===t.pid);
+  add('定时任务','st:'+t.id,t.name,[p?.name,typeof stPlan==='function'?stPlan(t):'',t.enabled?'已开启':'已暂停'].filter(Boolean).join(' · '),()=>{ST.pick=t.id;LS.set('scheduled_pick',t.id);go('scheduledetail')},[t.content||'']);});}catch(e){}
+ try{if(typeof materialsRows==='function')materialsRows().forEach(x=>{const p=DB.projects.find(p=>p.id===x.pid);
+  add('资料','m:'+x.id,x.name,p?.name||'公共资料',()=>{Object.assign(MATERIALS,{tab:'all',space:'',type:'all',query:x.name});go('materials',{keepTab:1})});});}catch(e){}
+ return out;
+}
+function gsScore(r,q){
+ const name=r.label.toLowerCase();
+ if(name===q)return 100;
+ if(name.startsWith(q))return 80;
+ if(name.includes(q))return 60;
+ if(r.feature&&r.feature.alias.some(a=>a.toLowerCase()===q))return 70;
+ if(r.feature&&r.feature.alias.some(a=>a.toLowerCase().includes(q)||q.includes(a.toLowerCase())&&a.length>=2))return 45;
+ if(r.hay.includes(q))return 30;
+ return 0;
+}
+const GS_ORDER=['功能','课题','定时任务','对话','实验','模型任务','数据集','资料'];
+function gsSearch(q){
+ q=q.trim().toLowerCase();
+ const idx=gsIndex();
+ if(!q){
+  const byKey=new Map(idx.map(r=>[r.key,r]));
+  const recent=gsRecent().map(x=>byKey.get(x.key)).filter(Boolean).map(r=>({...r,group:'最近打开'}));
+  const common=['f:schedules','f:materials','f:dsets','f:devices','f:set'].map(k=>byKey.get(k)).filter(Boolean).filter(r=>!recent.some(x=>x.key===r.key)).map(r=>({...r,group:'常用功能'}));
+  return recent.concat(common);
+ }
+ const hits=idx.map(r=>({...r,score:gsScore(r,q)})).filter(r=>r.score>0);
+ /* 组的先后按组里最好的那一条排；同分时功能在前。
+    「文献追踪」这种只蹭到功能别称的词，会让名字真正命中的那条定时任务排到前面 */
+ const groups=GS_ORDER.map((kind,o)=>{const g=hits.filter(r=>r.kind===kind).sort((a,b)=>b.score-a.score);return {kind,o,g,best:g[0]?.score||0}})
+  .filter(x=>x.g.length).sort((a,b)=>b.best-a.best||a.o-b.o);
+ const rows=[];
+ groups.forEach(({kind,g})=>g.slice(0,5).forEach(r=>rows.push({...r,group:kind})));
+  return rows;
+}
+function gsIcon(kind){
+ const p={'功能':'M4 6h16M4 12h10M4 18h7','课题':'M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2h8a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5z',
+  '对话':'M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H9l-4.5 4v-4H5.5A1.5 1.5 0 0 1 4 14.5z',
+  '定时任务':'M12 7v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z','实验':'M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3',
+  '模型任务':'M6.5 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM17.5 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM12 15a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM8 8.5l3 5M16 8.5l-3 5',
+  '数据集':'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3',
+  '资料':'M7 3h7l5 5v13H7zM14 3v5h5','搜索':'M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14zM20 20l-4-4'}[kind]||'M4 6h16M4 12h10M4 18h7';
+ return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+p+'"/></svg>';
+}
+function gsPaint(){
+ const d=document.getElementById('gs-dlg');if(!d)return;
+ const list=d.querySelector('.gs-list');
+ GS.rows=gsSearch(GS.q);
+ if(GS.i>=GS.rows.length)GS.i=Math.max(0,GS.rows.length-1);
+ if(!GS.rows.length){
+  list.innerHTML='<div class="gs-empty"><p>没有找到「'+esc(GS.q.trim())+'」</p><button type="button" class="gs-ask" data-gs-ask>在科研对话里问「'+esc(GS.q.trim().slice(0,20))+'」</button></div>';
+  list.querySelector('[data-gs-ask]').onclick=()=>{const text=GS.q.trim();gsClose();go('chat');setTimeout(()=>{const a=document.getElementById('ask');if(a){a.value=text;a.focus();a.dispatchEvent(new Event('input',{bubbles:true}))}},60)};
+  d.querySelector('.gs-input').setAttribute('aria-activedescendant','');
+  return;
+ }
+ let last='';
+ list.innerHTML=GS.rows.map((r,i)=>{
+  const head=r.group!==last?'<div class="gs-group" role="presentation">'+esc(r.group)+'</div>':'';last=r.group;
+  return head+'<div class="gs-row'+(i===GS.i?' is-on':'')+'" role="option" id="gs-opt-'+i+'" aria-selected="'+(i===GS.i)+'" data-gs-i="'+i+'"><span class="gs-ic">'+gsIcon(r.kind)+'</span><span class="gs-tx"><span class="gs-label">'+esc(r.label)+'</span>'+(r.sub?'<span class="gs-sub">'+esc(r.sub)+'</span>':'')+'</span>'+(i===GS.i?'<span class="gs-enter" aria-hidden="true">↵</span>':'')+'</div>';
+ }).join('');
+ d.querySelector('.gs-input').setAttribute('aria-activedescendant','gs-opt-'+GS.i);
+ list.querySelectorAll('[data-gs-i]').forEach(el=>{
+  el.onmousemove=()=>{const i=+el.dataset.gsI;if(i!==GS.i){GS.i=i;gsPaint()}};
+  el.onclick=()=>gsPick(+el.dataset.gsI);
+ });
+ list.querySelector('.is-on')?.scrollIntoView({block:'nearest'});
+}
+function gsPick(i){
+ const r=GS.rows[i];if(!r)return;
+ gsRemember(r);gsClose();
+ try{r.open()}catch(e){toast('打不开这一项，它可能已经被删除')}
+ /* 打开后把焦点交给目标页的标题，读屏和键盘都从新页面开始 */
+ setTimeout(()=>{if(document.querySelector('dialog[open]'))return;const h=document.querySelector('#view h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true})}},80);
+}
+function gsOpen(){
+ if(document.getElementById('gs-dlg')?.open)return;
+ /* 别的弹窗开着时不叠第二层 */
+ if(document.querySelector('dialog[open]:not(#gs-dlg)'))return;
+ let d=document.getElementById('gs-dlg');
+ if(!d){
+  d=document.createElement('dialog');d.id='gs-dlg';d.className='gs-dlg';d.setAttribute('aria-label','搜索');
+  d.innerHTML='<div class="gs-box"><div class="gs-bar">'+gsIcon('搜索')+'<input class="gs-input" type="text" role="combobox" aria-expanded="true" aria-controls="gs-list" aria-autocomplete="list" placeholder="搜索功能、课题、对话、任务、资料…" autocomplete="off" spellcheck="false"><kbd class="gs-esc">esc</kbd></div><div class="gs-list" id="gs-list" role="listbox" aria-label="搜索结果"></div><div class="gs-foot"><span><kbd>↑</kbd><kbd>↓</kbd> 选择</span><span><kbd>↵</kbd> 打开</span><span><kbd>esc</kbd> 关闭</span></div></div>';
+  document.body.appendChild(d);
+  const input=d.querySelector('.gs-input');
+  input.addEventListener('input',()=>{GS.q=input.value;GS.i=0;gsPaint()});
+  input.addEventListener('keydown',e=>{
+   if(e.isComposing)return;
+   if(e.key==='ArrowDown'){e.preventDefault();if(GS.rows.length){GS.i=(GS.i+1)%GS.rows.length;gsPaint()}}
+   else if(e.key==='ArrowUp'){e.preventDefault();if(GS.rows.length){GS.i=(GS.i-1+GS.rows.length)%GS.rows.length;gsPaint()}}
+   else if(e.key==='Enter'){e.preventDefault();if(GS.rows.length)gsPick(GS.i);else d.querySelector('[data-gs-ask]')?.click()}
+  });
+  d.addEventListener('click',e=>{if(e.target===d)gsClose()});
+  d.addEventListener('close',()=>{GS.open=false;const t=document.querySelector('.gs-trigger');t?.setAttribute('aria-expanded','false')});
+ }
+ GS.q='';GS.i=0;GS.open=true;
+ const input=d.querySelector('.gs-input');input.value='';
+ d.showModal();gsPaint();input.focus();
+ document.querySelector('.gs-trigger')?.setAttribute('aria-expanded','true');
+}
+function gsClose(){const d=document.getElementById('gs-dlg');if(d?.open)d.close();}
+/* 侧栏顶部的搜索框：放在品牌行下面、导航分组上面；折叠时只剩放大镜，位置不变 */
+(function gsMount(){
+ const side=document.getElementById('side'),brand=side?.querySelector('.brand');
+ if(!brand||side.querySelector('.gs-trigger'))return;
+ const mac=/Mac|iPhone|iPad/.test(navigator.platform||'');
+ const b=document.createElement('button');
+ b.type='button';b.className='gs-trigger';b.setAttribute('aria-haspopup','dialog');b.setAttribute('aria-expanded','false');
+ b.setAttribute('aria-label','搜索（'+(mac?'⌘K':'Ctrl K')+'）');b.title='搜索（'+(mac?'⌘K':'Ctrl K')+'）';
+ b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14zM20 20l-4-4"/></svg><span class="nav-tx gs-ph">搜索</span><kbd class="nav-tx gs-kbd">'+(mac?'⌘K':'Ctrl K')+'</kbd>';
+ b.onclick=gsOpen;
+ brand.insertAdjacentElement('afterend',b);
+})();
+document.addEventListener('keydown',e=>{
+ if((e.metaKey||e.ctrlKey)&&!e.altKey&&!e.shiftKey&&(e.key==='k'||e.key==='K')){
+  e.preventDefault();
+  if(document.getElementById('gs-dlg')?.open)gsClose();else gsOpen();
+ }
+},true);
+
+/* 第二版：情境入口
+   被收起的功能挂在它上游动作的旁边：附件里能从资料空间选、能上传数据集；
+   实验结论发布后能整理成数据集；训练表单能新建数据集；工具选择器能去管理我的工具。
+   全部只做导航与预填，不改各功能内部的业务逻辑。 */
+function ceNewDataset(pid,from){
+ if(pid&&DB.projects.some(p=>p.id===pid))S.pid=pid;
+ if(typeof dsReset==='function')dsReset();
+ go('dsnew');
+ if(from)toast(from);
+}
+/* 实验结论 → 数据集：带入课题；课题文件里有这批的测定表就直接选上，没有就停在「课题文件」让人自己挑 */
+function ceBatchToDataset(id){
+ const b=BATCHES.find(x=>x.id===id);if(!b)return toast('找不到这批实验');
+ if(DB.projects.some(p=>p.id===b.pid))S.pid=b.pid;
+ dsReset();NEWDS.src='proj';
+ const files=typeof dsFiles==='function'?dsFiles():[];
+ const hit=files.find(e=>e.name.includes(b.id))||null;
+ if(hit){const t=dsFileText(hit);if(t!=null){NEWDS.from=hit.name;dsRead(t,hit.name);if(!NEWDS.name)NEWDS.name=b.id+' 测定数据';}}
+ go('dsnew');
+ toast(hit?'已带入 '+hit.name+'，核对字段后建立数据集':'已切到「课题文件」，选这批的测定表');
+}
+/* 从资料空间选：列这个课题的资料（再列公共资料），选中的挂到输入框上方，和上传的文件同一种标签 */
+function ceMaterialsMenu(anchor){
+ const pid=typeof gsCurrentPid==='function'?gsCurrentPid():'';
+ const trash=typeof materialsPrefs==='function'?(materialsPrefs().trash||[]):[];
+ const rows=(typeof materialsRows==='function'?materialsRows():[]).filter(x=>!trash.includes(x.id));
+ const mine=rows.filter(x=>x.pid===pid),other=rows.filter(x=>x.pid!==pid);
+ const list=mine.concat(other).slice(0,12);
+ const pn=DB.projects.find(p=>p.id===pid)?.name||'';
+ const html=(list.length?'<div class="menu-l">'+esc(mine.length?pn+' 的资料':'资料空间')+'</div>'
+   +list.map(x=>'<button class="menu-i is-go" type="button" data-go="'+esc('m:'+x.name)+'"><span class="ck"></span><span><span class="nm">'+esc(x.name)+'</span><span class="sb">'+esc(DB.projects.find(p=>p.id===x.pid)?.name||'公共资料')+'</span></span></button>').join('')
+   :'<div class="menu-i" style="cursor:default"><span class="ck"></span><span><span class="nm">资料空间里还没有文件</span><span class="sb">先上传，之后都能从这里选</span></span></div>')
+  +'<div class="menu-sep"></div><button class="menu-i is-go" type="button" data-go="__open"><span class="ck"></span><span><span class="nm">打开资料空间</span></span></button>';
+ menu(anchor,html,v=>{
+  if(v==='__open'){Object.assign(MATERIALS,{tab:'all',space:mine.length?pid:'',query:'',type:'all'});go('materials',{keepTab:1});return}
+  if(v.startsWith('m:')){const name=v.slice(2);S.askFiles=(S.askFiles||[]).filter(n=>n!==name).concat([name]);render();
+   setTimeout(()=>document.getElementById('ask')?.focus(),30);}
+ });
+}
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-ce-batch-ds],[data-ce-new-ds],[data-ce-tools],[data-ce-mat-pid]');if(!el)return;
+ if(el.dataset.ceBatchDs){ceBatchToDataset(el.dataset.ceBatchDs);return}
+ if(el.dataset.ceNewDs!=null){ceNewDataset(S.pid,'新建的数据集发布后，会出现在训练数据里');return}
+ if(el.dataset.ceTools!=null){document.getElementById('dlg')?.close();go('tools');return}
+ if(el.dataset.ceMatPid){Object.assign(MATERIALS,{tab:'all',space:el.dataset.ceMatPid,query:'',type:'all'});go('materials',{keepTab:1});}
+});
+
+/* 实验环节报异常：环节卡片上直接给「查看设备」。用捕获阶段，免得点击同时触发卡片自己的选中 */
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-ce-device]');if(!el)return;
+ e.preventDefault();e.stopPropagation();
+ if(typeof labDeviceDialog==='function')labDeviceDialog(el.dataset.ceDevice);else go('devices');
+},true);
+
+/* 共享课题的往来进侧栏消息：有人申请我的资产（待我审批）、我的申请被批准（待导入）。
+   点一条直接打开那个共享课题和申请面板。数据全来自 RS.data.shared 里真实的申请记录。
+   这里只接消息，不并进工作台的「待处理」：那个数字统一走 wbAttentionTasks，只数任务，
+   混进审批会让课题卡片、待处理弹窗和工作台三处的数对不上。 */
+function ceSharedInbox(){
+ const out=[];
+ if(typeof RS==='undefined'||!RS.data||!Array.isArray(RS.data.shared))return out;
+ RS.data.shared.forEach(s=>{
+  const who=id=>s.members.find(m=>m.id===id)?.name||'项目成员';
+  const asset=id=>s.assets?.find(a=>a.id===id)?.name||'一项资产';
+  const open=()=>{RS.sharedPick=s.id;LS.set('rs_shared_pick',s.id);go('shareddetail');setTimeout(()=>{if(S.route==='shareddetail'&&typeof rsRequestsDialog==='function')rsRequestsDialog()},80)};
+  (s.requests||[]).forEach(r=>{
+   if(r.state==='pending'&&rsCan(s,'approve'))out.push({id:'sr-'+r.id,k:'dry',tag:'待你审批',title:who(r.actor)+' 申请添加「'+asset(r.assetId)+'」',text:s.name,at:r.at||'—',pid:s.projectId||'',open:'待处理',act:'去审批',go:open});
+   else if(r.state==='approved'&&r.actor===RS.actor)out.push({id:'sa-'+r.id,k:'dry',tag:'申请已批准',title:'「'+asset(r.assetId)+'」可以导入了',text:s.name,at:r.at||'—',pid:'',open:'待处理',act:'去导入',go:open});
+  });
+ });
+ return out;
+}
+if(typeof INBOX==='function'){
+ const ceInboxBase=INBOX;
+ INBOX=function(){
+  const base=ceInboxBase(),R=typeof inboxRead==='function'?inboxRead():[];
+  return base.concat(ceSharedInbox().map(x=>Object.assign(x,{read:R.indexOf(x.id)>=0})));
+ };
+}
 
 
 keepLoad();

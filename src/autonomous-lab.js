@@ -265,7 +265,7 @@ function alSamplePanel(f,readonly=false){
 }
 function alMethodFields(f,stage,values){
  const choices=alDeviceChoices(stage.id);
- const device=choices.length?alSelect('deviceId','参考设备型号',values.deviceId||AL_DEFAULT_DEVICES[stage.id],choices.map(item=>[item.id,item.model])):'';
+ const device=(choices.length?alSelect('deviceId','参考设备型号',values.deviceId||AL_DEFAULT_DEVICES[stage.id],choices.map(item=>[item.id,item.model])):'')+'<p class="al-help ce-dev">没有合适的设备？<a class="lv-link" href="#devices" target="_blank" rel="noopener">管理设备</a>（新标签页打开，正在填的方案不受影响）</p>';
  const controls=stage.id==='qc'?
   alInput('purity','纯度检测方法与 SOP *',values.purity)+
   alInput('aggregation','聚集状态检测方法与 SOP *',values.aggregation)+

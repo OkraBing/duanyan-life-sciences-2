@@ -37,3 +37,21 @@ html[data-theme=dark] .st-icon,html[data-theme=dark] .st-intro>img{filter:invert
 @media(max-width:600px){.st-dialog{width:calc(100vw - 20px);max-height:calc(100dvh - 20px);border-radius:14px}.st-modal-body{padding:20px 18px}.st-dialog .st-actions{bottom:0;margin:0 -18px -20px;padding:14px 18px 20px}.st-content-main{padding:22px 18px}.st-content-head{flex-wrap:wrap}.st-content-head h2{font-size:24px}.st-close{min-height:44px}.st-summary{padding:20px}}
 .st-sample{font-size:14px;line-height:1.8;overflow-wrap:anywhere}.st-sample-label{display:inline-block;padding:4px 10px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink-3);font-size:12px;margin-bottom:16px}.st-sample h4{font-size:21px;font-weight:600;line-height:1.5;margin:0 0 14px}.st-sample>p{margin:0 0 20px}.st-sample h5{font-size:15px;margin:24px 0 10px}.st-sample ul{padding-left:20px;margin:0 0 20px}.st-sample li{margin:6px 0}.st-sample-table{width:100%;overflow:auto;border:1px solid var(--line);border-radius:10px}.st-sample table{width:100%;border-collapse:collapse;font-size:13px}.st-sample th{text-align:left;background:var(--paper);font-weight:500;color:var(--ink-3)}.st-sample th,.st-sample td{padding:12px 14px;vertical-align:top;min-width:90px}.st-sample td{border-top:1px solid var(--line)}.st-sample td:last-child{min-width:180px}.st-sample .st-sample-note{font-size:12px;color:var(--ink-3);line-height:1.8;padding:14px 16px;background:var(--paper);border-radius:8px;margin-top:20px}.st-sample-library,.st-sample-option{border-top:1px solid var(--line);padding:16px 0}.st-sample-library>summary,.st-sample-option>summary{cursor:pointer;font-size:14px;color:var(--ink-2);padding:4px 0}.st-sample-option .st-sample{padding-top:20px}.st-sample-library>summary:focus-visible,.st-sample-option>summary:focus-visible{outline:2px solid var(--dry);outline-offset:4px}
 @media(max-width:600px){.st-sample h4{font-size:19px}.st-sample th,.st-sample td{padding:10px;min-width:75px}.st-sample td:last-child{min-width:145px}}
+
+/* 课题详情「定时」页签 */
+.pjx-tab-c{margin-left:4px;font-size:11px;color:var(--ink-4);font-weight:400}
+.stp-row{align-items:center}
+.stp-dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;margin:0 2px 0 4px;background:var(--ok,#336950)}
+.stp-dot.is-off{background:var(--ink-4)}
+.stp-dot.is-err{background:var(--err,#B34236)}
+.stp-flag{font-size:11px;padding:1px 7px;border-radius:999px;color:var(--err,#B34236);border:1px solid currentColor;flex:0 0 auto}
+.stp-all{display:block;width:100%;margin-top:10px;padding:8px;border:1px dashed var(--line);border-radius:8px;background:none;font:inherit;font-size:12px;color:var(--ink-3);cursor:pointer}
+.stp-all:hover{color:var(--ink);border-color:var(--ink-4)}
+.stp-empty{display:flex;flex-direction:column;gap:8px;padding:16px 4px}
+.stp-tpl{display:flex;flex-direction:column;gap:2px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font:inherit;cursor:pointer;color:var(--ink)}
+.stp-tpl strong{font-size:13px;font-weight:600}
+.stp-tpl span{font-size:12px;color:var(--ink-3);line-height:1.5}
+.stp-tpl:hover{border-color:var(--ink-4);background:var(--surface-2)}
+/* 对话回答下方的「设为定时任务」 */
+.st-offer{margin-top:10px}
+.st-offer-b{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;font-size:12px;border-radius:8px}

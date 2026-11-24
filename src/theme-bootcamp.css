@@ -368,5 +368,16 @@ body[data-route="chat"]:has(.chat-history:not([hidden])) .research-home .researc
   justify-content:flex-start!important;padding:0 12px!important}
 #side[data-collapsed="1"] .nav-group{padding:0 12px 10px!important;gap:3px!important;align-items:flex-start!important}
 #side[data-collapsed="1"] .nav-group.is-sep{padding:12px 0 10px!important;margin:0 12px!important}
-#side[data-collapsed="1"] .brand{justify-content:flex-start!important;padding-left:10px!important}
+#side[data-collapsed="1"] .brand{justify-content:flex-start!important;align-items:flex-start!important;padding-left:11px!important;padding-top:12px!important}  /* logo 与展开态同一个点：x=16 y=17 */
 #side[data-collapsed="1"] .side-toggle{left:12px!important;transform:none!important}
+
+/* 折叠态的展开按钮：不再单占一行（会压在搜索框上），而是叠在 logo 上。
+   平时看到的是 logo，鼠标移到品牌行或键盘聚焦时换成展开按钮；触屏没有悬停，直接显示按钮。
+   这样展开按钮在两种状态下都在品牌行里，折叠前后不跳位。 */
+#side[data-collapsed="1"] .brand{position:relative}
+#side[data-collapsed="1"] .side-toggle{top:16px!important;left:17px!important;opacity:0;z-index:2;
+  background:var(--surface)!important;transition:opacity .12s ease}
+#side[data-collapsed="1"] .brand:hover .side-toggle,#side[data-collapsed="1"] .side-toggle:focus-visible{opacity:1}
+#side[data-collapsed="1"] .brand:hover .brand-mark,#side[data-collapsed="1"] .brand:focus-within .brand-mark{opacity:0}
+@media (hover:none){#side[data-collapsed="1"] .side-toggle{opacity:1}#side[data-collapsed="1"] .brand-mark{opacity:0}}
+@media (prefers-reduced-motion:reduce){#side[data-collapsed="1"] .side-toggle{transition:none}}

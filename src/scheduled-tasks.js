@@ -68,7 +68,7 @@ function stDetail(){
  const project=DB.projects.find(p=>p.id===t.pid),runs=Array.isArray(t.runs)?t.runs.filter(r=>r&&typeof r.content==='string'):[];
  return '<main class="st-main st-content-main"><header class="st-content-head"><div><h2>'+esc(t.name)+'</h2><p class="st-subtitle">'+(t.enabled?'已开启':'已暂停')+(t.example?' · 示例计划':' · 本机计划')+'</p></div><button class="btn" data-st-action="edit" aria-label="设置任务：'+esc(t.name)+'">'+stIcon('filter')+'任务设置</button></header><div class="st-content-columns"><section class="st-output" aria-label="任务内容"><h3>任务内容</h3><p class="st-instruction">'+esc(t.content)+'</p><h3>输出内容</h3>'+(runs.length?runs.map(r=>'<article class="st-run"><time>'+esc(r.at||'未记录时间')+'</time><p>'+esc(r.content)+'</p></article>').join(''):stSampleOutput(t))+'</section><aside class="st-summary" aria-label="任务摘要"><h3>定时任务</h3><p class="st-summary-plan">'+stIcon('clock')+esc(stPlan(t))+'</p><p class="st-note">'+esc(t.zone)+' · '+(t.enabled?'下次计划 '+esc(stWhen(stNext(t),t.zone)):'已暂停')+'</p><h3>关联课题</h3><p>'+esc(project?.name||'课题不可用，请在设置中重新选择')+'</p><h3>来源</h3><p>'+esc(t.sources||'未指定')+'</p><h3>结果保存至</h3><p>'+(t.destination==='report'?'关联课题 / 研究报告':'关联课题 / 数据与文献')+'</p><div class="st-summary-actions"><button class="btn" data-st-action="edit">编辑任务</button><button class="btn" data-st-action="toggle">'+(t.enabled?'暂停任务':'恢复任务')+'</button><button class="btn st-danger" data-st-action="delete">删除计划</button></div></aside></div></main>';
 }
-function stCloseDialog(){const d=document.getElementById('st-dialog');if(d){d.close();d.remove();}ST.form=null;ST.errors=[];if(S.route==='schedulenew')go(ST.pick?'scheduledetail':'schedules');}
+function stCloseDialog(){const d=document.getElementById('st-dialog');if(d){d.close();d.remove();}ST.form=null;ST.errors=[];ST.stay=false;if(S.route==='schedulenew')go(ST.pick?'scheduledetail':'schedules');}
 function stOpenDialog(){
  let d=document.getElementById('st-dialog');if(d){stRenderDialog();return;}
  d=document.createElement('dialog');d.id='st-dialog';d.className='st-dialog';d.setAttribute('aria-labelledby','st-dialog-title');document.body.appendChild(d);
@@ -94,7 +94,7 @@ function stSave(){const f={...ST.form,name:ST.form.name.trim(),content:ST.form.c
  if(ST.errors.length){stRenderDialog();document.querySelector('#st-dialog .st-errors')?.focus();return;}
  const old=ST.items.find(t=>t.id===f.id),item={...f,id:f.id||'schedule-'+crypto.randomUUID(),example:false,enabled:old?old.enabled:true,updatedAt:new Date().toISOString()};
  if(!stPersist(old?ST.items.map(t=>t.id===item.id?item:t):[item,...ST.items]))return;
- ST.pick=item.id;LS.set('scheduled_pick',item.id);stCloseDialog();go('scheduledetail');toast(old?'计划修改已保存':'已保存本机计划，后台调度还没接入');
+ ST.pick=item.id;LS.set('scheduled_pick',item.id);if(ST.stay&&!old){ST.stay=false;stCloseDialog();render();toast('已设为定时任务：'+item.name+'（本机计划，后台调度还没接入）');return;}ST.stay=false;stCloseDialog();go('scheduledetail');toast(old?'计划修改已保存':'已保存本机计划，后台调度还没接入');
 }
 function schedulesBind(root){
  if(!['schedules','schedulenew','scheduledetail'].includes(S.route))return;
@@ -115,3 +115,74 @@ function schedulesBind(root){
  if(S.route==='schedulenew'&&!document.getElementById('st-dialog'))queueMicrotask(()=>{if(S.route==='schedulenew')stOpenDialog();});
 }
 ST.pick=LS.get('scheduled_pick',null);
+
+/* ---------- 第二版：定时任务回到课题里 ----------
+   定时任务必须关联课题、结果也写回课题，所以课题详情左栏多一个「定时」页签，只列本课题的计划。
+   状态全部由计划本身推出来，不编运行结果：后台调度还没接入，原型里没有真实运行记录，
+   所以「本次失败」只在 runs 里真有一条失败记录时才会出现。 */
+function stState(t){
+ if(!DB.projects.some(p=>p.id===t.pid))return {k:'orphan',label:'课题已删除',tone:'err'};
+ const runs=Array.isArray(t.runs)?t.runs:[],last=runs[runs.length-1];
+ if(t.period==='once'&&!stNext(t)&&runs.length)return {k:'done',label:'已结束',tone:'off'};
+ if(!t.enabled)return {k:'paused',label:'已暂停',tone:'off'};
+ if(last&&(last.ok===false||last.status==='failed'))return {k:'failed',label:'本次失败',tone:'err'};
+ const next=stNext(t);
+ if(!next)return {k:'stale',label:'没有下一次执行时间',tone:'off'};
+ return {k:'on',label:'下次 '+stWhen(next,t.zone),tone:'on'};
+}
+function stForProject(pid){stLoad();return ST.items.filter(t=>t.pid===pid);}
+/* 三个模板：每日文献追踪、实验数据周报、课题进展汇总 */
+const ST_PROJECT_TEMPLATES=[0,1,3];
+function stTemplateFor(i,pid){const T=ST_TEMPLATES[i];return {...stBlank(),pid,name:T[1],content:T[2],period:i===1||i===3?'weekly':'daily'};}
+function pjSchedTab(p){
+ const rows=stForProject(p.id);
+ const head='<div class="pjx-side-h"><span class="lbl">本课题的计划</span><span class="grow"></span><span class="t-xs mut2 num">'+rows.length+'</span>'
+  +'<button class="pjx-add" type="button" data-stp-new="'+esc(p.id)+'" aria-label="新建定时任务" title="新建定时任务"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 6v12M6 12h12"/></svg></button></div>';
+ if(!rows.length)return head+'<div class="pjx-side-b"><div class="stp-empty"><strong class="t-md">这个课题还没有定时任务</strong><span class="t-sm mut">从常用的开始：</span>'
+  +ST_PROJECT_TEMPLATES.map(i=>'<button class="stp-tpl" type="button" data-stp-tpl="'+i+'" data-stp-pid="'+esc(p.id)+'"><strong>'+esc(ST_TEMPLATES[i][1])+'</strong><span>'+esc(ST_TEMPLATES[i][2])+'</span></button>').join('')+'</div></div>';
+ return head+'<div class="pjx-side-b">'+rows.map(t=>{const s=stState(t);
+  return '<button class="pjx-f stp-row" type="button" data-stp-pick="'+esc(t.id)+'" title="'+esc(t.name)+'"><span class="stp-dot is-'+s.tone+'" aria-hidden="true"></span><span class="col grow" style="gap:1px;min-width:0"><span class="pjx-f-n">'+esc(t.name)+'</span><span class="t-xs mut2">'+esc(stPlan(t))+' · '+esc(s.label)+'</span></span>'+(s.tone==='err'?'<span class="stp-flag">'+esc(s.k==='failed'?'失败':'失效')+'</span>':'')+'</button>';
+ }).join('')+'<button class="stp-all" type="button" data-go="schedules">全部课题的定时任务</button></div>';
+}
+/* 课题页、对话里的入口都走这里：带好课题与内容打开同一张表单。
+   ST.stay=true 时保存后留在原地，不把人从课题或对话里带走。 */
+function stStartHere(task){ST.stay=true;stStart(null,task);}
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-stp-new],[data-stp-tpl],[data-stp-pick],[data-st-from-chat]');if(!el)return;
+ if(el.dataset.stpNew!=null){stStartHere({...stBlank(),pid:el.dataset.stpNew});return;}
+ if(el.dataset.stpTpl!=null){stStartHere(stTemplateFor(Number(el.dataset.stpTpl),el.dataset.stpPid));return;}
+ if(el.dataset.stpPick!=null){ST.pick=el.dataset.stpPick;LS.set('scheduled_pick',ST.pick);go('scheduledetail');return;}
+ if(el.dataset.stFromChat!=null){try{stStartHere(JSON.parse(el.dataset.stFromChat));}catch(err){stStartHere({...stBlank()});}}
+});
+
+/* ---------- 第二版：在对话里设定时 ----------
+   用户的话里有周期，回答下方给一个「设为定时任务」。识别用本机规则，不交给模型：
+   同一句话每次结果一样；识别不出周期就不出按钮。 */
+const ST_WD={'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'日':0,'天':0,'末':6};
+function stParsePeriod(text){
+ const s=String(text||'');let period=null,weekday=1,monthday=1;
+ let m;
+ if(/每(天|日)|天天|每个?工作日/.test(s))period='daily';
+ else if((m=s.match(/每(?:个)?(?:周|星期|礼拜)([一二三四五六日天末])/)))period='weekly',weekday=ST_WD[m[1]];
+ else if(/每(?:个)?(?:周|星期|礼拜)/.test(s))period='weekly';
+ else if((m=s.match(/每(?:个)?月(?:的)?(\d{1,2})\s*[号日]/)))period='monthly',monthday=Math.min(31,Math.max(1,+m[1]));
+ else if(/每(?:个)?月/.test(s))period='monthly';
+ else if(/定期|有新的?(?:论文|文献|数据|结果)?就(?:告诉|提醒|通知)我|持续(?:追踪|跟踪|关注)/.test(s))period='daily';
+ if(!period)return null;
+ let time='08:30';
+ if((m=s.match(/(早上|上午|中午|下午|傍晚|晚上)?\s*(\d{1,2})\s*(?:点|:|：)\s*(半|\d{1,2})?/))){
+  let h=+m[2],mi=m[3]==='半'?30:m[3]?+m[3]:0;
+  if(/下午|傍晚|晚上/.test(m[1]||'')&&h<12)h+=12;
+  if(h<=23&&mi<=59)time=String(h).padStart(2,'0')+':'+String(mi).padStart(2,'0');
+ }
+ return {period,weekday,monthday,time};
+}
+function stChatOffer(userText,pid){
+ const r=stParsePeriod(userText);if(!r)return '';
+ const text=String(userText).trim();
+ const task={...stBlank(),pid:pid||stBlank().pid,name:text.replace(/\s+/g,' ').slice(0,24),content:text.slice(0,5000),
+  period:r.period,weekday:r.weekday,monthday:r.monthday,time:r.time};
+ return '<div class="st-offer"><button class="btn st-offer-b" type="button" data-st-from-chat="'+esc(JSON.stringify(task))+'">'
+  +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/></svg>'
+  +'设为定时任务 · '+esc(stPlan(task))+'</button></div>';
+}

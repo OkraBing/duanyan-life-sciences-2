@@ -26,10 +26,14 @@ function researchActivities(){
   const hit=p?tasks.find(t=>t.pid===p.id&&t.at&&a.at&&t.at===a.at):null;
   return {id:'activity-'+i,title:a.t||'研究记录已更新',by:a.by||'我',at:a.at,pid:p?.id,project:p?.name||a.p||'研究记录',
    key:hit?.key||null,list:a.k==='dry'?'train':'experiment'};}).filter(a=>a.pid);
+ /* 定时任务的真实运行记录也算一条动态，带「定时」标记，点进去是那个计划。
+    后台调度还没接入时 runs 是空的，这里就一条都不加，不拿示例冒充运行结果。 */
+ try{if(typeof stLoad==='function'){stLoad();(ST.items||[]).forEach(t=>{const runs=Array.isArray(t.runs)?t.runs.filter(r=>r&&typeof r.content==='string'&&r.at):[];const r=runs[runs.length-1];const p=projects.find(p=>p.id===t.pid);
+  if(r&&p)entries.push({id:'schedule-'+t.id,title:t.name+'：'+String(r.content).replace(/\s+/g,' ').slice(0,30),by:'定时',at:r.at,pid:p.id,project:p.name,schedule:t.id});});}}catch(e){}
  if(entries.length){const rank=a=>{const m=String(a.at||'').match(/(今天|昨天)\s*(\d{1,2}):(\d{2})/);return m?(m[1]==='今天'?1440:0)+Number(m[2])*60+Number(m[3]):0;};return entries.sort((a,b)=>rank(b)-rank(a));}
  return tasks.filter(t=>t.at&&t.isTask!==false).slice(0,8).map(t=>({id:t.key,title:t.name+' · '+t.statusText,by:'记录',at:t.at,pid:t.pid,project:t.projectName,key:t.key,list:t.kind==='experiment'?'experiment':'train'}));
 }
-function researchActivityHTML(a,i){return '<button class="rh-activity" type="button" data-rh-act-key="'+esc(a.key||'')+'" data-rh-act-list="'+esc(a.list||'experiment')+'" data-rh-act-pid="'+esc(a.pid)+'"><span class="rh-avatar color-'+i%3+'" title="'+esc(a.by)+'">'+esc(a.by.slice(0,1))+'</span><span class="rh-activity-copy"><strong title="'+esc(a.title)+'">'+esc(a.title)+'</strong><small><span>'+esc(a.project)+'</span><span>'+esc(researchTime(a.at))+'</span></small></span></button>';}
+function researchActivityHTML(a,i){return '<button class="rh-activity'+(a.schedule?' is-schedule':'')+'" type="button" data-rh-act-key="'+esc(a.key||'')+'" data-rh-act-list="'+esc(a.list||'experiment')+'" data-rh-act-pid="'+esc(a.pid)+'"'+(a.schedule?' data-rh-act-schedule="'+esc(a.schedule)+'"':'')+'><span class="rh-avatar color-'+i%3+'" title="'+esc(a.by)+'">'+esc(a.by.slice(0,1))+'</span><span class="rh-activity-copy"><strong title="'+esc(a.title)+'">'+esc(a.title)+'</strong><small><span>'+esc(a.project)+'</span><span>'+esc(researchTime(a.at))+'</span>'+(a.schedule?'<span class="rh-tag">定时</span>':'')+'</small></span></button>';}
 function researchResources(projects){
  return researchPublished(projects).concat(researchCatalog(projects));
 }
@@ -69,6 +73,7 @@ wbBind=function(root){
  root.querySelector('[data-rh-projects]')?.addEventListener('click',()=>go('projects'));
  /* 研究动态点进去看的是任务本身，不是课题的对话流 */
  root.querySelectorAll('[data-rh-act-list]').forEach(b=>b.onclick=()=>{
+  if(b.dataset.rhActSchedule){ST.pick=b.dataset.rhActSchedule;LS.set('scheduled_pick',ST.pick);go('scheduledetail');return;}
   const k=b.dataset.rhActKey;
   if(k&&workbenchOpenTask(k))return;
   workbenchOpenList(b.dataset.rhActList,'all',b.dataset.rhActPid||null);

@@ -3027,6 +3027,7 @@ dialog.rs-copy-dialog{width:min(600px,calc(100vw - 32px));max-width:600px;overfl
 /* @include tool-ide.css */
 /* @include tool-wizard.css */
 /* @include autonomous-lab.css */
+/* @include global-search.css */
 /* @include theme-bootcamp.css */
 
 /* 项目卡标题被挤成两行、断在「结合界 / 面」：标题被写死 max-width:calc(100% - 55px)，
@@ -3453,7 +3454,7 @@ function mdlBtn(){
     : ps.map(x=>`<option value="${esc(x.sid+'|'+x.name)}"${(x.sid===a.sid&&x.name===a.name)?' selected':''}
         >${esc(x.name)}${h.pre?'（未适配）':''}</option>`).join('');
   return `<span class="ctl ctl-sel ctl-mdl">
-    <select id="askmdl" aria-label="这一句用哪个模型" data-ic="model">${body}</select>
+    <select id="askmdl" aria-label="这一句用哪个模型" data-ic="model">${body}<option value="__manage">管理模型接入…</option></select>
     <span class="car" aria-hidden="true"></span></span>`;
 }
 function projBtn(explicit=false){
@@ -6789,7 +6790,7 @@ V.trainnew=()=>{
   <section class="fsec">
     <div class="fsec-h">数据配置</div>
     <div class="fsec-b">
-      <div class="field"><label class="label" for="trds">训练数据 <i style="color:var(--err);font-style:normal">*</i></label>
+      <div class="field"><div class="row" style="align-items:baseline"><label class="label" for="trds">训练数据 <i style="color:var(--err);font-style:normal">*</i></label><span class="grow"></span><button class="lv-link ce-inline" type="button" data-ce-new-ds="train">＋ 新建数据集</button></div>
         <span class="ctl ctl-sel"><select id="trds" class="input">
           <option value="self" ${NEWTR.ds==='self'?'selected':''}>本课题实测（${nSelf} 条有实测值）</option>
           ${DS.map(x=>`<option value="${esc(x.id)}" ${NEWTR.ds===x.id?'selected':''}
@@ -7044,7 +7045,7 @@ V.chat=()=>{
   return `<div class="page chat">
     ${outBar()}
     <div class="chat-flow">
-      ${L.map(m=>m.role==='me'
+      ${L.map((m,i)=>m.role==='me'
         ? `<div class="turn turn-me"><span class="turn-g" aria-hidden="true">›</span>
             <div class="turn-b">${esc(m.text)}</div></div>`
         : `<div class="turn turn-ai"><span class="turn-g" aria-hidden="true"></span>
@@ -7053,6 +7054,8 @@ V.chat=()=>{
               ${m.text||m._live?`<p class="turn-p${m._live&&m.text.length<(m._full||'').length?' is-live':''}"
                 >${m.html||esc(m.text)}</p>`:''}
               ${(m.cards||[]).map(cardHTML).join('')}
+              ${m.fix==='set'?'<div class="st-offer"><button class="btn st-offer-b" type="button" data-go="set">去配置模型接入</button></div>':''}
+              ${!m._live&&L[i-1]?.role==='me'&&typeof stChatOffer==='function'?stChatOffer(L[i-1].text,typeof gsCurrentPid==='function'?gsCurrentPid():''):''}
             </div></div>`).join('')}
     </div>
     <div class="chat-ask">${composer()}</div>
@@ -9425,7 +9428,9 @@ function agentSend(){
   }).catch(e=>{
     const L=convOf();L.pop();
     TRACE.cur=tr0;
-    say((stray?'已选的「'+stray+'」不属于当前任务。':'')+modelErr(e));
+    const em=say((stray?'已选的「'+stray+'」不属于当前任务。':'')+modelErr(e));
+    /* 没填密钥、凭证被拒：错误下方直接给去模型接入的按钮，不让人自己找 */
+    {const raw=String(e&&e.message||e);if(em&&(raw==='NOKEY'||/HTTP (401|403)/.test(raw)))em.fix='set';}
   });
 }
 
@@ -9487,7 +9492,9 @@ function freeAsk(txt,stray){
   }).catch(e=>{
     const L=convOf();L.pop();
     TRACE.cur=tr0;
-    say((stray?'已选的「'+stray+'」不属于当前任务。':'')+modelErr(e));
+    const em=say((stray?'已选的「'+stray+'」不属于当前任务。':'')+modelErr(e));
+    /* 没填密钥、凭证被拒：错误下方直接给去模型接入的按钮，不让人自己找 */
+    {const raw=String(e&&e.message||e);if(em&&(raw==='NOKEY'||/HTTP (401|403)/.test(raw)))em.fix='set';}
   });
 }
 
@@ -9880,9 +9887,11 @@ V.project=()=>{
         aria-orientation="vertical" aria-label="拖动调整知识库宽度"
         title="拖动调整宽度，双击还原"></button>
       <div class="pjx-tabs">
-        ${[['kb','知识库'],['tool','工具'],['exp','实验']].map(([k,n])=>
-        `<button class="pjx-tab${tab===k?' is-on':''}" type="button" data-pjtab="${k}"
-          aria-current="${tab===k?'page':'false'}">${n}</button>`).join('')}
+        ${[['kb','知识库'],['tool','工具'],['exp','实验'],['st','定时']].map(([k,n])=>{
+        /* 定时：第二版把定时任务放回课题里；有计划时页签后带个数 */
+        const c=k==='st'&&typeof stForProject==='function'?stForProject(p.id).length:0;
+        return `<button class="pjx-tab${tab===k?' is-on':''}" type="button" data-pjtab="${k}"
+          aria-current="${tab===k?'page':'false'}">${n}${c?`<span class="pjx-tab-c num">${c}</span>`:''}</button>`}).join('')}
       </div>
       ${tab==='kb'?`
       <div class="pjx-side-h"><span class="lbl">全部文件</span><span class="grow"></span>
@@ -9922,7 +9931,8 @@ V.project=()=>{
             <span class="pjx-empty-ic">${fileIc('')}</span>
             <strong class="t-md" style="color:var(--ink)">还没有资料</strong>
             <span class="t-sm mut">点右上角的 ＋ 添加资料</span></div>`}
-      </div>`:tab==='exp'?'':`
+        <button class="stp-all" type="button" data-ce-mat-pid="${esc(p.id)}">在资料空间打开</button>
+      </div>`:tab==='exp'||tab==='st'?'':`
       <div class="pjx-side-h"><span class="lbl">已启用</span><span class="grow"></span>
         <span class="t-xs mut2 num">${ENABLED().length + dsSrcEnabled().length}</span>
         <!-- 这一页只能开关已经接进来的。要添新的得去市场，所以开一个新标签页，
@@ -9954,6 +9964,7 @@ V.project=()=>{
         ||'<span class="t-sm mut" style="padding:var(--s3) 0">一个数据源都没启用。</span>'}
       </div>`}
       ${tab==='exp'?pjExpTab(p):''}
+      ${tab==='st'&&typeof pjSchedTab==='function'?pjSchedTab(p):''}
     </aside>
 
     <section class="pjx-chat">
@@ -9969,7 +9980,7 @@ V.project=()=>{
       </div>
       ${docCur?`<div class="pjx-doc">${docPreview(docCur)}</div>`:''}
       ${L.length?`<div class="pjx-flow">
-        ${L.map(m=>m.role==='me'
+        ${L.map((m,i)=>m.role==='me'
           ? `<div class="turn turn-me"><span class="turn-g" aria-hidden="true">›</span>
               <div class="turn-b">${esc(m.text)}</div></div>`
           : `<div class="turn turn-ai"><span class="turn-g" aria-hidden="true"></span>
@@ -9978,6 +9989,8 @@ V.project=()=>{
                 ${m.text||m._live?`<p class="turn-p${m._live&&m.text.length<(m._full||'').length?' is-live':''}"
                   >${m.html||esc(m.text)}</p>`:''}
                 ${(m.cards||[]).map(cardHTML).join('')}
+                ${m.fix==='set'?'<div class="st-offer"><button class="btn st-offer-b" type="button" data-go="set">去配置模型接入</button></div>':''}
+                ${!m._live&&L[i-1]?.role==='me'&&typeof stChatOffer==='function'?stChatOffer(L[i-1].text,p.id):''}
               </div></div>`).join('')}
       </div>`
       :`<div class="pjx-flow">${pjOpener(p)}</div>`}
@@ -13918,6 +13931,7 @@ function tpBody(){
       ${bad.length?`<div class="lbl" style="padding:var(--s4) 0 var(--s2)">不适配这个节点　${bad.length}</div>
         ${bad.map(t=>tpRow(t,false)).join('')}`:''}
     </div>
+    <div class="ce-foot"><span class="t-xs mut">找不到自己的工具？</span><button class="lv-link ce-inline" type="button" data-ce-tools>管理我的工具</button></div>
   </div>`;
 }
 function tpPaint(){
@@ -17124,7 +17138,7 @@ function render(){
     mUse(fit[0].sid,fit[0].name);
     LS.set('mstat',null);          // 跟着换了模型，上一次的连通结论不再代表现在
     render();toast('已切换到 '+h.n+'，模型换成适配的 '+fit[0].name)});
-  q('#askmdl',el=>el.onchange=()=>{const v=el.value.split('|'),nm=v.slice(1).join('|');
+  q('#askmdl',el=>el.onchange=()=>{if(el.value==='__manage'){go('set');return}const v=el.value.split('|'),nm=v.slice(1).join('|');
     mUse(v[0],nm);
     LS.set('mstat',null);          // 换了模型，上一次的连通结论不再代表现在
     render();toast('已切换到 '+nm)});
@@ -18399,7 +18413,17 @@ function act(a,el){
       S.pid=id;S.round=1;S.collapsed=1;LS.set('collapsed',1);
       go('pw');toast(`已创建「${n}」`);
     });return}
-  if(a==='askfile'){const el=document.getElementById('askfile');if(el)el.click();return}
+  if(a==='askfile'){
+    /* 第二版：附件不只是「从电脑上传」。资料空间里已有的文件、要拿去训练的表格，都从这里进 */
+    const html='<button class="menu-i is-go" type="button" data-go="__up"><span class="ck"></span><span><span class="nm">上传文件</span><span class="sb">从这台电脑选</span></span></button>'
+      +'<button class="menu-i is-go" type="button" data-go="__mat"><span class="ck"></span><span><span class="nm">从资料空间选</span><span class="sb">已上传过的文献与数据</span></span></button>'
+      +'<button class="menu-i is-go" type="button" data-go="__ds"><span class="ck"></span><span><span class="nm">上传数据集</span><span class="sb">表格整理成可训练的数据集</span></span></button>';
+    menu(el,html,v=>{
+      if(v==='__up'){const f=document.getElementById('askfile');if(f)f.click();return}
+      if(v==='__ds'){ceNewDataset(gsCurrentPid&&gsCurrentPid());return}
+      if(v==='__mat')ceMaterialsMenu(el);
+    });
+    return}
   if(a==='side'){S.collapsed=S.collapsed?0:1;LS.set('collapsed',S.collapsed);S._sideOnly=1;render();return}
   if(a==='mdlimport'){
     modal('导入模型',`<div class="col" style="gap:var(--s4)">
@@ -20198,7 +20222,7 @@ V.devices=()=>{
 function labFlowHTML(steps,mode,assays,frozen=true){
  const labels=labStepLabels;
  const stateIcon=state=>'<svg viewBox="0 0 16 16" aria-hidden="true">'+(state==='done'?'<path d="m3 8 3 3 7-7"/>':state==='exception'?'<circle cx="8" cy="8" r="6"/><path d="M8 4.5v4M8 11.5h.01"/>':state==='running'?'<circle cx="8" cy="8" r="6" stroke-dasharray="23 15"/><path d="M8 4.5V8l2 1.5"/>':'<circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2 1.5"/>')+'</svg>';
- const node=s=>{const state=s.state||'pending';return `<div class="lv-flow-node lab-map-node is-${esc(state)}" data-lab-flow-step="${esc(s.id)}"><span class="lab-map-port is-input" aria-hidden="true"></span><strong>${esc(s.title)}</strong><small>${esc(s.stage==='review'?'人工复核':(frozen&&s.deviceSnapshot?.model)||labDevice(s.deviceId)?.model||'未选择设备')}</small><span class="lab-map-status is-${esc(state)}">${stateIcon(state)}${esc(labels[state]||state)}</span><span class="lab-map-port is-output" aria-hidden="true"></span></div>`;};
+ const node=s=>{const state=s.state||'pending';return `<div class="lv-flow-node lab-map-node is-${esc(state)}" data-lab-flow-step="${esc(s.id)}"><span class="lab-map-port is-input" aria-hidden="true"></span><strong>${esc(s.title)}</strong><small>${esc(s.stage==='review'?'人工复核':(frozen&&s.deviceSnapshot?.model)||labDevice(s.deviceId)?.model||'未选择设备')}</small><span class="lab-map-status is-${esc(state)}">${stateIcon(state)}${esc(labels[state]||state)}</span>${state==='exception'&&s.deviceId&&labDevice(s.deviceId)?`<button class="lv-link ce-inline ce-dev-link" type="button" data-ce-device="${esc(s.deviceId)}">查看设备</button>`:''}<span class="lab-map-port is-output" aria-hidden="true"></span></div>`;};
  const connector=(kind='line',count=1)=>{
   const end=(x)=>`<path d="M${x-8} 84l8 9 8-9"/>`,xs=Array.from({length:count},(_,i)=>(i+.5)*1000/count);
   let paths='';
@@ -20237,7 +20261,7 @@ V.lab=()=>{
 const labLegacyDetail=V.labdet;
 V.labdet=()=>{
  const b=BATCHES.find(b=>b.id===S.labPick);if(!b?.workflow)return labLegacyDetail();const w=b.workflow,s=labSummary(b),c=w.conclusion;
- return `<div class="page lv lab-experiment-detail"><header class="lv-head"><div><button class="lv-link" type="button" data-go="lab">← 实验管理</button><h1>${esc(b.name||(b.ctx.assay.join(' / ')+' · Round '+b.round))}</h1><p>${esc(b.id)} · ${esc(pnOf(b.pid))} · ${b.n} 个样本</p></div><div class="lv-actions">${labBadge(s.status)}<button class="btn" type="button" data-lv-export="${esc(b.id)}">导出实验记录</button>${w.phase==='draft'?`<button class="btn btn-pri" type="button" data-lv-edit="${esc(b.id)}">编辑草稿</button>`:''}</div></header><div class="lv-note"><strong>${esc(s.current)} · 已完成 ${s.done}/${s.total} 个环节</strong>${esc(s.detail)}<br>${w.source==='demo'?'这是演示流程：阶段状态与结论用于体验设计，不代表真实样品、测量或设备执行。':'本机人工记录：方案和进度不会自动下发到设备。'}</div><div class="lv-plan"><div><section class="lv-panel"><h2>环节进展</h2>${w.steps.map(st=>`<section class="lv-stage-detail" data-lv-stage="${esc(st.id)}"><div class="lv-stage-head"><strong>${esc(st.title)}</strong>${labBadge(st.state,labStepLabels[st.state])}</div><p class="lv-small">${st.stage==='review'?'人工数据复核':esc(st.deviceSnapshot?.model||labDevice(st.deviceId)?.model||'未选择设备')} ${st.resource?' · 实例 '+esc(st.resource):''}${st.sop?' · SOP '+esc(st.sop):''}<br>前置：${st.after.map(k=>esc(labStage(k).title)).join('、')||'样品交接'} · 第 ${st.attempt||1} 次记录</p>${st.result?`<div class="lv-stage-result is-${st.state}">${esc(st.result)}</div>`:''}${st.evidence?`<p class="lv-small">证据位置：${esc(st.evidence)}</p>`:''}<details class="lv-config"><summary>输入输出与历史记录</summary><div class="lv-config-body"><p class="lv-small">来源：${(st.inputFrom||[]).map(k=>k==='source'?'样本交接':esc(labStage(k).title)).join('、')}</p>${labIO(st.stage,st.contract)}${st.history?.length?`<div class="lv-log">${st.history.slice().reverse().map(h=>`<p>${esc(h.at)} · 第 ${h.attempt} 次 · ${esc(h.state==='invalidated'?'重试后失效':labStepLabels[h.state]||h.state)}<br>${esc(h.result||'')} ${h.evidence?' · '+esc(h.evidence):''}</p>`).join('')}</div>`:'<p class="lv-small">暂无历史记录</p>'}</div></details>${st.stage!=='review'&&w.phase!=='draft'?`<div class="lv-actions">${['exception','done'].includes(st.state)?`<button class="lv-link" type="button" data-lv-retry="${esc(st.id)}">重试此环节</button>`:`<button class="btn" type="button" data-lv-record="${esc(st.id)}" ${labCanRecord(b,st)?'':'disabled'}>记录环节进展</button>${!labCanRecord(b,st)?'<span class="lv-small">等待前置环节完成</span>':''}`}</div>`:''}</section>`).join('')}</section><section class="lv-panel${c?.published?' lv-conclusion':''}"><h2>实验结论</h2>${c?.published?`<div class="lv-eyebrow">${esc(c.verdict)}</div><div class="lv-stage-result">${esc(c.text)}</div><p class="lv-small">证据索引：${esc(c.evidence)}<br>${esc(c.by||'')} ${esc(c.at||'')}</p>`:`<p class="lv-small">${s.ready?'各实验环节已完成，请复核数据并填写结论。':'完成所有前处理和表征环节后，再复核证据并发布结论。'} 有结论可以是支持假设、不支持假设或证据不足。</p><button class="btn btn-pri" data-lv-publish="${esc(b.id)}" type="button" ${s.ready&&w.phase!=='draft'?'':'disabled'}>复核并发布结论</button>`}</section><section class="lv-panel"><h2>实验事件</h2><div class="lv-log">${w.events?.length?w.events.slice().reverse().map(e=>`<p>${esc(e.at)} · ${esc(e.by)}<br>${esc(e.text)}</p>`).join(''):'<p>演示流程尚无人工操作记录</p>'}</div></section></div><aside class="lv-panel lv-preview lab-workflow-panel"><div class="lab-workflow-head"><h2>流程与样品交接</h2><p class="lv-small">${esc(LAB_TEMPLATES[w.template]?.name||'自定义流程')} · ${w.mode==='parallel'?'分支并行':'依次执行'}</p></div>${labFlowHTML(w.steps,w.mode,w.assays||[])}<details class="lv-config lab-flow-source"><summary>样本与数据来源</summary><div class="lv-config-body"><p class="lv-small">${esc(w.sampleSource||'未记录')}</p><p class="lv-small">样本：${esc(w.sampleIds?.join('、')||'未记录')}</p><p class="lv-small">分样：${esc(w.aliquot||'未记录')}</p></div></details></aside></div></div>`;
+ return `<div class="page lv lab-experiment-detail"><header class="lv-head"><div><button class="lv-link" type="button" data-go="lab">← 实验管理</button><h1>${esc(b.name||(b.ctx.assay.join(' / ')+' · Round '+b.round))}</h1><p>${esc(b.id)} · ${esc(pnOf(b.pid))} · ${b.n} 个样本</p></div><div class="lv-actions">${labBadge(s.status)}<button class="btn" type="button" data-lv-export="${esc(b.id)}">导出实验记录</button>${c?.published?`<button class="btn" type="button" data-ce-batch-ds="${esc(b.id)}">整理成数据集</button>`:''}${w.phase==='draft'?`<button class="btn btn-pri" type="button" data-lv-edit="${esc(b.id)}">编辑草稿</button>`:''}</div></header><div class="lv-note"><strong>${esc(s.current)} · 已完成 ${s.done}/${s.total} 个环节</strong>${esc(s.detail)}<br>${w.source==='demo'?'这是演示流程：阶段状态与结论用于体验设计，不代表真实样品、测量或设备执行。':'本机人工记录：方案和进度不会自动下发到设备。'}</div><div class="lv-plan"><div><section class="lv-panel"><h2>环节进展</h2>${w.steps.map(st=>`<section class="lv-stage-detail" data-lv-stage="${esc(st.id)}"><div class="lv-stage-head"><strong>${esc(st.title)}</strong>${labBadge(st.state,labStepLabels[st.state])}</div><p class="lv-small">${st.stage==='review'?'人工数据复核':esc(st.deviceSnapshot?.model||labDevice(st.deviceId)?.model||'未选择设备')} ${st.resource?' · 实例 '+esc(st.resource):''}${st.sop?' · SOP '+esc(st.sop):''}<br>前置：${st.after.map(k=>esc(labStage(k).title)).join('、')||'样品交接'} · 第 ${st.attempt||1} 次记录</p>${st.result?`<div class="lv-stage-result is-${st.state}">${esc(st.result)}</div>`:''}${st.evidence?`<p class="lv-small">证据位置：${esc(st.evidence)}</p>`:''}<details class="lv-config"><summary>输入输出与历史记录</summary><div class="lv-config-body"><p class="lv-small">来源：${(st.inputFrom||[]).map(k=>k==='source'?'样本交接':esc(labStage(k).title)).join('、')}</p>${labIO(st.stage,st.contract)}${st.history?.length?`<div class="lv-log">${st.history.slice().reverse().map(h=>`<p>${esc(h.at)} · 第 ${h.attempt} 次 · ${esc(h.state==='invalidated'?'重试后失效':labStepLabels[h.state]||h.state)}<br>${esc(h.result||'')} ${h.evidence?' · '+esc(h.evidence):''}</p>`).join('')}</div>`:'<p class="lv-small">暂无历史记录</p>'}</div></details>${st.stage!=='review'&&w.phase!=='draft'?`<div class="lv-actions">${['exception','done'].includes(st.state)?`<button class="lv-link" type="button" data-lv-retry="${esc(st.id)}">重试此环节</button>`:`<button class="btn" type="button" data-lv-record="${esc(st.id)}" ${labCanRecord(b,st)?'':'disabled'}>记录环节进展</button>${!labCanRecord(b,st)?'<span class="lv-small">等待前置环节完成</span>':''}`}</div>`:''}</section>`).join('')}</section><section class="lv-panel${c?.published?' lv-conclusion':''}"><h2>实验结论</h2>${c?.published?`<div class="lv-eyebrow">${esc(c.verdict)}</div><div class="lv-stage-result">${esc(c.text)}</div><p class="lv-small">证据索引：${esc(c.evidence)}<br>${esc(c.by||'')} ${esc(c.at||'')}</p>`:`<p class="lv-small">${s.ready?'各实验环节已完成，请复核数据并填写结论。':'完成所有前处理和表征环节后，再复核证据并发布结论。'} 有结论可以是支持假设、不支持假设或证据不足。</p><button class="btn btn-pri" data-lv-publish="${esc(b.id)}" type="button" ${s.ready&&w.phase!=='draft'?'':'disabled'}>复核并发布结论</button>`}</section><section class="lv-panel"><h2>实验事件</h2><div class="lv-log">${w.events?.length?w.events.slice().reverse().map(e=>`<p>${esc(e.at)} · ${esc(e.by)}<br>${esc(e.text)}</p>`).join(''):'<p>演示流程尚无人工操作记录</p>'}</div></section></div><aside class="lv-panel lv-preview lab-workflow-panel"><div class="lab-workflow-head"><h2>流程与样品交接</h2><p class="lv-small">${esc(LAB_TEMPLATES[w.template]?.name||'自定义流程')} · ${w.mode==='parallel'?'分支并行':'依次执行'}</p></div>${labFlowHTML(w.steps,w.mode,w.assays||[])}<details class="lv-config lab-flow-source"><summary>样本与数据来源</summary><div class="lv-config-body"><p class="lv-small">${esc(w.sampleSource||'未记录')}</p><p class="lv-small">样本：${esc(w.sampleIds?.join('、')||'未记录')}</p><p class="lv-small">分样：${esc(w.aliquot||'未记录')}</p></div></details></aside></div></div>`;
 };
 function labRecordDialog(id){
  const b=BATCHES.find(b=>b.id===S.labPick),s=b?.workflow?.steps.find(s=>s.id===id);if(!s)return;
@@ -20729,6 +20753,8 @@ const rsBindShared=rsBind;rsBind=function(root){rsBindShared(root);root.querySel
 /* @include tool-wizard.js */
 /* @include tool-publish.js */
 /* @include autonomous-lab.js */
+/* @include global-search.js */
+/* @include contextual-entries.js */
 
 keepLoad();
 labInit();

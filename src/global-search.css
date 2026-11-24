@@ -1,0 +1,48 @@
+/* 全局搜索（第二版）：侧栏顶部的触发器 + ⌘K 面板。
+   触发器的尺寸和导航项同一把尺子：高 34、左右 12、图标 x=24，所以折叠前后位置不动。 */
+.gs-trigger{display:flex;align-items:center;gap:8px;margin:0 12px 6px;height:34px;padding:0 10px 0 11px;
+  border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink-3);
+  font:inherit;font-size:13px;cursor:pointer;text-align:left;flex:0 0 auto;width:calc(100% - 24px)}
+.gs-trigger svg{flex:0 0 auto}
+.gs-trigger .gs-ph{flex:1;min-width:0}
+.gs-trigger .gs-kbd{font-family:var(--mono,ui-monospace,monospace);font-size:11px;color:var(--ink-4);
+  border:1px solid var(--line);border-radius:4px;padding:0 5px;line-height:18px;background:var(--surface-2)}
+.gs-trigger:hover{border-color:var(--ink-4);color:var(--ink-2)}
+.gs-trigger:focus-visible{outline:2px solid var(--dry);outline-offset:2px}
+#side[data-collapsed="1"] .gs-trigger{width:40px;padding:0 0 0 11px;gap:0}
+#side[data-collapsed="1"] .gs-trigger .nav-tx{display:none}
+
+/* 面板 */
+.gs-dlg{padding:0;border:0;background:transparent;width:min(600px,calc(100vw - 32px));max-width:none;margin:12vh auto auto;overflow:visible}
+.gs-dlg::backdrop{background:rgba(14,17,22,.28)}
+.gs-box{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh-3);overflow:hidden;color:var(--ink)}
+.gs-bar{display:flex;align-items:center;gap:10px;padding:0 14px;height:52px;border-bottom:1px solid var(--line-2);color:var(--ink-3)}
+.gs-input{flex:1;min-width:0;height:100%;border:0;outline:0;background:transparent;font:inherit;font-size:15px;color:var(--ink)}
+.gs-input::placeholder{color:var(--ink-4)}
+.gs-dlg kbd{font-family:var(--mono,ui-monospace,monospace);font-size:11px;color:var(--ink-4);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface-2)}
+.gs-list{max-height:min(420px,56vh);overflow-y:auto;padding:6px}
+.gs-group{font-size:11px;font-weight:500;color:var(--ink-4);padding:10px 10px 4px}
+.gs-row{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;cursor:pointer;min-height:40px}
+.gs-row.is-on{background:var(--dry-soft)}
+.gs-ic{display:grid;place-items:center;width:26px;height:26px;border-radius:6px;background:var(--surface-2);color:var(--ink-3);flex:0 0 auto}
+.gs-row.is-on .gs-ic{color:var(--dry-ink)}
+.gs-tx{display:flex;flex-direction:column;min-width:0;flex:1}
+.gs-label{font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gs-sub{font-size:11px;color:var(--ink-4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gs-enter{font-size:12px;color:var(--ink-4)}
+.gs-empty{padding:28px 16px;text-align:center;color:var(--ink-3);font-size:13px}
+.gs-empty p{margin:0 0 10px}
+.gs-ask{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;color:var(--dry-ink);cursor:pointer}
+.gs-ask:hover{background:var(--surface-2)}
+.gs-foot{display:flex;gap:16px;padding:8px 14px;border-top:1px solid var(--line-2);font-size:11px;color:var(--ink-4)}
+.gs-foot kbd{margin-right:2px}
+@media(max-width:600px){.gs-dlg{margin-top:8vh}.gs-foot{display:none}}
+@media(max-width:760px){#side .gs-trigger{width:auto;margin:0 8px;flex:0 0 auto}}
+/* 整条搜索栏就是输入框，不再给里面的 input 套一圈全站的焦点环 */
+.gs-dlg .gs-input,.gs-dlg .gs-input:focus,.gs-dlg .gs-input:focus-visible{outline:none!important;box-shadow:none!important;border:0!important;background:transparent!important;padding:0!important;min-height:0!important}
+.gs-dlg .gs-bar:focus-within{box-shadow:inset 0 -2px 0 var(--dry)}
+/* 情境入口的小控件 */
+.ce-inline{font-size:12px;padding:0;border:0;background:none;color:var(--dry-ink);cursor:pointer}
+.ce-inline:hover{text-decoration:underline}
+.ce-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--line-2);padding-top:10px}
+.ce-dev{margin-top:4px}
