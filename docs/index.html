@@ -4540,6 +4540,17 @@ body[data-route="mdl"] #view .pg-hd,body[data-route="dsets"] #view .pg-hd{paddin
 #side .side-toggle{justify-content:flex-start!important;place-items:center start!important}
 #side[data-collapsed="1"] .side-toggle{width:40px!important;min-width:40px!important;max-width:40px!important;margin-left:4px!important}
 
+/* 「已共享」标签：只挂在真正共享出去的那一条上 */
+.shared-tag{display:inline-flex;align-items:center;margin-left:8px;padding:0 7px;height:18px;border-radius:5px;font-size:11px;font-weight:500;line-height:18px;
+  color:var(--dry-ink);background:var(--dry-soft);vertical-align:2px;white-space:nowrap}
+.lv-tags{display:inline-flex;align-items:center;gap:6px}
+.lv-tags .shared-tag{margin-left:0;vertical-align:0}
+.lv-card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto}
+.lv-share{border:1px solid var(--line);background:var(--surface);border-radius:7px;height:28px;padding:0 10px;font:inherit;font-size:12px;color:var(--ink-2);cursor:pointer}
+.lv-share:hover{border-color:var(--ink-4);color:var(--ink)}
+.pj-share-btn{display:inline-flex;align-items:center;gap:6px;height:28px!important;min-height:28px!important;padding:0 10px!important;font-size:12px!important;margin-left:10px}
+.pj-share-btn svg{width:14px;height:14px}
+
 
 /* 项目卡标题被挤成两行、断在「结合界 / 面」：标题被写死 max-width:calc(100% - 55px)，
    而右边那枚「共享」角标其实只有 40px 宽，行上还开了 flex-wrap。
@@ -6890,9 +6901,9 @@ function MDL_LIST(){
 function atCell(v){const t=String(v||'');
   const short=t.replace(/^\d{4}-/,'');
   return `<td class="t-sm num c-at" title="${esc(t)}">${esc(short)}</td>`;}
-function nmCell(name,id,sub){
+function nmCell(name,id,sub,tag){
   return `<td class="c-nm"><div class="col" style="gap:1px">
-    <strong class="t-md">${esc(name)}</strong>
+    <strong class="t-md">${esc(name)}${tag||''}</strong>
     <span class="t-xs mut2 num">ID: ${esc(id)}${sub?'　'+esc(sub):''}</span></div></td>`;
 }
 /* 操作列：动作常驻，做不了的置灰并写明原因。off 是禁用原因，写了就禁用。 */
@@ -7349,7 +7360,7 @@ function dsBody(){
         <th scope="col">训练任务</th><th scope="col">指纹</th>
         <th scope="col">更新时间</th><th scope="col">操作</th></tr></thead>
       <tbody>${L.map(d=>{const st=dsSt(d);const used=dsUseCount(d.id);return `<tr>
-        ${nmCell(d.name,d.id,d.src||'上传')}
+        ${nmCell(d.name,d.id,d.src||'上传',typeof ceSharedTag==='function'?ceSharedTag('dataset',d.id,d.pid):'')}
         ${projCell(d)}
         <td><span class="chip ${st[1]}">${st[0]}</span></td>
         <td class="t-sm num">${d.rows.length.toLocaleString()}</td>
@@ -7365,6 +7376,8 @@ function dsBody(){
           {n:'发布',attr:`data-dspub="${esc(d.id)}"`,
            off:d.st==='pub'?('已于 '+(d.pubAt||d.at)+' 发布锁定'):'',
            tip:'发布后内容锁定，可用于训练'},
+          {n:'共享',attr:`data-ce-share="dataset|${esc(d.id)}|${esc(d.pid||S.pid||'')}|${esc(d.name)}"`,
+           off:d.st==='pub'?'':'数据集发布后才能共享',tip:'共享到课题组：组员申请后可添加到自己的课题'},
           {n:'删除',attr:`data-dsdel="${esc(d.id)}"`,
            off:used?('已被 '+used+' 个训练任务使用，不能删除'):''}
         ])}
@@ -7702,7 +7715,7 @@ function mdlCur(){
         <th scope="col">更新时间</th>
         <th scope="col">操作</th></tr></thead>
       <tbody>${L.map(m=>{const status=statusById(m.id);return `<tr>
-        ${nmCell(m.name||('打分器 · '+tgtName(m.target)),m.id)}
+        ${nmCell(m.name||('打分器 · '+tgtName(m.target)),m.id,'',typeof ceSharedTag==='function'?ceSharedTag('model',m.id,m._pid):'')}
         ${projCell(m)}
         <td><span class="t-xs ${status.active?'c-ok':'mut2'}"${status.title?' title="'+esc(status.title)+'"':''}>${status.label}</span></td>
         <td class="t-sm num">${esc(tgtName(m.target))}</td>
@@ -7713,7 +7726,7 @@ function mdlCur(){
         ${acts([
           status.serviceId?{n:'查看服务',attr:`data-deploy-service="${esc(status.serviceId)}"`}
             :{n:'部署',attr:`data-deploy-model="${esc(m.id)}"`,tip:'打开在线部署设置'},
-          {n:'发布',attr:`data-model-publish="${esc(m.id)}"`,tip:'发布到关联课题的共享课题'},
+          {n:'共享',attr:`data-model-publish="${esc(m.id)}"`,tip:'共享到课题组：组员申请后可添加到自己的课题'},
           {n:'详情',attr:`data-jobpick="${esc(m.id)}"`},
           {n:'删除',attr:`data-mdel="${esc(m.id)}"`},
           {n:'下载权重',attr:`data-mdl="${esc(m.id)}"`}
@@ -11410,7 +11423,7 @@ V.project=()=>{
         stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
         ><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>
     <div class="col pjx-title" style="gap:4px;min-width:0">
-      <div class="pjx-title-row"><h1 class="pjx-n">${esc(p.name)}</h1>${rsProjectShared(p.id)?'<button class="project-shared-badge" type="button" data-project-members="'+esc(rsProjectShared(p.id).id)+'" aria-label="查看协作者" aria-haspopup="dialog">'+rsSharingIcon()+'共享课题</button>':''}</div>
+      <div class="pjx-title-row"><h1 class="pjx-n">${esc(p.name)}</h1><button class="btn pj-share-btn" type="button" data-ce-share-project="${esc(p.id)}" title="${rsProjectShared(p.id)?'查看成员、继续共享资产':'把这个课题共享给组员'}">${rsSharingIcon()}${rsProjectShared(p.id)?'共享设置':'共享'}</button>${rsProjectShared(p.id)?'<button class="project-shared-badge" type="button" data-project-members="'+esc(rsProjectShared(p.id).id)+'" aria-label="查看协作者" aria-haspopup="dialog">'+rsSharingIcon()+'共享课题</button>':''}</div>
       <span class="t-xs mut2" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
         >${esc(goalText(p))}</span>
     </div>
@@ -22926,13 +22939,13 @@ labCardV2=function(b){
  const methods=workflow?.source==='autonomous'?alTaskMethods(workflow):b.ctx?.assay?.join('、');
  const context=summary.status==='exception'?summary.detail:summary.status==='conclusion'?workflow?.conclusion?.verdict:summary.current;
  return `<article class="lv-exp is-${summary.status}" role="button" tabindex="0" data-labgo="${esc(b.id)}" aria-label="${action}：${esc(title)}">
-  <div class="row" style="justify-content:space-between;gap:10px">${labBadge(summary.status,summary.label)}${b.id.includes('DEMO')?'':`<span class="lv-id-tag num">${esc(b.id)}</span>`}</div>
+  <div class="row" style="justify-content:space-between;gap:10px">${labBadge(summary.status,summary.label)}<span class="lv-tags">${typeof ceSharedTag==='function'?ceSharedTag('experiment',b.id,b.pid):''}${b.id.includes('DEMO')?'':`<span class="lv-id-tag num">${esc(b.id)}</span>`}</span></div>
   <h2 class="lv-exp-title">${esc(title)}</h2>
   <p class="lv-small">${esc(pnOf(b.pid))} · ${b.n} 个${workflow?.source==='autonomous'?'候选':''}样本</p>
   ${methods?`<p class="lv-small lv-card-summary">${esc(methods)}</p>`:''}
   ${context?`<p class="lv-small lv-card-summary">${esc(context)}</p>`:''}
   ${hasProgress?`<div class="lv-exp-progress"><div class="lv-bar" aria-hidden="true">${workflow.steps.map(step=>'<i class="'+esc(step.state)+'"></i>').join('')}</div><span class="lv-small">${summary.done}/${summary.total} 环节</span></div>`:''}
-  <span class="lv-card-action">${action} →</span>
+  <div class="lv-card-foot"><span class="lv-card-action">${action} →</span>${summary.status!=='draft'?`<button class="lv-share" type="button" data-ce-share="experiment|${esc(b.id)}|${esc(b.pid)}|${esc(title)}">共享</button>`:''}</div>
  </article>`;
 };
 V.lab=()=>{
@@ -23669,7 +23682,7 @@ function materialsSubtitle(){const m=MATERIALS;if(m.space==='public')return '操
 /* 时间统一成一种写法：今天只给时分，其余给 月-日 时:分；原值留在 title 里 */
 function materialsWhen(at){const t=String(at||'');if(!t||t==='—')return '—';const today=nowStamp().slice(0,10);if(t.startsWith(today))return '今天 '+t.slice(11,16);if(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(t))return t.slice(5,16);return t;}
 function materialsNav(label,tab,count){return '<button type="button" class="ms-nav '+(MATERIALS.tab===tab&&!MATERIALS.space?'selected':'')+'" data-ms-tab="'+tab+'">'+materialsIcon(tab==='shared'?'users':tab==='stars'?'star':tab==='trash'?'trash':'file')+'<span>'+label+'</span><small>'+count+'</small></button>';}
-function materialsRow(x){const star=materialsPrefs().stars.includes(x.id),trash=MATERIALS.tab==='trash';return '<article class="ms-file" data-ms-row="'+esc(x.id)+'"><button class="ms-file-main" type="button" data-ms-open="'+esc(x.id)+'">'+fileIc(fileExt(x))+'<span><strong>'+esc(x.name)+'</strong><small>'+esc(x.kind==='link'?'链接':fileExt(x).toUpperCase())+' · '+(x.kind==='import'?'从共享课题导入':x.kind==='shared'?'共享资产':x.bytes==null?'资料引用':fmtBytes(x.bytes))+'</small></span></button><span class="ms-cell">'+esc(materialsSpace(x))+'</span><time class="ms-cell" title="'+esc(x.at||'')+'">'+esc(materialsWhen(x.at))+'</time><div class="ms-row-actions">'+(trash?'<button type="button" data-ms-restore="'+esc(x.id)+'">恢复</button>':'<button type="button" aria-label="'+(star?'取消收藏':'收藏')+' '+esc(x.name)+'" aria-pressed="'+star+'" data-ms-star="'+esc(x.id)+'">'+(star?'已收藏':'收藏')+'</button>'+(x.sharedId?'':'<button type="button" aria-label="共享 '+esc(x.name)+'" data-ms-share="'+esc(x.id)+'">共享</button>')+'<button type="button" aria-label="复制文件名 '+esc(x.name)+'" data-ms-copy="'+esc(x.id)+'">复制</button>'+(!x.sharedId&&materialsEditable(x.pid)?'<button type="button" class="is-danger" aria-label="删除 '+esc(x.name)+'" data-ms-del="'+esc(x.id)+'">删除</button>':''))+'</div></article>';}
+function materialsRow(x){const star=materialsPrefs().stars.includes(x.id),trash=MATERIALS.tab==='trash';return '<article class="ms-file" data-ms-row="'+esc(x.id)+'"><button class="ms-file-main" type="button" data-ms-open="'+esc(x.id)+'">'+fileIc(fileExt(x))+'<span><strong>'+esc(x.name)+(typeof ceSharedTag==='function'?ceSharedTag('knowledge',x.id,x.pid):'')+'</strong><small>'+esc(x.kind==='link'?'链接':fileExt(x).toUpperCase())+' · '+(x.kind==='import'?'从共享课题导入':x.kind==='shared'?'共享资产':x.bytes==null?'资料引用':fmtBytes(x.bytes))+'</small></span></button><span class="ms-cell">'+esc(materialsSpace(x))+'</span><time class="ms-cell" title="'+esc(x.at||'')+'">'+esc(materialsWhen(x.at))+'</time><div class="ms-row-actions">'+(trash?'<button type="button" data-ms-restore="'+esc(x.id)+'">恢复</button>':'<button type="button" aria-label="'+(star?'取消收藏':'收藏')+' '+esc(x.name)+'" aria-pressed="'+star+'" data-ms-star="'+esc(x.id)+'">'+(star?'已收藏':'收藏')+'</button>'+(x.sharedId?'':'<button type="button" aria-label="共享 '+esc(x.name)+'" data-ms-share="'+esc(x.id)+'">共享</button>')+'<button type="button" aria-label="复制文件名 '+esc(x.name)+'" data-ms-copy="'+esc(x.id)+'">复制</button>'+(!x.sharedId&&materialsEditable(x.pid)?'<button type="button" class="is-danger" aria-label="删除 '+esc(x.name)+'" data-ms-del="'+esc(x.id)+'">删除</button>':''))+'</div></article>';}
 /* 行尾「更多」：分享（放进我能发布的共享课题）；菜单点外面即关 */
 function materialsMoreMenu(btn,id){
  document.querySelector('.ms-menu')?.remove();
@@ -25303,6 +25316,60 @@ if(typeof INBOX==='function'){
 
 /* 科研工具：用途下拉（原来是一排胶囊，和 Skills / SCP / 模型 页签叠成了三层） */
 document.addEventListener('change',e=>{const el=e.target.closest('[data-shcap-select]');if(!el)return;S.shcap=el.value;render();});
+
+/* ---------- 共享：入口放在资产所在的地方 ----------
+   规则不变：共享出去的只有资产（资料、工具、实验记录、模型、数据集），对话流不共享；
+   组员看得到名称与说明，申请通过后才能添加到自己的课题。
+   这里只做入口与标识，写入仍走原来的 rsPublishAssets / 新建共享课题。 */
+/* 按「课题 + 资产」比对：工具这类资产拿名字当编号，不同课题会重名，只比编号会把别处的算进来 */
+function ceSharedOf(kind,src,pid){
+ if(typeof RS==='undefined'||!RS.data||!Array.isArray(RS.data.shared))return [];
+ return RS.data.shared.filter(s=>rsCan(s,'approve')&&(!pid||s.projectId===pid)&&(s.assets||[]).some(a=>a.sourceId===src&&(!kind||a.kind===kind))).map(s=>s.name);
+}
+/* 「已共享」只挂在真正共享出去的那一条上，悬停写共享到了哪里 */
+function ceSharedTag(kind,src,pid){const L=ceSharedOf(kind,src,pid);return L.length?'<span class="shared-tag" title="已共享到「'+esc(L.join('」「'))+'」">已共享</span>':'';}
+const CE_KIND_NAME={knowledge:'资料',model:'模型',dataset:'数据集',experiment:'实验记录',tool:'工具'};
+function ceShareAsset(kind,src,pid,label){
+ if(!RS.ready||RS.error){toast(RS.error||'正在读取本机工作空间');return}
+ const project=rsProject(pid);if(!project){toast('这一项没有关联课题，不能共享到课题组');return}
+ const name=label||src,noun=CE_KIND_NAME[kind]||'资产';
+ const already=ceSharedOf(kind,src,pid);
+ const cand=rsCandidates(pid).find(a=>a.kind===kind&&a.sourceId===src);
+ const shared=rsProjectShared(pid);
+ if(already.length&&(!cand||shared&&shared.assets.some(a=>a.id===cand.id))){
+  modal('已共享','<p class="rs-help">「'+esc(name)+'」已共享到「'+esc(already.join('」「'))+'」。组员申请通过后可以添加到自己的课题。</p>','查看共享课题',()=>{const s=RS.data.shared.find(x=>x.name===already[0]);if(s){RS.sharedPick=s.id;LS.set('rs_shared_pick',s.id);go('shareddetail');}return true;});return;}
+ if(!cand){toast(kind==='dataset'?'数据集发布后才能共享':kind==='model'?'训练完成并加入模型库的模型才能共享':'这一项暂时不能共享');return}
+ const scope='<p class="rs-help">组员能看到这条'+noun+'的名称与说明，申请通过后才能添加到自己的课题；你的对话流不会共享。</p>';
+ if(!shared){
+  if(!can('edit')||(project.ownerId||'me')!=='me'){toast('需要课题所有者先开启共享');return}
+  modal('共享到课题组','<p class="rs-help">「'+esc(project.name)+'」还没有共享给组员。开启共享时会带上「'+esc(name)+'」，你还可以再勾选别的资产。</p>'+scope,'开启共享',()=>{
+   RS.sharedForm={mode:'existing',pid,name:project.name,goal:project.desc||'',assets:[cand.id],initialized:true};go('sharednew');return true;});
+  return;}
+ modal('共享到「'+shared.name+'」','<p class="rs-help">「'+esc(name)+'」 · '+esc(rsAssetLabel(kind))+' · '+esc(cand.version)+'</p>'+scope,'共享',()=>rsModalSave(async()=>{await rsPublishAssets(shared.id,[cand.id]);toast('已共享到「'+shared.name+'」');}));
+}
+/* 课题级：没共享过 → 开启共享（勾选要共享的资产）；已共享 → 去共享课题看成员、继续添加 */
+function ceShareProject(pid){
+ if(!RS.ready||RS.error){toast(RS.error||'正在读取本机工作空间');return}
+ const project=rsProject(pid);if(!project)return;
+ const shared=rsProjectShared(pid);
+ if(shared){RS.sharedPick=shared.id;LS.set('rs_shared_pick',shared.id);RS.tab='assets';go('shareddetail');return}
+ if(!can('edit')||(project.ownerId||'me')!=='me'){toast('需要课题所有者开启共享');return}
+ RS.sharedForm={mode:'existing',pid,name:project.name,goal:project.desc||'',assets:null,initialized:true};go('sharednew');
+}
+document.addEventListener('click',e=>{
+ const a=e.target.closest('[data-ce-share],[data-ce-share-project]');if(!a)return;
+ e.preventDefault();e.stopPropagation();
+ if(a.dataset.ceShareProject){ceShareProject(a.dataset.ceShareProject);return}
+ const [kind,src,pid,...rest]=a.dataset.ceShare.split('|');ceShareAsset(kind,src,pid,rest.join('|'));
+},true);
+/* 资料空间的「共享」：课题资料走同一个流程（课题还没共享时能直接开启）；公共资料仍按原来的选课题方式 */
+if(typeof materialsShareDialog==='function'){
+ const ceMsShareBase=materialsShareDialog;
+ materialsShareDialog=function(x){
+  if(x&&x.pid&&typeof rsCandidates==='function'&&rsCandidates(x.pid).some(a=>a.kind==='knowledge'&&a.sourceId===x.id))return ceShareAsset('knowledge',x.id,x.pid,x.name);
+  return ceMsShareBase(x);
+ };
+}
 
 
 keepLoad();

@@ -532,13 +532,13 @@ labCardV2=function(b){
  const methods=workflow?.source==='autonomous'?alTaskMethods(workflow):b.ctx?.assay?.join('、');
  const context=summary.status==='exception'?summary.detail:summary.status==='conclusion'?workflow?.conclusion?.verdict:summary.current;
  return `<article class="lv-exp is-${summary.status}" role="button" tabindex="0" data-labgo="${esc(b.id)}" aria-label="${action}：${esc(title)}">
-  <div class="row" style="justify-content:space-between;gap:10px">${labBadge(summary.status,summary.label)}${b.id.includes('DEMO')?'':`<span class="lv-id-tag num">${esc(b.id)}</span>`}</div>
+  <div class="row" style="justify-content:space-between;gap:10px">${labBadge(summary.status,summary.label)}<span class="lv-tags">${typeof ceSharedTag==='function'?ceSharedTag('experiment',b.id,b.pid):''}${b.id.includes('DEMO')?'':`<span class="lv-id-tag num">${esc(b.id)}</span>`}</span></div>
   <h2 class="lv-exp-title">${esc(title)}</h2>
   <p class="lv-small">${esc(pnOf(b.pid))} · ${b.n} 个${workflow?.source==='autonomous'?'候选':''}样本</p>
   ${methods?`<p class="lv-small lv-card-summary">${esc(methods)}</p>`:''}
   ${context?`<p class="lv-small lv-card-summary">${esc(context)}</p>`:''}
   ${hasProgress?`<div class="lv-exp-progress"><div class="lv-bar" aria-hidden="true">${workflow.steps.map(step=>'<i class="'+esc(step.state)+'"></i>').join('')}</div><span class="lv-small">${summary.done}/${summary.total} 环节</span></div>`:''}
-  <span class="lv-card-action">${action} →</span>
+  <div class="lv-card-foot"><span class="lv-card-action">${action} →</span>${summary.status!=='draft'?`<button class="lv-share" type="button" data-ce-share="experiment|${esc(b.id)}|${esc(b.pid)}|${esc(title)}">共享</button>`:''}</div>
  </article>`;
 };
 V.lab=()=>{

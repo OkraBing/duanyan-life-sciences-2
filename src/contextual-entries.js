@@ -80,3 +80,57 @@ if(typeof INBOX==='function'){
 
 /* 科研工具：用途下拉（原来是一排胶囊，和 Skills / SCP / 模型 页签叠成了三层） */
 document.addEventListener('change',e=>{const el=e.target.closest('[data-shcap-select]');if(!el)return;S.shcap=el.value;render();});
+
+/* ---------- 共享：入口放在资产所在的地方 ----------
+   规则不变：共享出去的只有资产（资料、工具、实验记录、模型、数据集），对话流不共享；
+   组员看得到名称与说明，申请通过后才能添加到自己的课题。
+   这里只做入口与标识，写入仍走原来的 rsPublishAssets / 新建共享课题。 */
+/* 按「课题 + 资产」比对：工具这类资产拿名字当编号，不同课题会重名，只比编号会把别处的算进来 */
+function ceSharedOf(kind,src,pid){
+ if(typeof RS==='undefined'||!RS.data||!Array.isArray(RS.data.shared))return [];
+ return RS.data.shared.filter(s=>rsCan(s,'approve')&&(!pid||s.projectId===pid)&&(s.assets||[]).some(a=>a.sourceId===src&&(!kind||a.kind===kind))).map(s=>s.name);
+}
+/* 「已共享」只挂在真正共享出去的那一条上，悬停写共享到了哪里 */
+function ceSharedTag(kind,src,pid){const L=ceSharedOf(kind,src,pid);return L.length?'<span class="shared-tag" title="已共享到「'+esc(L.join('」「'))+'」">已共享</span>':'';}
+const CE_KIND_NAME={knowledge:'资料',model:'模型',dataset:'数据集',experiment:'实验记录',tool:'工具'};
+function ceShareAsset(kind,src,pid,label){
+ if(!RS.ready||RS.error){toast(RS.error||'正在读取本机工作空间');return}
+ const project=rsProject(pid);if(!project){toast('这一项没有关联课题，不能共享到课题组');return}
+ const name=label||src,noun=CE_KIND_NAME[kind]||'资产';
+ const already=ceSharedOf(kind,src,pid);
+ const cand=rsCandidates(pid).find(a=>a.kind===kind&&a.sourceId===src);
+ const shared=rsProjectShared(pid);
+ if(already.length&&(!cand||shared&&shared.assets.some(a=>a.id===cand.id))){
+  modal('已共享','<p class="rs-help">「'+esc(name)+'」已共享到「'+esc(already.join('」「'))+'」。组员申请通过后可以添加到自己的课题。</p>','查看共享课题',()=>{const s=RS.data.shared.find(x=>x.name===already[0]);if(s){RS.sharedPick=s.id;LS.set('rs_shared_pick',s.id);go('shareddetail');}return true;});return;}
+ if(!cand){toast(kind==='dataset'?'数据集发布后才能共享':kind==='model'?'训练完成并加入模型库的模型才能共享':'这一项暂时不能共享');return}
+ const scope='<p class="rs-help">组员能看到这条'+noun+'的名称与说明，申请通过后才能添加到自己的课题；你的对话流不会共享。</p>';
+ if(!shared){
+  if(!can('edit')||(project.ownerId||'me')!=='me'){toast('需要课题所有者先开启共享');return}
+  modal('共享到课题组','<p class="rs-help">「'+esc(project.name)+'」还没有共享给组员。开启共享时会带上「'+esc(name)+'」，你还可以再勾选别的资产。</p>'+scope,'开启共享',()=>{
+   RS.sharedForm={mode:'existing',pid,name:project.name,goal:project.desc||'',assets:[cand.id],initialized:true};go('sharednew');return true;});
+  return;}
+ modal('共享到「'+shared.name+'」','<p class="rs-help">「'+esc(name)+'」 · '+esc(rsAssetLabel(kind))+' · '+esc(cand.version)+'</p>'+scope,'共享',()=>rsModalSave(async()=>{await rsPublishAssets(shared.id,[cand.id]);toast('已共享到「'+shared.name+'」');}));
+}
+/* 课题级：没共享过 → 开启共享（勾选要共享的资产）；已共享 → 去共享课题看成员、继续添加 */
+function ceShareProject(pid){
+ if(!RS.ready||RS.error){toast(RS.error||'正在读取本机工作空间');return}
+ const project=rsProject(pid);if(!project)return;
+ const shared=rsProjectShared(pid);
+ if(shared){RS.sharedPick=shared.id;LS.set('rs_shared_pick',shared.id);RS.tab='assets';go('shareddetail');return}
+ if(!can('edit')||(project.ownerId||'me')!=='me'){toast('需要课题所有者开启共享');return}
+ RS.sharedForm={mode:'existing',pid,name:project.name,goal:project.desc||'',assets:null,initialized:true};go('sharednew');
+}
+document.addEventListener('click',e=>{
+ const a=e.target.closest('[data-ce-share],[data-ce-share-project]');if(!a)return;
+ e.preventDefault();e.stopPropagation();
+ if(a.dataset.ceShareProject){ceShareProject(a.dataset.ceShareProject);return}
+ const [kind,src,pid,...rest]=a.dataset.ceShare.split('|');ceShareAsset(kind,src,pid,rest.join('|'));
+},true);
+/* 资料空间的「共享」：课题资料走同一个流程（课题还没共享时能直接开启）；公共资料仍按原来的选课题方式 */
+if(typeof materialsShareDialog==='function'){
+ const ceMsShareBase=materialsShareDialog;
+ materialsShareDialog=function(x){
+  if(x&&x.pid&&typeof rsCandidates==='function'&&rsCandidates(x.pid).some(a=>a.kind==='knowledge'&&a.sourceId===x.id))return ceShareAsset('knowledge',x.id,x.pid,x.name);
+  return ceMsShareBase(x);
+ };
+}

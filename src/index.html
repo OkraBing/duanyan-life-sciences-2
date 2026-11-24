@@ -5379,9 +5379,9 @@ function MDL_LIST(){
 function atCell(v){const t=String(v||'');
   const short=t.replace(/^\d{4}-/,'');
   return `<td class="t-sm num c-at" title="${esc(t)}">${esc(short)}</td>`;}
-function nmCell(name,id,sub){
+function nmCell(name,id,sub,tag){
   return `<td class="c-nm"><div class="col" style="gap:1px">
-    <strong class="t-md">${esc(name)}</strong>
+    <strong class="t-md">${esc(name)}${tag||''}</strong>
     <span class="t-xs mut2 num">ID: ${esc(id)}${sub?'　'+esc(sub):''}</span></div></td>`;
 }
 /* 操作列：动作常驻，做不了的置灰并写明原因。off 是禁用原因，写了就禁用。 */
@@ -5838,7 +5838,7 @@ function dsBody(){
         <th scope="col">训练任务</th><th scope="col">指纹</th>
         <th scope="col">更新时间</th><th scope="col">操作</th></tr></thead>
       <tbody>${L.map(d=>{const st=dsSt(d);const used=dsUseCount(d.id);return `<tr>
-        ${nmCell(d.name,d.id,d.src||'上传')}
+        ${nmCell(d.name,d.id,d.src||'上传',typeof ceSharedTag==='function'?ceSharedTag('dataset',d.id,d.pid):'')}
         ${projCell(d)}
         <td><span class="chip ${st[1]}">${st[0]}</span></td>
         <td class="t-sm num">${d.rows.length.toLocaleString()}</td>
@@ -5854,6 +5854,8 @@ function dsBody(){
           {n:'发布',attr:`data-dspub="${esc(d.id)}"`,
            off:d.st==='pub'?('已于 '+(d.pubAt||d.at)+' 发布锁定'):'',
            tip:'发布后内容锁定，可用于训练'},
+          {n:'共享',attr:`data-ce-share="dataset|${esc(d.id)}|${esc(d.pid||S.pid||'')}|${esc(d.name)}"`,
+           off:d.st==='pub'?'':'数据集发布后才能共享',tip:'共享到课题组：组员申请后可添加到自己的课题'},
           {n:'删除',attr:`data-dsdel="${esc(d.id)}"`,
            off:used?('已被 '+used+' 个训练任务使用，不能删除'):''}
         ])}
@@ -6191,7 +6193,7 @@ function mdlCur(){
         <th scope="col">更新时间</th>
         <th scope="col">操作</th></tr></thead>
       <tbody>${L.map(m=>{const status=statusById(m.id);return `<tr>
-        ${nmCell(m.name||('打分器 · '+tgtName(m.target)),m.id)}
+        ${nmCell(m.name||('打分器 · '+tgtName(m.target)),m.id,'',typeof ceSharedTag==='function'?ceSharedTag('model',m.id,m._pid):'')}
         ${projCell(m)}
         <td><span class="t-xs ${status.active?'c-ok':'mut2'}"${status.title?' title="'+esc(status.title)+'"':''}>${status.label}</span></td>
         <td class="t-sm num">${esc(tgtName(m.target))}</td>
@@ -6202,7 +6204,7 @@ function mdlCur(){
         ${acts([
           status.serviceId?{n:'查看服务',attr:`data-deploy-service="${esc(status.serviceId)}"`}
             :{n:'部署',attr:`data-deploy-model="${esc(m.id)}"`,tip:'打开在线部署设置'},
-          {n:'发布',attr:`data-model-publish="${esc(m.id)}"`,tip:'发布到关联课题的共享课题'},
+          {n:'共享',attr:`data-model-publish="${esc(m.id)}"`,tip:'共享到课题组：组员申请后可添加到自己的课题'},
           {n:'详情',attr:`data-jobpick="${esc(m.id)}"`},
           {n:'删除',attr:`data-mdel="${esc(m.id)}"`},
           {n:'下载权重',attr:`data-mdl="${esc(m.id)}"`}
@@ -9899,7 +9901,7 @@ V.project=()=>{
         stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
         ><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>
     <div class="col pjx-title" style="gap:4px;min-width:0">
-      <div class="pjx-title-row"><h1 class="pjx-n">${esc(p.name)}</h1>${rsProjectShared(p.id)?'<button class="project-shared-badge" type="button" data-project-members="'+esc(rsProjectShared(p.id).id)+'" aria-label="查看协作者" aria-haspopup="dialog">'+rsSharingIcon()+'共享课题</button>':''}</div>
+      <div class="pjx-title-row"><h1 class="pjx-n">${esc(p.name)}</h1><button class="btn pj-share-btn" type="button" data-ce-share-project="${esc(p.id)}" title="${rsProjectShared(p.id)?'查看成员、继续共享资产':'把这个课题共享给组员'}">${rsSharingIcon()}${rsProjectShared(p.id)?'共享设置':'共享'}</button>${rsProjectShared(p.id)?'<button class="project-shared-badge" type="button" data-project-members="'+esc(rsProjectShared(p.id).id)+'" aria-label="查看协作者" aria-haspopup="dialog">'+rsSharingIcon()+'共享课题</button>':''}</div>
       <span class="t-xs mut2" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
         >${esc(goalText(p))}</span>
     </div>

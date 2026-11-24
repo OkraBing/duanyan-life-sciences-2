@@ -278,6 +278,41 @@ T('UC19','删除定时任务：站内确认 → 从本机存储、定时任务�
  expect(!(await p.$$eval('.stp-row .pjx-f-n',es=>es.map(e=>e.textContent))).includes(t.name),'课题页签还显示已删除的任务');
 });
 
+T('UC20','共享：课题页常驻「共享」——没共享过的进「开启共享」，已共享的进共享课题',async p=>{
+ const un=await p.evaluate(()=>DB.projects.find(x=>!rsProjectShared(x.id)&&(x.ownerId||'me')==='me')?.id);
+ await p.evaluate(pid=>go('project',{pid}),un);await p.waitForTimeout(400);
+ expect((await p.locator('.pj-share-btn').innerText()).trim()==='共享','未共享课题按钮文案');
+ await p.click('.pj-share-btn');await p.waitForTimeout(400);
+ expect((await p.evaluate(()=>S.route+'|'+RS.sharedForm?.pid))==='sharednew|'+un,'没进开启共享');
+ await p.evaluate(()=>go('project',{pid:'p1'}));await p.waitForTimeout(400);
+ await p.click('.pj-share-btn');await p.waitForTimeout(400);
+ expect((await p.evaluate(()=>S.route+'|'+rsShared()?.projectId))==='shareddetail|p1','已共享课题没进共享课题');
+});
+T('UC21','共享：在资产所在处共享 → 写进共享课题 → 那一行出现「已共享」（悬停写共享到哪）→ 移出共享后标签消失',async p=>{
+ const id=await p.evaluate(()=>{const s=rsProjectShared('p1');const a=s.assets.find(a=>a.kind==='experiment');s.assets=s.assets.filter(x=>x!==a);return a.sourceId});
+ await p.evaluate(()=>go('lab'));await p.waitForTimeout(500);
+ expect(!(await p.evaluate(id=>!!document.querySelector('[data-labgo="'+id+'"] .shared-tag'),id)),'未共享时就有标签');
+ await p.click('[data-ce-share^="experiment|'+id+'|"]');await p.waitForTimeout(250);
+ expect(await p.evaluate(()=>S.route)==='lab','点共享时卡片把人带走了');
+ await p.click('#dlg button[value="ok"]');await p.waitForTimeout(700);
+ const tag=await p.evaluate(id=>document.querySelector('[data-labgo="'+id+'"] .shared-tag')?.title||'',id);
+ expect(/Barnase/.test(tag),'标签或悬停说明不对：'+tag);
+ expect(await p.evaluate(id=>rsProjectShared('p1').assets.some(a=>a.kind==='experiment'&&a.sourceId===id),id),'没写进共享课题');
+ await p.evaluate(id=>{const s=rsProjectShared('p1');s.assets=s.assets.filter(a=>!(a.kind==='experiment'&&a.sourceId===id));render()},id);await p.waitForTimeout(300);
+ expect(!(await p.evaluate(id=>!!document.querySelector('[data-labgo="'+id+'"] .shared-tag'),id)),'移出共享后标签还在');
+});
+T('UC22','共享：标签只挂在真正共享出去的那一条；草稿数据集不能共享；别人共享给我的课题里的东西不挂',async p=>{
+ await p.evaluate(()=>go('dsets'));await p.waitForTimeout(400);
+ const r=await p.evaluate(()=>{const mine=new Set(RS.data.shared.filter(s=>rsCan(s,'approve')).flatMap(s=>s.assets.filter(a=>a.kind==='dataset').map(a=>a.sourceId)));
+  const rows=[...document.querySelectorAll('#view tbody tr')].map(tr=>{const b=tr.querySelector('[data-ce-share^="dataset|"]');if(!b)return null;const id=b.dataset.ceShare.split('|')[1];return {id,tag:!!tr.querySelector('.shared-tag'),shared:mine.has(id),off:b.disabled||b.getAttribute('aria-disabled')==='true'}}).filter(Boolean);
+  const wrong=rows.filter(x=>x.tag!==x.shared);const draft=DSETS?ALL_DSETS().filter(d=>d.st!=='pub').map(d=>d.id):[];
+  const draftOk=rows.filter(x=>draft.includes(x.id)).every(x=>x.off);
+  return {n:rows.length,wrong:wrong.map(x=>x.id),draftOk}});
+ expect(r.n>0&&!r.wrong.length&&r.draftOk,JSON.stringify(r));
+ const leak=await p.evaluate(()=>{const s=RS.data.shared.find(s=>!rsCan(s,'approve'));return s?s.assets.filter(a=>ceSharedOf(a.kind,a.sourceId,s.projectId).length).length:0});
+ expect(leak===0,'别人的共享课题也被算成我共享的：'+leak);
+});
+
 (async()=>{
  if(process.argv.includes('--list')){CASES.forEach(c=>console.log(c.id+'  '+c.name));return}
  const b=await chromium.launch();

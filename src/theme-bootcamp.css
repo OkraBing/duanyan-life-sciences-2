@@ -480,3 +480,14 @@ body[data-route="mdl"] #view .pg-hd,body[data-route="dsets"] #view .pg-hd{paddin
 /* 图标与上面的导航图标同一条竖线（x=24） */
 #side .side-toggle{justify-content:flex-start!important;place-items:center start!important}
 #side[data-collapsed="1"] .side-toggle{width:40px!important;min-width:40px!important;max-width:40px!important;margin-left:4px!important}
+
+/* 「已共享」标签：只挂在真正共享出去的那一条上 */
+.shared-tag{display:inline-flex;align-items:center;margin-left:8px;padding:0 7px;height:18px;border-radius:5px;font-size:11px;font-weight:500;line-height:18px;
+  color:var(--dry-ink);background:var(--dry-soft);vertical-align:2px;white-space:nowrap}
+.lv-tags{display:inline-flex;align-items:center;gap:6px}
+.lv-tags .shared-tag{margin-left:0;vertical-align:0}
+.lv-card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto}
+.lv-share{border:1px solid var(--line);background:var(--surface);border-radius:7px;height:28px;padding:0 10px;font:inherit;font-size:12px;color:var(--ink-2);cursor:pointer}
+.lv-share:hover{border-color:var(--ink-4);color:var(--ink)}
+.pj-share-btn{display:inline-flex;align-items:center;gap:6px;height:28px!important;min-height:28px!important;padding:0 10px!important;font-size:12px!important;margin-left:10px}
+.pj-share-btn svg{width:14px;height:14px}
