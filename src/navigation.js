@@ -1,6 +1,6 @@
 /* Global navigation groups and settings routes. */
 Object.assign(NAV_PARENT,{shared:'materials',sharednew:'materials',shareddetail:'materials',me:'settings',set:'settings',files:'materials',chats:'chat',project:'projects',pw:'projects'});
-Object.assign(NAVNAME,{projects:'课题项目',shared:'共享课题',dsets:'数据集',mdl:'模型',tools:'工具',shelf:'科研工具',data:'公共数据库',settings:'设置'});
+Object.assign(NAVNAME,{projects:'课题项目',shared:'共享课题',dsets:'数据集',mdl:'模型训练及评测',tools:'我的工具',data:'数据库',materials:'资料空间',devices:'设备管理',schedules:'定时任务',shelf:'科研工具',data:'公共数据库',settings:'设置'});
 Object.assign(BACKNAME,{projects:'课题项目',settings:'设置'});
 NAV_ROUTE.shared=1;
 NAV_ROUTE.settings=NAV_ROUTE.me=NAV_ROUTE.set=1;
@@ -54,7 +54,9 @@ function navigationProjectsPage(mode){
  const template=document.createElement('template');template.innerHTML=navigationProjectViews.projects();
  const heading=template.content.querySelector('h1');if(heading)heading.textContent=mode==='resources'?'资源共享':'课题项目';
  const create=template.content.querySelector('[data-act="newproj"]');
- if(create){create.textContent='＋ 新建课题';create.insertAdjacentHTML('beforebegin','<button class="btn" type="button" data-project-join>申请加入课题</button>');}
+ /* 第二版：资料空间没有左侧入口了，它的家在课题项目页右上角——
+    资料本来就按课题归档，从课题列表进去比从导航进去顺。 */
+ if(create){create.textContent='＋ 新建课题';create.insertAdjacentHTML('beforebegin','<button class="btn" type="button" data-go="materials">资料空间</button><button class="btn" type="button" data-project-join>申请加入课题</button>');}
  const description=template.content.querySelector('.projects-header p');if(description)description.textContent='我的课题 · 包含我创建的和共享给我的课题';
  const projTab=mode==='resources'?'resources':'projects';
  let grid=template.content.querySelector('.pgrid');

@@ -492,7 +492,11 @@ C(80,'D','侧栏模型接入、直达书签与系列选择可持久化',async(pg
   await h.ev(id=>mUse(id,'deepseek-v4-pro'),id);await h.go('#set');
   const c=await h.ev(()=>MC.cfg());
   if(c.sid!==id||c.name!=='deepseek-v4-pro'||c.endpoint!=='https://model.example.test/v1/chat/completions')return '模型系列或模型选择在重载后丢失';
-  await h.nav('chat');await h.nav('set');if(await h.ev(()=>S.route)!=='set')return '侧栏模型接入入口失效';});
+  await h.nav('chat');
+  /* 第二版：设置与模型接入不再占左侧导航，入口在账户（侧栏底部）→ 设置 → 模型接入。 */
+  await pg.click('#side .acct-b');await pg.waitForTimeout(260);
+  if(!['me','settings'].includes(await h.ev(()=>S.route)))return '点账户没进个人中心/设置';
+  await h.ev(()=>go('set'));if(await h.ev(()=>S.route)!=='set')return '从设置进模型接入失效';});
 C(81,'D','代理模式不带凭据',async(pg,h)=>{await h.go('#set');
   const r=await h.ev(async()=>{const log=[];const real=window.fetch;
     window.fetch=(u,o)=>{log.push({u:String(u),auth:!!((o&&o.headers||{})['Authorization'])});

@@ -3064,11 +3064,9 @@ dialog.rs-copy-dialog{width:min(600px,calc(100vw - 32px));max-width:600px;overfl
       <div id="navA" class="nav-group"></div>
       <div id="navB" class="nav-group is-sep"></div>
       <div id="navC" class="nav-group is-sep"></div>
-      <div id="navT" class="nav-group is-sep"></div>
-      <div id="navD" class="nav-group is-sep"></div>
-      <div id="navH" class="nav-group nav-hist"></div>
+                  <div id="navH" class="nav-group nav-hist"></div>
     </div>
-    <div id="navS" class="nav-group is-sep"></div>
+    
     <!-- 底部是账户。不做成按钮：这一版没有登录、没有账号中心，
          做成按钮就是一颗通不到任何地方的键。第二行写的是这个产品真实的运行方式。 -->
     <div id="navAcct" class="side-foot">
@@ -3978,39 +3976,28 @@ function domOf(p){const x=p||PRJ();return DOMAINS.find(d=>d.k===(x&&x.dom))||DOM
    每一项的 title 写的是「哪个研究动作需要它」（R16）——
    原先 title 就是按钮名本身，等于把眼前的字再念一遍。 */
 /* 子页面没有自己的导航项：亮它所属的那一项，不然进了项目或表单页，侧栏上一处都不亮 */
-const NAV_PARENT={toolnew:'shelf',databasenew:'data',resdetail:'shelf',sharednew:'shared',shareddetail:'shared',project:'projects',labdet:'lab',labnew:'lab',dsnew:'dsets',trainnew:'mdl',bnew:'mdl'};
+const NAV_PARENT={toolnew:'shelf',databasenew:'data',resdetail:'shelf',sharednew:'shared',shareddetail:'shared',project:'projects',labdet:'lab',labnew:'lab',dsnew:'mdl',dsets:'mdl',trainnew:'mdl',bnew:'mdl',
+  /* 第二版：这些页面没有自己的导航入口，高亮它们的新归属 */
+  devices:'lab',tools:'shelf',materials:'projects',files:'projects',shared:'projects',
+  schedules:'workbench',schedulenew:'workbench',scheduledetail:'workbench'};
 const NAV=[
+  /* 第二版的导航只留三组七个入口。被拿掉的入口不是删功能，是换了归属：
+     资料空间 → 课题项目页右上；设备管理 → 实验管理页；数据集 → 模型页的一个页签；
+     我的工具 → 科研工具的「我的」页签；定时任务 → 工作台右上；设置 → 账户。
+     路由全部保留，老链接照样能打开。 */
   ['A','研究',[
     ['workbench','工作台',"M3.5 4.5h7v7h-7zM13.5 4.5h7v4h-7zM13.5 11.5h7v8h-7zM3.5 14.5h7v5h-7z",'了解课题进展、发现研究灵感与学术资讯'],
     ['chat','科研对话',"M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4 3.5V16A2.5 2.5 0 0 1 5 13.5zM12 7.5v5M9.5 10h5",'用一句话发起任务'],
-    ['projects','课题项目',"M3.5 7.5a2 2 0 0 1 2-2h3.6l2 2.2h7.4a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2zM7.5 13.5h9",'按课题管理多轮的数据、模型与实验'],
+    ['projects','课题项目',"M3.5 7.5a2 2 0 0 1 2-2h3.6l2 2.2h7.4a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2zM7.5 13.5h9",'按课题管理资料、数据、模型与实验'],
   ]],
   ['B','实验',[
-    ['lab','实验管理',"M9.5 3.5v5.6L4.7 17.6A2.2 2.2 0 0 0 6.6 21h10.8a2.2 2.2 0 0 0 1.9-3.4L14.5 9.1V3.5M8 3.5h8M7.3 14.5h9.4",'查看实验环节进度、异常与结论'],
-    ['devices','设备管理',"M4 8h16v12H4zM8 8V4h8v4M8 13h8M8 17h3",'查看蛋白实验设备能力、型号与输入输出要求']]],
-  /* 资源是「我自己攒下来的」：我的数据集、我训的模型。
-     市场是「外面有什么、接没接」：科研工具、公共数据库。
-     两件事混在一组里，同一个词（数据集／数据库）指两样东西。 */
+    ['lab','实验管理',"M9.5 3.5v5.6L4.7 17.6A2.2 2.2 0 0 0 6.6 21h10.8a2.2 2.2 0 0 0 1.9-3.4L14.5 9.1V3.5M8 3.5h8M7.3 14.5h9.4",'查看实验环节进度、异常与结论，并管理设备']]],
   ['C','资源',[
-    ['dsets','数据集',"M4.5 6A1.5 1.5 0 0 1 6 4.5h12A1.5 1.5 0 0 1 19.5 6v12a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 18zM4.5 9.5h15M4.5 14.5h15M10 9.5v10",'用于模型训练的数据集'],
-    ['mdl','模型',"M6.5 5a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM17.5 5a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM12 15a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM8.5 7h7M7.4 8.8l3.6 6.5M16.6 8.8 13 15.3",'训练、评测打分模型，以及模型推理'],
-    ['tools','工具',"M4.5 4.5h6v6h-6zM13.5 4.5h6v6h-6zM4.5 13.5h6v6h-6zM16.5 13.5v6M13.5 16.5h6",'管理自己的科研工具与版本']]],
-  ['T','任务',[
-    ['schedules','定时任务','M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zM12 6v6l-4 3','按计划管理科研任务']]],
-  ['D','市场',[
-    ['shelf','科研工具',"M4.5 4.5h6v6h-6zM13.5 4.5h6v6h-6zM4.5 13.5h6v6h-6zM16.5 13.5v6M13.5 16.5h6",'查看和启用工具'],
-    ['data','公共数据库',"M5 7c0-1.7 3.1-3 7-3s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3zM5 7v10c0 1.7 3.1 3 7 3s7-1.3 7-3V7M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3",'某个库接没接、许可是什么']]],
-  /* 照 bootcamp：系统配置这一类钉在导航最下面、账户上面。
-     它不是一个研究动作，所以不进上面那几组；但「对话里那句话会不会被真的回答」
-     取决于它，所以必须有入口（R16）。
-     在线推理和批量推理曾经也钉在这里，现在并进「模型管理」做页签了——
-     导航不为每一件和模型有关的事各开一格。 */
-  ['S','',[
-    ['settings','设置',"M12 3v3M12 18v3M3 12h3M18 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8",'管理偏好设置与模型接入']]],
-  /* 「模型接入」原先单独钉在底部。它不是一个研究动作，当时就不好归组；
-     现在并进「模型管理」做一个标签页——那一页本来就是「模型这件事在哪儿办」，
-     对话走哪个模型也是模型的事。底部那一格腾给账户。 */
+    ['mdl','模型训练及评测',"M6.5 5a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM17.5 5a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM12 15a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM8.5 7h7M7.4 8.8l3.6 6.5M16.6 8.8 13 15.3",'数据集、训练、评测与推理'],
+    ['shelf','科研工具',"M4.5 4.5h6v6h-6zM13.5 4.5h6v6h-6zM4.5 13.5h6v6h-6zM16.5 13.5v6M13.5 16.5h6",'市场里的工具，以及我自己的工具'],
+    ['data','数据库',"M5 7c0-1.7 3.1-3 7-3s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3zM5 7v10c0 1.7 3.1 3 7 3s7-1.3 7-3V7M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3",'市场里的数据库，以及我自己的数据库']]],
 ];
+
 
 /* 轮次内的阶段标签 */
 /* 一轮从「这一轮要回答什么问题」开始，不是从「生成多少条」开始。
@@ -5766,18 +5753,21 @@ V.labdet=()=>{
 
 /* ================= 数据集 ================= */
 V.dsets=()=>{
-  /* 这一页只管自己建的：有目标列、切分和指纹，能拿去训。
-     外部公共库在「市场 → 公共数据库」，那边只有许可和接口，只能取回——
-     两类东西差得太远，原先并成两个页签，同一个词指两样东西。 */
+  /* 第二版：数据集是「模型训练及评测」下的一个页签，所以套同一个页头与页签条。
+     这一页只管自己建的：有目标列、切分和指纹，能拿去训；
+     外部公共库在「资源 → 数据库」，那边只有许可和接口，只能取回。 */
   return `<div class="page">
   <div class="pg-hd">
     <div class="row wrap" style="align-items:flex-end">
       <div class="col grow" style="gap:6px">
-        <h1>数据集</h1>
-        <p class="mut t-md" style="margin:0;max-width:60ch"
-          >用于模型训练的数据集，可按课题筛选</p>
+        <h1>模型训练及评测</h1>
+        <p class="mut t-md pg-sub">用于模型训练的数据集，可按课题筛选</p>
+      </div>
+      <div class="row wrap" style="gap:var(--s3);flex:0 0 auto">
+        <button class="btn btn-pri" type="button" data-nav="dsnew">新建数据集</button>
       </div>
     </div>
+    ${mdlTabsBar('dset')}
   </div>
 
   <div class="row wrap" style="gap:var(--s3);align-items:center">
@@ -5789,7 +5779,6 @@ V.dsets=()=>{
           >${esc(x.name)}（${(x.dsets||[]).length}）</option>`).join('')}
       </select><span class="car" aria-hidden="true"></span></span>
     <span class="grow"></span>
-    <button class="btn btn-pri" type="button" data-nav="dsnew">新建数据集</button>
   </div>
   ${dsBody()}
 </div>`;
@@ -5918,7 +5907,8 @@ function toolDetail(n){
   </div>`,'知道了',()=>{});
 }
 
-const MDL_TABS=[['cur','模型库'],['job','模型制备'],['eval','模型评测'],['batch','模型推理']];
+function mdlTabsBar(selected){return `<div class="tabs">${MDL_TABS.map(([k,n])=>{const c=mdlCount(k);return `<button class="tab${selected===k?' is-on':''}" type="button" data-mtab="${k}" aria-selected="${selected===k}">${esc(n)}${c==null?'':`<span class="tab-c num">${c}</span>`}</button>`}).join('')}</div>`}
+const MDL_TABS=[['dset','数据集'],['cur','模型库'],['job','模型制备'],['eval','模型评测'],['batch','模型推理']];
 const MDL_SUB={
   cur:'查看模型、评测结果与部署状态',
   job:'跟踪训练任务的进度与结果',
@@ -6039,6 +6029,7 @@ function importModel(txt,fname){
 function mdlCount(k){
   /* 在线推理没有「几条」这个概念：它是一张台子，不是一份清单。
      批量推理有，报任务数。 */
+  if(k==='dset')return ALL_DSETS().length||null;
   if(k==='infer')return null;
   if(k==='batch')return BJ().length||null;
   const L=MDL_LIST();
@@ -6100,7 +6091,7 @@ V.mdl=(activeTab=S.mtab)=>{
   <div class="pg-hd">
     <div class="row wrap" style="align-items:flex-end">
       <div class="col grow" style="gap:6px">
-        <h1>模型</h1>
+        <h1>模型训练及评测</h1>
         <p class="mut t-md pg-sub">${esc(MDL_SUB[tab]||MDL_SUB.cur)}</p>
       </div>
       <!-- flex:0 0 auto：左边标题那一列是 grow，不写这句的话这一排会被压窄、
@@ -6117,10 +6108,7 @@ V.mdl=(activeTab=S.mtab)=>{
           :`<button class="btn btn-pri" type="button" data-nav="${esc(act[1])}">${esc(act[0])}</button>`):''}
       </div>
     </div>
-    <div class="tabs">
-      ${MDL_TABS.map(([k,n])=>{const c=mdlCount(k);return `<button class="tab${selected===k?' is-on':''}" type="button"
-        data-mtab="${k}" aria-selected="${selected===k}">${esc(n)}${c==null?'':`<span class="tab-c num">${c}</span>`}</button>`}).join('')}
-    </div>
+    ${mdlTabsBar(selected)}
   </div>
   ${tab==='services'?'':tab==='infer'?'<div><button class="btn" type="button" data-go="batch">返回推理任务</button></div>':tab==='batch'?`<div class="row wrap" style="gap:var(--s3);align-items:center">
     <label class="fbar-q"><span class="sr">搜索批量推理任务</span>${SEARCH_IC}
@@ -13642,7 +13630,7 @@ V.data=()=>{
   return `<div class="page">
   <div class="row wrap" style="align-items:flex-end">
     <div class="col grow" style="gap:6px">
-      <h1>公共数据库</h1>
+      <h1>数据库</h1>
     </div>
     <div class="field" style="width:auto"><label class="sr" for="dq">搜索</label>
       <input id="dq" class="input" value="${esc(S.dq||'')}" placeholder="搜数据源、机构、模态"
@@ -16790,6 +16778,8 @@ function backPrev(){
 const MDL_TAB_ROUTE={infer:'infer',batch:'batch',services:'services'};
 function go(r,o){
   if(MDL_TAB_ROUTE[r]){S.mtab=MDL_TAB_ROUTE[r];S.jobPick=null;S.checkpointPick=null;r='mdl'}
+  /* 第二版：我的工具并进「科研工具 → 我的」页签，老链接 #tools 落到那里，不留一个无入口的页。 */
+  if(r==='tools'){RS.marketTab='mine';r='shelf'}
   const t=ROUTE_HOME(r);
   if(t!=='mdl')S.checkpointPick=null;
   /* 切页先收掉浮层：开着的弹窗、资料空间的更多菜单，否则它们会跨页面留在屏上 */
@@ -16997,7 +16987,10 @@ function render(){
   q('[data-round]',b=>b.onclick=()=>go('round',{round:+b.dataset.round}));
   q('[data-dom]',b=>b.onclick=()=>{S.dom=b.dataset.dom;render()});
   q('[data-ptab]',b=>b.onclick=()=>{S.ptab=b.dataset.ptab;render()});
-  q('[data-mtab]',b=>b.onclick=()=>{S.mtab=b.dataset.mtab;S.jobPick=null;S.checkpointPick=null;render()});
+  q('[data-mtab]',b=>b.onclick=()=>{const k=b.dataset.mtab;S.jobPick=null;S.checkpointPick=null;
+    /* 数据集有自己的路由（深链接、回归用例都按它找），所以它是跳页不是换页签 */
+    if(k==='dset'){go('dsets');return}
+    S.mtab=k;if(S.route==='dsets'){go('mdl');return}render()});
   q('[data-pjtab]',b=>b.onclick=()=>{S.pjtab=b.dataset.pjtab;render()});
   q('[data-pjjob]',b=>b.onclick=()=>{S.pjBatch=null;S.jobPick=b.dataset.pjjob;render()});
   q('[data-pjbatch]',b=>b.onclick=()=>{S.jobPick=null;S.pjBatch=b.dataset.pjbatch;render()});
@@ -20227,7 +20220,7 @@ V.lab=()=>{
  const f=LABUI.filter==='all'&&S.lflt==='run'?'normal':LABUI.filter==='all'&&S.lflt==='past'?'conclusion':LABUI.filter;
  const pid=DB.projects.some(p=>p.id===S.labProject)?S.labProject:'all';
  const rows=BATCHES.filter(b=>(pid==='all'||b.pid===pid)&&(f==='all'||labSummary(b).status===f));
- return `<div class="page lv"><header class="lv-head"><div><h1>实验管理</h1><p>查看实验进展与结论</p></div><div class="lv-actions"><button class="btn" data-go="devices" type="button">查看设备列表</button><button class="btn btn-pri" data-act="labnew" type="button">发起新实验</button></div></header><div class="lv-toolbar"><select class="input" style="max-width:250px" data-lv-project-filter aria-label="按课题筛选实验"><option value="all" ${pid==='all'?'selected':''}>全部课题</option>${DB.projects.map(p=>`<option value="${esc(p.id)}" ${p.id===pid?'selected':''}>${esc(p.name)}</option>`).join('')}</select><div class="lv-filters" role="group" aria-label="实验状态">${[['all','全部实验'],['normal','正常进行中'],['exception','异常'],['conclusion','有结论'],['draft','草稿']].map(([k,n])=>`<button class="pill lv-filter${f===k?' is-on':''}" type="button" data-lv-filter="${k}" aria-pressed="${f===k}">${n}</button>`).join('')}</div><span class="lv-small">${rows.length} 项记录</span></div><div class="lv-cards">${rows.map(labCardV2).join('')}</div>${!rows.length?'<div class="lv-empty">当前状态下暂无实验，可切换筛选或发起新实验。</div>':''}</div>`;
+ return `<div class="page lv"><header class="lv-head"><div><h1>实验管理</h1><p>查看实验进展与结论</p></div><div class="lv-actions"><button class="btn" data-go="devices" type="button">设备管理</button><button class="btn btn-pri" data-act="labnew" type="button">发起新实验</button></div></header><div class="lv-toolbar"><select class="input" style="max-width:250px" data-lv-project-filter aria-label="按课题筛选实验"><option value="all" ${pid==='all'?'selected':''}>全部课题</option>${DB.projects.map(p=>`<option value="${esc(p.id)}" ${p.id===pid?'selected':''}>${esc(p.name)}</option>`).join('')}</select><div class="lv-filters" role="group" aria-label="实验状态">${[['all','全部实验'],['normal','正常进行中'],['exception','异常'],['conclusion','有结论'],['draft','草稿']].map(([k,n])=>`<button class="pill lv-filter${f===k?' is-on':''}" type="button" data-lv-filter="${k}" aria-pressed="${f===k}">${n}</button>`).join('')}</div><span class="lv-small">${rows.length} 项记录</span></div><div class="lv-cards">${rows.map(labCardV2).join('')}</div>${!rows.length?'<div class="lv-empty">当前状态下暂无实验，可切换筛选或发起新实验。</div>':''}</div>`;
 };
 const labLegacyDetail=V.labdet;
 V.labdet=()=>{
@@ -20661,8 +20654,8 @@ function rsResourceForm(kind){const gate=rsGate();if(gate)return gate;if(!RS.for
 }
 V.toolnew=()=>rsResourceForm('tool');V.databasenew=()=>rsResourceForm('database');
 const rsBuiltinShelf=V.shelf,rsBuiltinData=V.data;
-function rsMarketTabs(kind){return '<div class="rs-market-tabs" role="group" aria-label="资源范围">'+[['catalog','公共精选'],['mine','我的提交']].map(([k,n])=>'<button type="button" data-rs-market-tab="'+k+'" data-rs-kind="'+kind+'" class="'+((RS.marketTab||'catalog')===k?'is-on':'')+'" aria-pressed="'+((RS.marketTab||'catalog')===k)+'">'+n+'</button>').join('')+'</div>';}
-function rsMarketPage(kind,scope=RS.marketTab){const isTool=kind==='tool',personal=S.route==='tools',noun=isTool?'工具':'数据库',title=personal?'工具':isTool?'科研工具':'公共数据库',create='<button class="btn btn-pri" type="button" data-rs-new-resource="'+kind+'">新建'+noun+'</button>';
+function rsMarketTabs(kind){return '<div class="rs-market-tabs" role="group" aria-label="资源范围">'+[['catalog','市场'],['mine','我的']].map(([k,n])=>'<button type="button" data-rs-market-tab="'+k+'" data-rs-kind="'+kind+'" class="'+((RS.marketTab||'catalog')===k?'is-on':'')+'" aria-pressed="'+((RS.marketTab||'catalog')===k)+'">'+n+'</button>').join('')+'</div>';}
+function rsMarketPage(kind,scope=RS.marketTab){const isTool=kind==='tool',personal=S.route==='tools',noun=isTool?'工具':'数据库',title=personal?'工具':isTool?'科研工具':'数据库',create='<button class="btn btn-pri" type="button" data-rs-new-resource="'+kind+'">新建'+noun+'</button>';
  if(scope==='mine'){const items=RS.data.resources.filter(r=>r.kind===kind&&r.owner==='me');return '<div class="page rs">'+rsHeader(title,'管理自己的文件、版本与发布状态。',create)+(personal?'':rsMarketTabs(kind))+'<p class="rs-local-note">私有资源仅在本机可见；公开审核和发布为本机流程演示，未上传到端砚或其他服务。</p>'+(items.length?'<div class="rs-project-grid">'+items.map(rsResourceCard).join('')+'</div>':'<div class="rs-empty"><h2>创建你的第一个'+noun+'</h2><p>上传文件、完善信息，建立可以复用的资源版本。</p>'+create+'</div>')+'</div>';}
  let html=(isTool?rsBuiltinShelf:rsBuiltinData)();html=html.replace('<h1>'+title+'</h1>','<h1>'+title+'</h1>');
  html=html.replace(isTool?'<label class="fbar-q">':'<div class="field" style="width:auto">',create+(isTool?'<label class="fbar-q">':'<div class="field" style="width:auto">'));

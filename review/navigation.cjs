@@ -11,7 +11,8 @@ async function checkExperimentSelection(page){
  });
  await page.locator('#side [data-navid="workbench"]').click();
  const expected=await appearance();
- for(const route of ['lab','devices']){
+ /* 第二版：设备管理没有导航入口了，选中态改用资源组的两个入口验证 */
+ for(const route of ['lab','mdl']){
   await page.locator('#side [data-navid="'+route+'"]').click();
   assert.equal(await selected.getAttribute('data-navid'),route);
   assert.deepEqual(await appearance(),expected,route+' selected appearance');
@@ -23,32 +24,39 @@ await p.goto(require('node:url').pathToFileURL(path.resolve(__dirname,'../index.
 await p.locator('#navA [data-navid="projects"]').click();
 assert.equal(await p.locator('#view h1').first().innerText(),'课题项目');
 assert.equal(await p.locator('#navA [data-navid="shared"]').count(),0);
-assert.deepEqual(await p.locator('#navA .nav-tx').allTextContents(),['工作台','科研对话','课题项目','资料空间']);
+/* 第二版：导航只剩三组七个入口；资料空间 / 设备 / 数据集 / 我的工具 / 定时任务 / 设置都改在页内进 */
+assert.deepEqual(await p.locator('#navA .nav-tx').allTextContents(),['工作台','科研对话','课题项目']);
+assert.deepEqual(await p.locator('#navB .nav-tx').allTextContents(),['实验管理']);
 assert.equal(await p.locator('#navC .lbl').innerText(),'资源');
-assert.deepEqual(await p.locator('#navC .nav-tx').allTextContents(),['数据集','模型','工具']);
-assert.equal(await p.locator('#navD .lbl').innerText(),'市场');
-assert.deepEqual(await p.locator('#navD .nav-tx').allTextContents(),['科研工具','公共数据库']);
+assert.deepEqual(await p.locator('#navC .nav-tx').allTextContents(),['模型训练及评测','科研工具','数据库']);
+assert.equal(await p.locator('#navD').count(),0,'市场分组应已并入资源');
+assert.equal(await p.locator('#side [data-navid="settings"]').count(),0,'设置不该再占导航');
 assert.equal(await p.locator('#view .navigation-tab').count(),0);
 assert(await p.locator('#view .navigation-project-source').count()>0);
 assert(await p.locator('#view .navigation-project-source').allTextContents().then(rows=>rows.every(text=>text==='共享')));
 assert(await p.locator('#view .project-update').count()>0);
 await p.waitForTimeout(300);await p.screenshot({path:out+'/expanded.png'});await checkExperimentSelection(p);
 await p.locator('.side-toggle').click();assert.equal(Math.round((await p.locator('#side').boundingBox()).width),72);
-await p.locator('[data-navid="materials"]').hover();await p.waitForTimeout(100);assert.equal(await p.locator('#navigation-tooltip').innerText(),'资料空间');assert(await p.locator('#navigation-tooltip').isVisible());
+await p.locator('[data-navid="mdl"]').hover();await p.waitForTimeout(100);assert.equal(await p.locator('#navigation-tooltip').innerText(),'模型训练及评测');assert(await p.locator('#navigation-tooltip').isVisible());
 await p.screenshot({path:out+'/collapsed.png'});await p.keyboard.press('Escape');assert(!(await p.locator('#navigation-tooltip').isVisible()));
-await p.locator('[data-navid="materials"]').click();assert.match(await p.locator('#view').innerText(),/资料空间/);assert.equal(await p.locator('#side [aria-current="page"]').getAttribute('data-navid'),'materials');
+/* 资料空间的入口搬到了课题项目页右上角，从那里进去，导航高亮课题项目 */
+await p.locator('[data-navid="projects"]').click();await p.waitForTimeout(200);
+await p.locator('#view [data-go="materials"]').click();await p.waitForTimeout(300);
+assert.match(await p.locator('#view').innerText(),/资料空间/);assert.equal(await p.locator('#side [aria-current="page"]').getAttribute('data-navid'),'projects');
 await p.reload();assert.equal(Math.round((await p.locator('#side').boundingBox()).width),72);
 await checkExperimentSelection(p);
 const settingsMenu=p.getByRole('navigation',{name:'设置分类'});
 const currentSetting=settingsMenu.locator('[aria-current="page"]');
-await p.locator('[data-navid="settings"]').click();
+/* 第二版：设置从侧栏底部的账户进 */
+await p.locator('#side .acct-b').click();await p.waitForTimeout(250);
 assert.equal(await p.locator('#view h1').first().innerText(),'设置');
 assert.equal(await currentSetting.innerText(),'常规设置');
 assert((await settingsMenu.boundingBox()).x < (await p.locator('#view h1').boundingBox()).x);
 await settingsMenu.getByRole('link',{name:'模型接入'}).click();
 assert.equal(await p.locator('#view h1').first().innerText(),'模型接入');
 assert.equal(await currentSetting.innerText(),'模型接入');
-assert.equal(await p.locator('#side [aria-current="page"]').getAttribute('data-navid'),'settings');
+/* 设置没有导航入口了，所以侧栏不该有任何高亮项 */
+assert.equal(await p.locator('#side .nav[aria-current="page"]').count(),0,'设置页不该高亮任何导航入口');
 assert.equal(await p.locator('#view .navigation-tab, #view [role="tablist"]').count(),0);
 await p.screenshot({path:out+'/settings-desktop.png'});
 await p.goBack();
