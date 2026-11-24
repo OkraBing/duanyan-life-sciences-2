@@ -464,3 +464,19 @@ body[data-route="mdl"] #view .pg-hd,body[data-route="dsets"] #view .pg-hd{paddin
 #menu .menu-i.has-sub{display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center}
 #menu .menu-i.has-sub .sub-car{color:var(--ink-4);font-size:14px;padding-left:8px}
 #menu .menu-i.has-sub.is-open{background:var(--surface-2)}
+
+/* ---- 折叠按钮放到侧栏底部 ----（覆盖上面「放在品牌行 / 叠在 logo 上」的写法） */
+#side .brand-home,#side[data-collapsed="1"] .brand-home{visibility:visible!important}
+#side .side-toggle-row{display:flex;padding:8px 0 0;margin-top:8px;border-top:1px solid var(--line-2)}
+#side .side-toggle,#side[data-collapsed="1"] .side-toggle{position:static!important;top:auto!important;left:auto!important;transform:none!important;opacity:1!important;
+  width:auto!important;height:32px!important;min-height:32px!important;max-height:32px!important;padding:0 10px 0 11px!important;
+  display:flex!important;align-items:center;gap:10px;border:1px solid transparent!important;background:transparent!important;color:var(--ink-3)!important;font-size:13px;border-radius:8px!important}
+#side:not([data-collapsed="1"]) .side-toggle{flex:1}
+#side:not([data-collapsed="1"]) .side-toggle::after{content:"收起侧栏"}
+#side[data-collapsed="1"] .side-toggle{width:40px!important;padding:0 0 0 11px!important}
+#side .side-toggle:hover{background:var(--surface-2)!important;color:var(--ink)!important;border-color:transparent!important}
+#side .side-toggle:focus-visible{outline:2px solid var(--dry);outline-offset:1px}
+@media(max-width:760px){#side .side-toggle-row{display:none}}
+/* 图标与上面的导航图标同一条竖线（x=24） */
+#side .side-toggle{justify-content:flex-start!important;place-items:center start!important}
+#side[data-collapsed="1"] .side-toggle{width:40px!important;min-width:40px!important;max-width:40px!important;margin-left:4px!important}

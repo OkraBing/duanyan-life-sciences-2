@@ -8,7 +8,7 @@ const ST_TEMPLATES=[
  ['data','数据集更新检查','定期检查已接入数据源，提示新增数据与版本变化。'],
  ['clock','自定义科研任务','描述任务内容与执行周期，安排自己的科研计划。']
 ];
-const ST_PERIODS={once:'仅一次',daily:'每天',weekly:'每周',monthly:'每月'};
+const ST_PERIODS={daily:'每天',weekdays:'工作日',weekly:'每周',monthly:'每月',once:'仅一次'};
 const ST_ZONES=['Asia/Shanghai','UTC','America/New_York'];
 const stIcon=k=>'<img class="st-icon" src="assets/tasks/'+k+'.svg" alt="" width="20" height="20">';
 function stBlank(){return {name:'',pid:DB.projects[0]?.id||'',content:'',sources:'PubMed · arXiv · 课题文献库',period:'daily',time:'08:30',zone:'Asia/Shanghai',weekday:5,monthday:1,date:'',destination:'papers',notify:true,enabled:true};}
@@ -34,6 +34,7 @@ function stNext(f,now=Date.now()){
  const p=stParts(now,f.zone);
  for(let i=0;i<400;i++){
   const day=new Date(Date.UTC(p.year,p.month-1,p.day+i));
+  if(f.period==='weekdays'&&[0,6].includes(day.getUTCDay()))continue;
   if(f.period==='weekly'&&day.getUTCDay()!==Number(f.weekday))continue;
   if(f.period==='monthly'&&day.getUTCDate()!==Number(f.monthday))continue;
   const at=stInstant(day.getUTCFullYear(),day.getUTCMonth()+1,day.getUTCDate(),f.time,f.zone);if(at>now)return at;
@@ -41,32 +42,80 @@ function stNext(f,now=Date.now()){
 }
 function stWhen(at,zone){return at?new Intl.DateTimeFormat('zh-CN',{timeZone:zone,month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(at)):'无后续安排';}
 function stPlan(t){return (t.period==='weekly'?'每周'+['日','一','二','三','四','五','六'][t.weekday]:t.period==='monthly'?'每月 '+t.monthday+' 日':t.period==='once'?t.date:ST_PERIODS[t.period])+' '+t.time;}
-function stPreview(f){const next=stNext(f);return '<strong>'+esc(stPlan(f))+' 执行</strong><p>'+(next?'首次／下次计划：'+esc(stWhen(next,f.zone)):'请选择有效的未来执行时间')+' · '+esc(f.zone)+'</p>'+(f.period==='monthly'&&f.monthday>28?'<p>当月没有该日期时跳过该月。</p>':'');}
+function stPreview(f){const next=stNext(f);return '<strong>'+esc(stPlan(f))+'</strong><p>'+(next?'下次执行：'+esc(stWhen(next,f.zone)):'请选择一个将来的时间')+'</p>'+(f.period==='monthly'&&f.monthday>28?'<p>当月没有这一天时跳过。</p>':'');}
 function stStart(index,task){ST.form=task?{...task}:{...stBlank(),...(index!=null?{name:ST_TEMPLATES[index][1],content:ST_TEMPLATES[index][2],period:index===1||index===3?'weekly':'daily'}:{})};ST.errors=[];stOpenDialog();}
 function stSidebar(){
  /* 列表已按 已开启 / 已暂停 分组，不再另设状态筛选 */
  const rows=ST.items.filter(t=>t.name.toLowerCase().includes(ST.query.toLowerCase()));
- return '<aside class="st-list ms-sidebar" aria-label="定时任务列表"><div class="st-list-head"><h1>定时任务</h1><button class="st-icon-button" data-st-action="search" aria-label="搜索任务" aria-expanded="'+ST.search+'">'+stIcon('search')+'</button></div>'+
+ return '<aside class="st-list ms-sidebar" aria-label="定时任务列表"><button class="ms-back" type="button" data-go="workbench"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>工作台</button><div class="st-list-head"><h1>定时任务</h1><button class="st-icon-button" data-st-action="search" aria-label="搜索任务" aria-expanded="'+ST.search+'">'+stIcon('search')+'</button></div>'+
  (ST.search?'<input class="input st-search" id="st-search" placeholder="搜索任务名称" aria-label="搜索任务名称" value="'+esc(ST.query)+'">':'')+
- '<button class="st-new ms-nav" data-st-action="new">'+stIcon('plus')+'新建任务</button>'+[true,false].map(on=>'<h2>'+(on?'已开启':'已暂停')+'</h2>'+ (rows.filter(t=>t.enabled===on).map(t=>'<button class="st-row ms-nav" data-st-pick="'+esc(t.id)+'" aria-current="'+(S.route==='scheduledetail'&&ST.pick===t.id)+'">'+stIcon('clock')+'<span class="st-row-copy"><strong title="'+esc(t.name)+'">'+esc(t.name)+'</strong><small>'+(on?esc(stWhen(stNext(t),t.zone)):'已暂停')+' · '+esc(ST_PERIODS[t.period])+(t.example?' · 示例':'')+'</small></span></button>').join('')||'<p class="st-empty">'+(ST.query?'没有匹配的任务':on?'暂无已开启任务':'暂无已暂停任务')+'</p>')).join('')+'<p class="st-note">本机计划 · 后台调度还没接入</p></aside>';
+ '<button class="st-new ms-nav" data-st-action="new">'+stIcon('plus')+'新建任务</button>'+[true,false].map(on=>'<h2>'+(on?'已开启':'已暂停')+'</h2>'+ (rows.filter(t=>t.enabled===on).map(t=>'<button class="st-row ms-nav" data-st-pick="'+esc(t.id)+'" aria-current="'+(S.route==='scheduledetail'&&ST.pick===t.id)+'">'+stIcon('clock')+'<span class="st-row-copy"><strong title="'+esc(t.name)+'">'+esc(t.name)+'</strong><small>'+(on?esc(stWhen(stNext(t),t.zone)):'已暂停')+' · '+esc(ST_PERIODS[t.period])+(t.example?' · 示例':'')+'</small></span></button>').join('')||'<p class="st-empty">'+(ST.query?'没有匹配的任务':on?'暂无已开启任务':'暂无已暂停任务')+'</p>')).join('')+'</aside>';
 }
 function stHome(){return '<main class="st-main st-home"><div class="st-intro"><img src="assets/tasks/hero-clock.svg" alt="" width="62" height="62"><h2>安排任务</h2><p>让端砚按计划追踪文献、整理数据，持续跟进科研进展。</p></div><div class="st-grid">'+ST_TEMPLATES.map(([icon,name,desc],i)=>'<button class="st-card" data-st-template="'+i+'">'+stIcon(icon)+'<span><strong>'+name+'</strong><p>'+desc+'</p></span></button>').join('')+'</div></main>';}
 function stField(label,key,value,type='text',extra=''){return '<label class="st-field"><span>'+label+'</span><input class="input" name="'+key+'" type="'+type+'" value="'+esc(value||'')+'" '+extra+'></label>';}
-function stForm(){const f=ST.form||(ST.form=stBlank());return '<section class="st-modal-body"><header class="st-modal-head"><div><h2 id="st-dialog-title">'+(f.id?'编辑定时任务':'新建定时任务')+'</h2><p class="st-subtitle">告诉端砚要做什么，以及何时执行。</p></div><button type="button" class="st-close" data-st-action="cancel" aria-label="关闭任务设置">×</button></header><form id="st-form" class="st-form" novalidate>'+
+/* 第二版：新建只问三件事——要做什么（一句话）、归哪个课题、什么时候做（选项）。
+   任务名从那句话里取，不再单独填；数据来源、时区、保存位置用默认值，不在表单里摆出来。 */
+function stTitleFrom(text){
+ let t=String(text||'').replace(/\s+/g,' ').trim();
+ t=t.replace(/^(请|帮我|麻烦|每(天|日)|每个?(周|星期|礼拜)[一二三四五六日天末]?|每个?月(\d{1,2}[号日])?|工作日|定期|(早上|上午|中午|下午|傍晚|晚上)?\s*\d{1,2}\s*(点|:|：)\s*(半|\d{1,2})?(分)?|早上|上午|中午|下午|傍晚|晚上)+/,'');
+ t=t.replace(/^[，,、\s]+/,'').replace(/^(帮我|请|给我)/,'');
+ return (t||String(text||'').trim()).slice(0,20)||'定时任务';
+}
+function stScheduleFields(f,prefix=''){
+ const wd=['一','二','三','四','五','六','日'],wv=[1,2,3,4,5,6,0];
+ return '<fieldset class="st-freq"><legend>频次</legend><div class="st-pills">'+Object.entries(ST_PERIODS).map(([k,n])=>'<label class="st-pill"><input type="radio" name="'+prefix+'period" value="'+k+'" '+(f.period===k?'checked':'')+'><span>'+n+'</span></label>').join('')+'</div></fieldset>'
+  +'<div class="st-when">'
+  +(f.period==='weekly'?'<fieldset class="st-freq"><legend>星期</legend><div class="st-pills is-days">'+wd.map((d,i)=>'<label class="st-pill"><input type="radio" name="'+prefix+'weekday" value="'+wv[i]+'" '+(Number(f.weekday)===wv[i]?'checked':'')+'><span>'+d+'</span></label>').join('')+'</div></fieldset>':'')
+  +(f.period==='monthly'?'<label class="st-field"><span>日期</span><select class="input" name="'+prefix+'monthday">'+Array.from({length:31},(_,i)=>'<option value="'+(i+1)+'" '+(Number(f.monthday)===i+1?'selected':'')+'>每月 '+(i+1)+' 日</option>').join('')+'</select></label>':'')
+  +(f.period==='once'?'<label class="st-field"><span>日期</span><input class="input" type="date" name="'+prefix+'date" value="'+esc(f.date||'')+'"></label>':'')
+  +'<label class="st-field"><span>时间</span><input class="input" type="time" name="'+prefix+'time" value="'+esc(f.time)+'" step="300"></label>'
+  +'</div>';
+}
+function stForm(){const f=ST.form||(ST.form=stBlank());return '<section class="st-modal-body"><header class="st-modal-head"><div><h2 id="st-dialog-title">新建定时任务</h2><p class="st-subtitle">用一句话告诉端砚要定期做什么。</p></div><button type="button" class="st-close" data-st-action="cancel" aria-label="关闭">×</button></header><form id="st-form" class="st-form" novalidate>'+
  (ST.errors.length?'<div class="st-errors" role="alert" tabindex="-1">'+ST.errors.map(esc).join('<br>')+'</div>':'')+
- stField('任务名称 *','name',f.name,'text','required maxlength="80"')+
- '<label class="st-field"><span>关联课题 *</span><select class="input" name="pid" required><option value="">选择课题</option>'+DB.projects.map(p=>'<option value="'+esc(p.id)+'" '+(p.id===f.pid?'selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select></label>'+
- '<label class="st-field"><span>任务内容 *</span><textarea class="input" name="content" required maxlength="5000" placeholder="描述希望按计划完成的科研任务">'+esc(f.content)+'</textarea></label>'+
- stField('数据来源','sources',f.sources,'text','maxlength="500"')+
- '<fieldset class="st-period"><legend>执行计划 *</legend><div class="st-period-options">'+Object.entries(ST_PERIODS).map(([key,label])=>'<label><input type="radio" name="period" value="'+key+'" '+(f.period===key?'checked':'')+'><span>'+label+'</span></label>').join('')+'</div></fieldset><div class="st-inline">'+
- (f.period==='once'?stField('执行日期 *','date',f.date,'date','required'):f.period==='weekly'?'<label class="st-field"><span>星期</span><select class="input" name="weekday">'+['日','一','二','三','四','五','六'].map((v,i)=>'<option value="'+i+'" '+(Number(f.weekday)===i?'selected':'')+'>星期'+v+'</option>').join('')+'</select></label>':f.period==='monthly'?stField('每月几日 *','monthday',f.monthday,'number','min="1" max="31" required'):'')+
- stField('执行时间 *','time',f.time,'time','required')+'<label class="st-field"><span>时区</span><select class="input" name="zone">'+ST_ZONES.map(z=>'<option '+(z===f.zone?'selected':'')+'>'+z+'</option>').join('')+'</select></label></div>'+
- '<label class="st-field"><span>结果保存至</span><select class="input" name="destination">'+[['papers','关联课题 / 数据与文献'],['report','关联课题 / 研究报告']].map(([v,n])=>'<option value="'+v+'" '+(f.destination===v?'selected':'')+'>'+n+'</option>').join('')+'</select></label>'+
- '<label class="st-check"><input name="notify" type="checkbox" '+(f.notify?'checked':'')+'>运行失败时提醒我</label><div class="st-preview" id="st-preview" aria-live="polite">'+stPreview(f)+'</div><p class="st-note">计划仅保存在当前浏览器；后台调度、自动运行与消息提醒还没接入。</p><div class="st-actions"><button class="btn" type="button" data-st-action="cancel">取消</button><button class="btn btn-pri" type="submit">'+(f.id?'保存修改': '创建并启用')+'</button></div></form></section>';}
+ '<label class="st-field"><span>要做什么</span><textarea class="input st-ask" name="content" required maxlength="2000" rows="3" placeholder="例如：追踪 Barnase–Barstar 结合界面相关的新论文，汇总关键发现和原文链接">'+esc(f.content)+'</textarea></label>'+
+ '<label class="st-field"><span>关联课题</span><select class="input" name="pid" required><option value="">选择课题</option>'+DB.projects.map(p=>'<option value="'+esc(p.id)+'" '+(p.id===f.pid?'selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select></label>'+
+ stScheduleFields(f)+
+ '<div class="st-preview" id="st-preview" aria-live="polite">'+stPreview(f)+'</div><div class="st-actions"><button class="btn" type="button" data-st-action="cancel">取消</button><button class="btn btn-pri" type="submit">创建</button></div></form></section>';}
 function stDetail(){
- const t=ST.items.find(t=>t.id===ST.pick);if(!t)return '<main class="st-main"><button class="st-back" data-go="schedules">返回定时任务</button><h2>请选择一个任务</h2><p>可从左侧选择任务，或新建定时任务。</p></main>';
- const project=DB.projects.find(p=>p.id===t.pid),runs=Array.isArray(t.runs)?t.runs.filter(r=>r&&typeof r.content==='string'):[];
- return '<main class="st-main st-content-main"><header class="st-content-head"><div><h2>'+esc(t.name)+'</h2><p class="st-subtitle">'+(t.enabled?'已开启':'已暂停')+(t.example?' · 示例计划':' · 本机计划')+'</p></div><button class="btn" data-st-action="edit" aria-label="设置任务：'+esc(t.name)+'">'+stIcon('filter')+'任务设置</button></header><div class="st-content-columns"><section class="st-output" aria-label="任务内容"><h3>任务内容</h3><p class="st-instruction">'+esc(t.content)+'</p><h3>输出内容</h3>'+(runs.length?runs.map(r=>'<article class="st-run"><time>'+esc(r.at||'未记录时间')+'</time><p>'+esc(r.content)+'</p></article>').join(''):stSampleOutput(t))+'</section><aside class="st-summary" aria-label="任务摘要"><h3>定时任务</h3><p class="st-summary-plan">'+stIcon('clock')+esc(stPlan(t))+'</p><p class="st-note">'+esc(t.zone)+' · '+(t.enabled?'下次计划 '+esc(stWhen(stNext(t),t.zone)):'已暂停')+'</p><h3>关联课题</h3><p>'+esc(project?.name||'课题不可用，请在设置中重新选择')+'</p><h3>来源</h3><p>'+esc(t.sources||'未指定')+'</p><h3>结果保存至</h3><p>'+(t.destination==='report'?'关联课题 / 研究报告':'关联课题 / 数据与文献')+'</p><div class="st-summary-actions"><button class="btn" data-st-action="edit">编辑任务</button><button class="btn" data-st-action="toggle">'+(t.enabled?'暂停任务':'恢复任务')+'</button><button class="btn st-danger" data-st-action="delete">删除计划</button></div></aside></div></main>';
+ const t=ST.items.find(t=>t.id===ST.pick);if(!t)return '<main class="st-main st-home"><div class="st-intro"><h2>选择一个定时任务</h2><p>从左侧选择，或新建一个。</p></div></main>';
+ const project=DB.projects.find(p=>p.id===t.pid),runs=Array.isArray(t.runs)?t.runs.filter(r=>r&&typeof r.content==='string'):[],st=stState(t);
+ const revs=Array.isArray(t.revisions)?t.revisions:[],hist=Array.isArray(t.history)?t.history:[];
+ return '<main class="st-main st-content-main st-v2"><header class="st-content-head"><div><h2>'+esc(t.name)+'</h2><p class="st-subtitle"><span class="st-state is-'+st.tone+'">'+esc(st.label)+'</span>'+(project?'<button class="lv-link ce-inline" type="button" data-st-project="'+esc(project.id)+'">'+esc(project.name)+'</button>':'<span>课题已删除</span>')+(t.example?'<span class="st-tag">示例</span>':'')+'</p></div>'
+  +'<div class="st-head-actions"><button class="st-switch" type="button" role="switch" data-st-action="toggle" aria-checked="'+t.enabled+'" aria-label="'+(t.enabled?'暂停这个任务':'开启这个任务')+'"><i></i><span>'+(t.enabled?'已开启':'已暂停')+'</span></button><button class="btn st-danger" type="button" data-st-action="delete">删除</button></div></header>'
+  +'<section class="st-card2"><h3>任务</h3><p class="st-instruction">'+esc(t.content)+'</p>'
+  +(revs.length?'<div class="st-revs"><h4>补充要求<small>按添加顺序执行，后加的优先</small></h4><ul>'+revs.map((r,i)=>'<li><span>'+esc(r.text)+'</span><button class="st-rev-x" type="button" data-st-rev-del="'+i+'" aria-label="撤回这条补充要求">撤回</button></li>').join('')+'</ul></div>':'')
+  +'<form class="st-nl" data-st-nl><input class="input" name="nl" maxlength="300" autocomplete="off" placeholder="用一句话修改，例如「只看近一周发表的论文」「改成每周五早上 9 点」「暂停」"><button class="btn" type="submit">修改</button></form>'
+  +(hist.length?'<details class="st-hist"><summary>修改记录 '+hist.length+'</summary><ul>'+hist.slice().reverse().map(h=>'<li><time>'+esc(h.at)+'</time><span>「'+esc(h.text)+'」</span><em>'+esc(h.effect)+'</em></li>').join('')+'</ul></details>':'')
+  +'</section>'
+  +'<section class="st-card2"><h3>执行计划</h3><form class="st-plan" data-st-plan>'+stScheduleFields(t,'p_')+'</form><p class="st-next">'+(t.enabled?(stNext(t)?'下次执行：'+esc(stWhen(stNext(t),t.zone)):'没有下一次执行时间，请重新选择'):'已暂停，开启后按这个计划执行')+'</p></section>'
+  +'<section class="st-card2"><h3>运行记录</h3>'+(runs.length?runs.slice().reverse().map(r=>'<article class="st-run'+(r.ok===false?' is-failed':'')+'"><time>'+esc(r.at||'')+'</time><p>'+esc(r.content)+'</p></article>').join(''):'<p class="st-empty-runs">还没有运行记录。</p>'+(t.example&&typeof stSampleOutput==='function'?'<details class="st-sample"><summary>示例输出（不是运行结果）</summary>'+stSampleOutput(t)+'</details>':''))+'</section>'
+  +'</main>';
+}
+/* 一句话修改：能识别的指令（暂停 / 恢复 / 删除 / 频次 / 时间）直接改计划；
+   其余的话作为「补充要求」记在任务下面，不改写原句——改写需要模型，规则做不到就不假装做到。 */
+function stApplyNL(t,text){
+ const s=String(text||'').trim();if(!s)return null;
+ const now=typeof nowStamp==='function'?nowStamp():new Date().toLocaleString('zh-CN');
+ let next={...t},effect='';
+ if(/^(删除|删掉)(这个|该)?(任务|计划)?$/.test(s))return {del:true};
+ if(/^(暂停|先停|停一下|停掉)/.test(s)){next.enabled=false;effect='已暂停';}
+ else if(/^(恢复|继续|开启|重新开启|打开)/.test(s)){
+  if(!DB.projects.some(p=>p.id===t.pid)||!stNext(t))return {err:'恢复前请先在执行计划里选一个将来的时间，并确认关联课题还在。'};
+  next.enabled=true;effect='已开启';}
+ else{
+  const r=typeof stParsePeriod==='function'?stParsePeriod(s):null;
+  const wkd=/工作日/.test(s);
+  const tm=s.match(/(早上|上午|中午|下午|傍晚|晚上)?\s*(\d{1,2})\s*(?:点|:|：)\s*(半|\d{1,2})?/);
+  if(r||wkd){Object.assign(next,{period:wkd?'weekdays':r.period,weekday:r?r.weekday:next.weekday,monthday:r?r.monthday:next.monthday,time:tm&&r?r.time:(r&&r.time!=='08:30'?r.time:next.time)});
+   if(tm&&!r){let h=+tm[2],mi=tm[3]==='半'?30:tm[3]?+tm[3]:0;if(/下午|傍晚|晚上/.test(tm[1]||'')&&h<12)h+=12;if(h<24&&mi<60)next.time=String(h).padStart(2,'0')+':'+String(mi).padStart(2,'0');}
+   effect='执行计划改为 '+stPlan(next);}
+  else if(tm&&/^(改|换|挪|调)?(到|成|为)?/.test(s)&&s.length<=16){let h=+tm[2],mi=tm[3]==='半'?30:tm[3]?+tm[3]:0;if(/下午|傍晚|晚上/.test(tm[1]||'')&&h<12)h+=12;
+   if(h<24&&mi<60){next.time=String(h).padStart(2,'0')+':'+String(mi).padStart(2,'0');effect='执行时间改为 '+next.time;}}
+  if(!effect){next.revisions=[...(Array.isArray(t.revisions)?t.revisions:[]),{at:now,text:s}];effect='加为补充要求';}
+ }
+ next.history=[...(Array.isArray(t.history)?t.history:[]),{at:now,text:s,effect}].slice(-30);
+ return {next,effect};
 }
 function stCloseDialog(){const d=document.getElementById('st-dialog');if(d){d.close();d.remove();}ST.form=null;ST.errors=[];ST.stay=false;if(S.route==='schedulenew')go(ST.pick?'scheduledetail':'schedules');}
 function stOpenDialog(){
@@ -85,16 +134,15 @@ function stBindForm(root){
 function stPage(mode){stLoad();return '<div class="st-layout" data-mode="'+mode+'">'+stSidebar()+(mode==='detail'||mode==='new'&&ST.pick?stDetail():stHome())+'</div>';}
 V.schedules=()=>stPage('home');V.schedulenew=()=>stPage('new');V.scheduledetail=()=>stPage('detail');
 NAV_PARENT.schedulenew='schedules';NAV_PARENT.scheduledetail='schedules';
-function stSave(){const f={...ST.form,name:ST.form.name.trim(),content:ST.form.content.trim()};ST.errors=[];
- if(!f.name||f.name.length>80)ST.errors.push('请填写 1–80 字的任务名称。');
- if(!DB.projects.some(p=>p.id===f.pid))ST.errors.push('请选择可用的关联课题。');
- if(!f.content||f.content.length>5000)ST.errors.push('请填写 1–5000 字的任务内容。');
- if(!ST_PERIODS[f.period]||!ST_ZONES.includes(f.zone)||!stNext(f))ST.errors.push('请选择有效的执行计划；一次性任务必须选择未来时间。');
+function stSave(){const f={...ST.form,content:String(ST.form.content||'').trim()};f.name=String(f.name||'').trim()||stTitleFrom(f.content);ST.errors=[];
+ if(!DB.projects.some(p=>p.id===f.pid))ST.errors.push('选一个关联课题。');
+ if(!f.content)ST.errors.push('用一句话写下要做什么。');
+ if(!ST_PERIODS[f.period]||!ST_ZONES.includes(f.zone)||!stNext(f))ST.errors.push('选一个将来的执行时间。');
  if(f.period==='monthly'&&(!Number.isInteger(Number(f.monthday))||f.monthday<1||f.monthday>31))ST.errors.push('每月日期应为 1–31 的整数。');
  if(ST.errors.length){stRenderDialog();document.querySelector('#st-dialog .st-errors')?.focus();return;}
  const old=ST.items.find(t=>t.id===f.id),item={...f,id:f.id||'schedule-'+crypto.randomUUID(),example:false,enabled:old?old.enabled:true,updatedAt:new Date().toISOString()};
  if(!stPersist(old?ST.items.map(t=>t.id===item.id?item:t):[item,...ST.items]))return;
- ST.pick=item.id;LS.set('scheduled_pick',item.id);if(ST.stay&&!old){ST.stay=false;stCloseDialog();render();toast('已设为定时任务：'+item.name+'（本机计划，后台调度还没接入）');return;}ST.stay=false;stCloseDialog();go('scheduledetail');toast(old?'计划修改已保存':'已保存本机计划，后台调度还没接入');
+ ST.pick=item.id;LS.set('scheduled_pick',item.id);if(ST.stay&&!old){ST.stay=false;stCloseDialog();render();toast('已设为定时任务：'+item.name);return;}ST.stay=false;stCloseDialog();go('scheduledetail');toast(old?'已保存修改':'已创建定时任务');
 }
 function schedulesBind(root){
  if(!['schedules','schedulenew','scheduledetail'].includes(S.route))return;
@@ -107,9 +155,20 @@ function schedulesBind(root){
   if(action==='search'){ST.search=!ST.search;if(!ST.search)ST.query='';render();view.querySelector('#st-search')?.focus();}
   if(action==='filters'){ST.filters=!ST.filters;if(!ST.filters)ST.filter='all';render();}
   if(action==='edit'&&t)stStart(null,t);
-  if(action==='toggle'&&t){if(!t.enabled&&(!DB.projects.some(p=>p.id===t.pid)||!stNext(t))){toast('无法恢复，请先编辑并选择可用课题及未来执行时间。');return;}if(stPersist(ST.items.map(x=>x.id===t.id?{...x,enabled:!x.enabled}:x)))render();}
-  if(action==='delete'&&t&&confirm('删除「'+t.name+'」的计划？历史成果不会被删除。')){if(stPersist(ST.items.filter(x=>x.id!==t.id))){ST.pick=null;go('schedules');}}
+  if(action==='toggle'&&t){if(!t.enabled&&(!DB.projects.some(p=>p.id===t.pid)||!stNext(t))){toast('开启前请先在执行计划里选一个将来的时间，并确认关联课题还在。');return;}if(stPersist(ST.items.map(x=>x.id===t.id?{...x,enabled:!x.enabled}:x)))render();}
+  if(action==='delete'&&t)stConfirmDelete(t);
  });
+ const t0=ST.items.find(t=>t.id===ST.pick);
+ const nl=root.querySelector('[data-st-nl]');if(nl&&t0)nl.onsubmit=e=>{e.preventDefault();const v=nl.querySelector('input').value;const r=stApplyNL(t0,v);if(!r)return;
+  if(r.err){toast(r.err);return}if(r.del){stConfirmDelete(t0);return}
+  if(stPersist(ST.items.map(x=>x.id===t0.id?r.next:x))){render();toast(r.effect);setTimeout(()=>view.querySelector('[data-st-nl] input')?.focus(),30);}};
+ const plan=root.querySelector('[data-st-plan]');if(plan&&t0)plan.onchange=e=>{const el=e.target;if(!el.name||!el.name.startsWith('p_'))return;const k=el.name.slice(2);
+  const next={...t0,[k]:el.value};if(!stNext(next)&&k!=='period'){toast('这个时间已经过去，选一个将来的时间');render();return}
+  const at=typeof nowStamp==='function'?nowStamp():'';next.history=[...(Array.isArray(t0.history)?t0.history:[]),{at,text:'在执行计划里修改',effect:'执行计划改为 '+stPlan(next)}].slice(-30);
+  if(stPersist(ST.items.map(x=>x.id===t0.id?next:x))){render();toast('已保存：'+stPlan(next));}};
+ root.querySelectorAll('[data-st-rev-del]').forEach(b=>b.onclick=()=>{if(!t0)return;const i=+b.dataset.stRevDel;const revs=(t0.revisions||[]).filter((_,k)=>k!==i);
+  if(stPersist(ST.items.map(x=>x.id===t0.id?{...x,revisions:revs}:x))){render();toast('已撤回这条补充要求');}});
+ root.querySelectorAll('[data-st-project]').forEach(b=>b.onclick=()=>{go('project',{pid:b.dataset.stProject});S.pjtab='st';render();});
  const search=root.querySelector('#st-search');if(search)search.oninput=()=>{ST.query=search.value;render();};
  const filter=root.querySelector('#st-filter');if(filter)filter.onchange=()=>{ST.filter=filter.value;render();};
  if(S.route==='schedulenew'&&!document.getElementById('st-dialog'))queueMicrotask(()=>{if(S.route==='schedulenew')stOpenDialog();});
@@ -185,4 +244,10 @@ function stChatOffer(userText,pid){
  return '<div class="st-offer"><button class="btn st-offer-b" type="button" data-st-from-chat="'+esc(JSON.stringify(task))+'">'
   +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/></svg>'
   +'设为定时任务 · '+esc(stPlan(task))+'</button></div>';
+}
+
+/* 删除用站内确认，写清楚删了什么、留下什么 */
+function stConfirmDelete(t){
+ modal('删除定时任务？','<p style="margin:0;line-height:1.7">「'+esc(t.name)+'」会停止执行并从列表中移除；已经写进课题的运行结果不受影响。</p>','删除',()=>{
+  if(stPersist(ST.items.filter(x=>x.id!==t.id))){ST.pick=null;LS.set('scheduled_pick',null);go('schedules');toast('已删除「'+t.name+'」');}return true;});
 }

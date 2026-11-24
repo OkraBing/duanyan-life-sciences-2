@@ -108,3 +108,18 @@ body[data-route=workbench] #view{padding-block:0 var(--s8);padding-inline:max(va
 .rh-news-detail p{margin:0 0 10px;font-size:13px;line-height:1.7;color:var(--ink-2)}
 .rh-news-detail h4{margin:14px 0 6px;font-size:13px;font-weight:600;color:var(--ink)}
 .rh-news-meta{font-size:12px!important;color:var(--ink-3)!important}
+/* 工作台 · 定时任务（最多两张） */
+.rh-sched-wrap{margin-top:8px}
+.rh-sched-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.rh-sched{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);text-align:left;font:inherit;cursor:pointer;min-width:0;box-shadow:0 1px 2px rgba(19,24,38,.05);transition:border-color .12s,box-shadow .12s}
+.rh-sched:hover{border-color:color-mix(in srgb,var(--line) 45%,var(--ink-4));box-shadow:0 6px 18px -10px rgba(19,24,38,.22),0 1px 2px rgba(19,24,38,.05)}
+.rh-sched:focus-visible{outline:2px solid var(--dry);outline-offset:2px}
+.rh-sched-ic{display:grid;place-items:center;width:32px;height:32px;border-radius:8px;background:var(--surface-2);color:var(--ink-3);flex:0 0 auto}
+.rh-sched-copy{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.rh-sched-copy strong{font-size:14px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rh-sched-copy small{font-size:12px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rh-sched-state{flex:0 0 auto;font-size:12px;padding:2px 8px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
+.rh-sched-state.is-on{background:color-mix(in srgb,var(--ok,#336950) 10%,var(--surface));color:var(--ok,#336950)}
+.rh-sched-state.is-err{background:color-mix(in srgb,var(--err,#B34236) 10%,var(--surface));color:var(--err,#B34236)}
+.rh-sched-empty{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border:1px dashed var(--line);border-radius:12px;font-size:13px;color:var(--ink-3)}
+@media(max-width:760px){.rh-sched-grid{grid-template-columns:minmax(0,1fr)}}

@@ -29,10 +29,10 @@ T('A03','实验管理有「设备管理」，没有「查看设备列表」',asy
  await p.evaluate(()=>go('lab'));await p.waitForTimeout(300);
  const t=await p.locator('#view').innerText();expect(/设备管理/.test(t)&&!/查看设备列表/.test(t),'文案不对');
 });
-T('A04','设置不在侧栏，账户可达；定时任务在工作台右上',async p=>{
+T('A04','设置不在侧栏，账户可达；工作台有定时任务区块',async p=>{
  expect(await p.locator('#side .nav[data-navid="settings"]').count()===0,'侧栏还有设置');
  await p.click('#side .acct-b');await p.waitForTimeout(300);expect(['me','settings'].includes(await $route(p)),'账户没去个人中心');
- await p.evaluate(()=>go('workbench'));await p.waitForTimeout(300);expect(await p.locator('#view .rh-header [data-go="schedules"]').count()===1,'工作台右上没有定时任务');
+ await p.evaluate(()=>go('workbench'));await p.waitForTimeout(300);expect(await p.locator('#view .rh-sched-wrap [data-go="schedules"]').count()===1,'工作台没有定时任务区块');
 });
 T('A05','科研工具「市场 / 我的」，数据库「公共数据集 / 我的数据集」；#tools 落到科研工具·我的',async p=>{
  for(const [r,want] of [['shelf',['市场','我的']],['data',['公共数据集','我的数据集']]]){await p.evaluate(r=>go(r),r);await p.waitForTimeout(300);
@@ -104,7 +104,7 @@ T('UC02','课题页签新建计划 → 写入本机存储 → 课题页签 / 定
  const pid=await p.evaluate(()=>DB.projects[0].id);
  await p.evaluate(pid=>{go('project',{pid});S.pjtab='st';render()},pid);await p.waitForTimeout(300);
  await p.click('[data-stp-new]');await p.waitForTimeout(200);
- await p.fill('#st-dialog [name="name"]','UC02 计划');await p.fill('#st-dialog [name="content"]','每周汇总 UC02');
+ await p.fill('#st-dialog [name="content"]','UC02 计划');
  await p.click('#st-dialog .btn-pri');await p.waitForTimeout(300);
  const stored=await p.evaluate(()=>(LS.get('scheduled_plans_v1',[])||[]).find(t=>t.name==='UC02 计划'));
  expect(stored&&stored.pid===pid&&stored.enabled===true,'存储：'+JSON.stringify(stored));
@@ -151,7 +151,7 @@ T('UC06','预填表单取消（取消键 / Esc / 切页）后不残留「留在�
  }
  await p.evaluate(()=>go('schedules'));await p.waitForTimeout(250);
  await p.click('#view [data-st-action="new"]');await p.waitForTimeout(200);
- await p.fill('#st-dialog [name="name"]','UC06 计划');await p.fill('#st-dialog [name="content"]','UC06');
+ await p.fill('#st-dialog [name="content"]','UC06 计划');
  await p.click('#st-dialog .btn-pri');await p.waitForTimeout(300);
  expect(await $route(p)==='scheduledetail','定时任务页新建后没跳到详情：'+await $route(p));
 });
@@ -231,6 +231,51 @@ T('UC15','运行记录失败 → 课题页签标「失败」，状态为「本�
  const r=await p.evaluate(()=>{stLoad();const t=ST.items.find(t=>t.enabled&&DB.projects.some(p=>p.id===t.pid));t.runs=[{at:'今天 08:30',content:'数据源不可用',ok:false}];
   go('project',{pid:t.pid});S.pjtab='st';render();const row=[...document.querySelectorAll('.stp-row')].find(e=>e.textContent.includes(t.name));return {state:stState(t).label,flag:row?.querySelector('.stp-flag')?.textContent||''}});
  expect(r.state==='本次失败'&&r.flag==='失败',JSON.stringify(r));
+});
+
+T('UC16','定时任务：一句话修改 → 补充要求 / 频次 / 时间 / 暂停 / 恢复各落到对应字段，修改记录逐条留下，刷新后仍在',async p=>{
+ const id=await p.evaluate(()=>{stLoad();const t=ST.items.find(t=>t.enabled&&DB.projects.some(p=>p.id===t.pid));ST.pick=t.id;go('scheduledetail');return t.id});await p.waitForTimeout(300);
+ const say=async s=>{await p.fill('[data-st-nl] input',s);await p.click('[data-st-nl] button');await p.waitForTimeout(250);return p.evaluate(id=>{const t=ST.items.find(x=>x.id===id);return {period:t.period,weekday:Number(t.weekday),time:t.time,enabled:t.enabled,revs:(t.revisions||[]).map(r=>r.text),hist:(t.history||[]).length}},id)};
+ const a=await say('只看近一周发表的论文');expect(a.revs.includes('只看近一周发表的论文'),'补充要求：'+JSON.stringify(a));
+ const b=await say('改成每周五早上9点');expect(b.period==='weekly'&&b.weekday===5&&b.time==='09:00'&&b.revs.length===a.revs.length,'频次：'+JSON.stringify(b));
+ const c=await say('改到下午3点半');expect(c.time==='15:30'&&c.period==='weekly','时间：'+JSON.stringify(c));
+ const d=await say('暂停');expect(d.enabled===false,'暂停');
+ const e=await say('恢复');expect(e.enabled===true,'恢复');
+ const f=await say('改成工作日');expect(f.period==='weekdays','工作日：'+f.period);
+ const stored=await p.evaluate(id=>(LS.get('scheduled_plans_v1',[])||[]).find(t=>t.id===id),id);
+ expect(stored&&stored.period==='weekdays'&&stored.time==='15:30'&&(stored.history||[]).length===f.hist&&f.hist>=6,'存储：'+JSON.stringify(stored&&{p:stored.period,t:stored.time,h:(stored.history||[]).length}));
+ await p.click('[data-st-rev-del="0"]');await p.waitForTimeout(250);
+ expect(await p.evaluate(id=>!(ST.items.find(x=>x.id===id).revisions||[]).length,id),'撤回补充要求失败');
+});
+T('UC17','定时任务：执行计划用选项修改即存；选到过去的一次性时间会被拦下',async p=>{
+ await p.check('input[name="p_period"][value="monthly"]',{force:true});await p.waitForTimeout(250);
+ expect(await p.evaluate(()=>ST.items.find(x=>x.id===ST.pick).period)==='monthly','没存上每月');
+ await p.selectOption('select[name="p_monthday"]','15');await p.waitForTimeout(250);
+ expect(await p.evaluate(()=>Number(ST.items.find(x=>x.id===ST.pick).monthday))===15,'没存上 15 日');
+ await p.check('input[name="p_period"][value="once"]',{force:true});await p.waitForTimeout(250);
+ await p.fill('input[name="p_date"]','2020-01-01');await p.dispatchEvent('input[name="p_date"]','change');await p.waitForTimeout(250);
+ expect(await p.evaluate(()=>ST.items.find(x=>x.id===ST.pick).date)!=='2020-01-01','过去的日期被存下了');
+});
+T('UC18','工作台定时任务卡片：最多两张，开启的、下次执行早的在前；点卡片进详情；数据与定时任务列表一致',async p=>{
+ await p.evaluate(()=>go('workbench'));await p.waitForTimeout(400);
+ const shown=await p.$$eval('.rh-sched strong',es=>es.map(e=>e.textContent));
+ const want=await p.evaluate(()=>(ST.items||[]).filter(t=>DB.projects.some(p=>p.id===t.pid)).map(t=>({t,n:stNext(t)||Infinity})).sort((a,b)=>(b.t.enabled-a.t.enabled)||(a.n-b.n)).slice(0,2).map(x=>x.t.name));
+ expect(shown.length<=2&&JSON.stringify(shown)===JSON.stringify(want),JSON.stringify({shown,want}));
+ const total=await p.evaluate(()=>ST.items.length);expect((await p.locator('#rh-sched-title').innerText()).includes('('+total+')'),'总数不对');
+ await p.locator('.rh-sched').first().click();await p.waitForTimeout(300);
+ expect((await p.evaluate(()=>S.route+'|'+ST.items.find(x=>x.id===ST.pick)?.name))==='scheduledetail|'+shown[0],'没进到对应详情');
+});
+T('UC19','删除定时任务：站内确认 → 从本机存储、定时任务列表、工作台卡片、课题页签同时消失',async p=>{
+ const t=await p.evaluate(()=>{const t=ST.items.find(x=>x.id===ST.pick);return {id:t.id,name:t.name,pid:t.pid}});
+ await p.click('[data-st-action="delete"]');await p.waitForTimeout(200);
+ expect(await p.evaluate(()=>document.getElementById('dlg').open),'没有确认弹窗');
+ await p.click('#dlg button[value="ok"]');await p.waitForTimeout(300);
+ const r=await p.evaluate(t=>({store:(LS.get('scheduled_plans_v1',[])||[]).some(x=>x.id===t.id),mem:ST.items.some(x=>x.id===t.id),route:S.route}),t);
+ expect(!r.store&&!r.mem&&r.route==='schedules',JSON.stringify(r));
+ await p.evaluate(()=>go('workbench'));await p.waitForTimeout(300);
+ expect(!(await p.$$eval('.rh-sched strong',es=>es.map(e=>e.textContent))).includes(t.name),'工作台还显示已删除的任务');
+ await p.evaluate(pid=>{go('project',{pid});S.pjtab='st';render()},t.pid);await p.waitForTimeout(300);
+ expect(!(await p.$$eval('.stp-row .pjx-f-n',es=>es.map(e=>e.textContent))).includes(t.name),'课题页签还显示已删除的任务');
 });
 
 (async()=>{

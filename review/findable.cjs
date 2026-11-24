@@ -40,7 +40,7 @@ async function fresh(b){const p=await b.newPage({viewport:{width:1440,height:900
   ok('T03 页签只列本课题的计划',await p.evaluate(pid=>document.querySelectorAll('.stp-row').length===ST.items.filter(t=>t.pid===pid).length,pid));
   await p.click('[data-stp-new]');await p.waitForTimeout(250);
   ok('T04 新建带入本课题',(await p.evaluate(()=>document.querySelector('#st-dialog select[name="pid"]')?.value))===pid);
-  await p.fill('#st-dialog [name="name"]','专项计划');await p.fill('#st-dialog [name="content"]','专项内容');
+  await p.fill('#st-dialog [name="content"]','专项计划');
   await p.click('#st-dialog .btn-pri');await p.waitForTimeout(400);
   ok('T05 保存后留在课题页且出现在页签里',(await p.evaluate(()=>S.route))==='project'&&(await p.$$eval('.stp-row .pjx-f-n',es=>es.map(e=>e.textContent))).includes('专项计划'));
   const offer=await p.evaluate(pid=>{const k=pjSid(pid);CONV[k]=[{role:'me',text:'每周一早上9点帮我汇总一次 R5 的新测定数据'},{role:'ai',text:'好的。'}];render();return document.querySelector('.st-offer-b')?.textContent||''},pid);

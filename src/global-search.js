@@ -199,3 +199,11 @@ document.addEventListener('keydown',e=>{
   if(document.getElementById('gs-dlg')?.open)gsClose();else gsOpen();
  }
 },true);
+
+/* 侧栏折叠按钮挪到侧栏最底部（账户下面）：展开时写「收起侧栏」，折叠时只剩图标。
+   两种状态下都在左下角同一个位置，常驻可见，也不再压住顶上的 logo。 */
+(function sideToggleMount(){
+ const t=document.querySelector('#side .side-toggle'),foot=document.getElementById('navAcct');
+ if(!t||!foot||foot.contains(t))return;
+ const row=document.createElement('div');row.className='side-toggle-row';row.appendChild(t);foot.appendChild(row);
+})();
