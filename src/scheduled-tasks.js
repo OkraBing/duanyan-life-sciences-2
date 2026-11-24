@@ -72,7 +72,7 @@ function stCloseDialog(){const d=document.getElementById('st-dialog');if(d){d.cl
 function stOpenDialog(){
  let d=document.getElementById('st-dialog');if(d){stRenderDialog();return;}
  d=document.createElement('dialog');d.id='st-dialog';d.className='st-dialog';d.setAttribute('aria-labelledby','st-dialog-title');document.body.appendChild(d);
- d.addEventListener('cancel',e=>{e.preventDefault();stCloseDialog();});d.addEventListener('close',()=>{if(d.isConnected){d.remove();ST.form=null;ST.errors=[];}});
+ d.addEventListener('cancel',e=>{e.preventDefault();stCloseDialog();});d.addEventListener('close',()=>{if(d.isConnected){d.remove();ST.form=null;ST.errors=[];ST.stay=false;}});
  stRenderDialog();d.showModal();d.querySelector('[name=name]')?.focus();
 }
 function stRenderDialog(){const d=document.getElementById('st-dialog');if(!d)return;const top=d.scrollTop,active=d.querySelector(':focus')?.name;d.innerHTML=stForm();stBindForm(d);d.querySelectorAll('[data-st-action=cancel]').forEach(b=>b.onclick=stCloseDialog);d.scrollTop=top;if(active)d.querySelector('[name="'+active+'"]')?.focus({preventScroll:true});}

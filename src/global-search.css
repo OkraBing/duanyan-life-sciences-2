@@ -1,9 +1,9 @@
 /* 全局搜索（第二版）：侧栏顶部的触发器 + ⌘K 面板。
    触发器的尺寸和导航项同一把尺子：高 34、左右 12、图标 x=24，所以折叠前后位置不动。 */
-.gs-trigger{display:flex;align-items:center;gap:8px;margin:0 12px 6px;height:34px;padding:0 10px 0 11px;
+.gs-trigger{display:flex;align-items:center;gap:8px;margin:10px 12px 12px;height:34px;padding:0 10px 0 11px;
   border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink-3);
   font:inherit;font-size:13px;cursor:pointer;text-align:left;flex:0 0 auto;width:calc(100% - 24px)}
-.gs-trigger svg{flex:0 0 auto}
+.gs-trigger svg{flex:0 0 auto;display:block}
 .gs-trigger .gs-ph{flex:1;min-width:0}
 .gs-trigger .gs-kbd{font-family:var(--mono,ui-monospace,monospace);font-size:11px;color:var(--ink-4);
   border:1px solid var(--line);border-radius:4px;padding:0 5px;line-height:18px;background:var(--surface-2)}
@@ -46,3 +46,13 @@
 .ce-inline:hover{text-decoration:underline}
 .ce-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--line-2);padding-top:10px}
 .ce-dev{margin-top:4px}
+/* 科研工具：一条工具条（左：工具类型分段；右：用途下拉） */
+.tl-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 16px}
+.tl-seg{display:inline-flex;padding:3px;border-radius:9px;background:var(--surface-2);border:1px solid var(--line-2);gap:2px}
+.tl-seg-b{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border:0;border-radius:7px;background:transparent;font:inherit;font-size:13px;color:var(--ink-3);cursor:pointer}
+.tl-seg-b .num{font-size:11px;color:var(--ink-4)}
+.tl-seg-b.is-on{background:var(--surface);color:var(--ink);font-weight:500;box-shadow:0 1px 2px rgba(14,17,22,.08)}
+.tl-seg-b:focus-visible{outline:2px solid var(--dry);outline-offset:1px}
+.tl-cap{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-3)}
+.tl-cap .input{min-height:32px;height:32px;font-size:13px;padding:0 28px 0 10px;width:auto}
+.tl-clear{min-height:28px;padding:0 8px;font-size:12px}

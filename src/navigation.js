@@ -176,7 +176,7 @@ function navigationTeamOpen(s,invite){
 }
 function navigationJoinDialog(){
  if(!RS.ready||RS.error){toast(RS.error||'课题数据仍在加载，请稍后重试');return;}
- modal('申请加入课题','<label class="rs-field"><span>课题编号 *</span><input class="input" id="project-join-code" placeholder="请输入课题创建者提供的共享课题编号" maxlength="100"></label><label class="rs-field"><span>申请说明</span><textarea class="input" id="project-join-reason" maxlength="500" rows="3" placeholder="介绍研究方向与协作目的"></textarea></label><p class="rs-help">申请通过后加入课题；当前申请仅保存在本机工作空间。</p>','提交申请',()=>rsModalSave(async()=>{
+ modal('申请加入课题','<label class="rs-field"><span>课题编号 *</span><input class="input" id="project-join-code" placeholder="请输入课题创建者提供的共享课题编号" maxlength="100"></label><label class="rs-field"><span>申请说明</span><textarea class="input" id="project-join-reason" maxlength="500" rows="3" placeholder="介绍研究方向与协作目的"></textarea></label><p class="rs-help">申请通过后加入课题。</p>','提交申请',()=>rsModalSave(async()=>{
  const code=document.getElementById('project-join-code').value.trim(),reason=document.getElementById('project-join-reason').value.trim();
  if(!code)throw new Error('请填写课题编号');
  const shared=RS.data.shared.find(s=>s.id===code);

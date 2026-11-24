@@ -532,7 +532,7 @@ labCardV2=function(b){
  const methods=workflow?.source==='autonomous'?alTaskMethods(workflow):b.ctx?.assay?.join('、');
  const context=summary.status==='exception'?summary.detail:summary.status==='conclusion'?workflow?.conclusion?.verdict:summary.current;
  return `<article class="lv-exp is-${summary.status}" role="button" tabindex="0" data-labgo="${esc(b.id)}" aria-label="${action}：${esc(title)}">
-  <div class="row" style="justify-content:space-between;gap:10px">${labBadge(summary.status,summary.label)}<span class="lv-small">${esc(b.id.includes('DEMO')?'':b.id)}</span></div>
+  <div class="row" style="justify-content:space-between;gap:10px">${labBadge(summary.status,summary.label)}${b.id.includes('DEMO')?'':`<span class="lv-id-tag num">${esc(b.id)}</span>`}</div>
   <h2 class="lv-exp-title">${esc(title)}</h2>
   <p class="lv-small">${esc(pnOf(b.pid))} · ${b.n} 个${workflow?.source==='autonomous'?'候选':''}样本</p>
   ${methods?`<p class="lv-small lv-card-summary">${esc(methods)}</p>`:''}

@@ -102,3 +102,9 @@ body[data-route=workbench] #view{padding-block:0 var(--s8);padding-inline:max(va
 @media(max-width:1100px){.rh-activity+.rh-activity{padding-left:0!important;border-left:0!important;border-top:1px solid var(--line-2)!important}}
 /* 定时任务产出的动态：时间后面一个「定时」小标签 */
 .rh-activity .rh-tag{font-size:10px;padding:0 6px;border-radius:999px;background:var(--dry-soft);color:var(--dry-ink);line-height:16px}
+/* 学术资讯（示例） */
+.rh-news-note{margin:4px 0 8px;font-size:12px;color:var(--ink-4)}
+.rh-news-type{display:inline-block;font-size:11px;line-height:18px;padding:0 6px;margin-right:8px;border-radius:4px;background:var(--surface-2);color:var(--ink-2)}
+.rh-news-detail p{margin:0 0 10px;font-size:13px;line-height:1.7;color:var(--ink-2)}
+.rh-news-detail h4{margin:14px 0 6px;font-size:13px;font-weight:600;color:var(--ink)}
+.rh-news-meta{font-size:12px!important;color:var(--ink-3)!important}

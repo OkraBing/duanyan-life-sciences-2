@@ -4117,9 +4117,11 @@ function sessMenu(btn,id){
   const x=SESSIONS.find(y=>y.id===id);if(!x)return;
   const row=(k,n)=>`<button class="menu-i" type="button" data-pick="${k}">
     <span class="ck"></span><span><span class="nm">${n}</span></span></button>`;
+  /* 第二版：「继续对话」去掉——点对话本身就是继续。改绑项目不再关掉菜单再开一个，
+     而是在菜单右边展开课题列表，选完即生效。 */
   menu(btn,'<div class="menu-l">对话</div>'
-    +row('open','继续对话')
-    +row('proj',x.pid?'改绑项目':'添加到项目')
+    +`<button class="menu-i has-sub" type="button" data-sess-sub aria-haspopup="menu" aria-expanded="false">
+       <span class="ck"></span><span><span class="nm">${x.pid?'改绑项目':'添加到项目'}</span></span><span class="sub-car" aria-hidden="true">›</span></button>`
     +row('pin',x.pin?'取消置顶':'置顶')
     +row('rename','重命名')
     +row('arch',x.arch?'取消归档':'归档')
@@ -4127,7 +4129,6 @@ function sessMenu(btn,id){
     +`<button class="menu-i is-danger" type="button" data-pick="del">
        <span class="ck"></span><span><span class="nm">删除</span></span></button>`,
     v=>{
-      if(v==='open')return openSession(x);
       if(v==='proj')return setTimeout(()=>sessProj(btn,x),0);
       if(v==='rename')return sessRename(x);
       if(v==='pin'){x.pin=!x.pin;paintNav(1);render();
@@ -4136,6 +4137,36 @@ function sessMenu(btn,id){
         toast(x.arch?'已归档':'已取消归档');return}
       if(v==='del')return sessDel(x);
     });
+  sessProjFlyout(x);
+}
+function sessProjFlyout(x){
+  const m=document.getElementById('menu'),trig=m&&m.querySelector('[data-sess-sub]');if(!trig)return;
+  m.classList.add('has-fly');
+  const open=(focus)=>{
+    let f=m.querySelector('.menu-fly');
+    if(!f){
+      f=document.createElement('div');f.className='menu menu-fly';f.setAttribute('role','menu');
+      f.innerHTML='<div class="menu-l">绑定到项目</div>'
+        +DB.projects.map(p=>`<button class="menu-i" type="button" data-fly-pid="${esc(p.id)}" aria-checked="${x.pid===p.id}">
+           <span class="ck">${x.pid===p.id?CK:''}</span><span><span class="nm">${esc(p.name)}</span></span></button>`).join('')
+        +'<div class="menu-sep"></div>'
+        +`<button class="menu-i" type="button" data-fly-pid="" aria-checked="${!x.pid}"><span class="ck">${x.pid?'':CK}</span><span><span class="nm">不绑定项目</span></span></button>`;
+      m.appendChild(f);
+      f.querySelectorAll('[data-fly-pid]').forEach(b=>b.onclick=()=>{const v=b.dataset.flyPid;x.pid=v||null;closeMenu();render();
+        toast(v?`已绑定到「${(DB.projects.find(p=>p.id===v)||{}).name}」`:'已解除项目绑定')});
+    }
+    /* 贴着「改绑项目」那一行往右展开；右边放不下就往左 */
+    const mr=m.getBoundingClientRect(),tr=trig.getBoundingClientRect();
+    f.style.top=(tr.top-mr.top-6)+'px';
+    f.style.left=(mr.right+6+f.offsetWidth>innerWidth-8)?(-f.offsetWidth-6)+'px':'calc(100% + 6px)';
+    trig.setAttribute('aria-expanded','true');trig.classList.add('is-open');
+    if(focus)f.querySelector('.menu-i')?.focus();
+  };
+  trig.addEventListener('mouseenter',()=>open(false));
+  trig.addEventListener('click',e=>{e.preventDefault();open(true)});
+  trig.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();open(true)}});
+  /* 鼠标移到别的菜单项上就收起右侧 */
+  m.querySelectorAll(':scope > .menu-i:not([data-sess-sub])').forEach(it=>it.addEventListener('mouseenter',()=>{m.querySelector('.menu-fly')?.remove();trig.setAttribute('aria-expanded','false');trig.classList.remove('is-open')}));
 }
 function sessProj(btn,x){
   menu(btn,'<div class="menu-l">绑定到项目</div>'
@@ -5765,6 +5796,7 @@ V.dsets=()=>{
         <p class="mut t-md pg-sub">用于模型训练的数据集，可按课题筛选</p>
       </div>
       <div class="row wrap" style="gap:var(--s3);flex:0 0 auto">
+        <button class="btn" type="button" data-go="set">模型接入</button>
         <button class="btn btn-pri" type="button" data-nav="dsnew">新建数据集</button>
       </div>
     </div>
@@ -6098,6 +6130,8 @@ V.mdl=(activeTab=S.mtab)=>{
       <!-- flex:0 0 auto：左边标题那一列是 grow，不写这句的话这一排会被压窄、
            自己折成两行（搜索框一行、按钮一行）。 -->
       <div class="row wrap" style="gap:var(--s3);flex:0 0 auto">
+        <!-- 第二版：模型接入（外部大模型的系列与密钥）放在模型制备页右上角，和用到它的地方在一起 -->
+        <button class="btn" type="button" data-go="set">模型接入</button>
         ${tab==='cur'?`<input type="file" id="mdlin" accept=".json" style="display:none"
             aria-label="选择要导入的模型文件">`:''}
         ${tab==='infer'?inferHd():''}
@@ -6244,8 +6278,7 @@ function mdlJob(){
           {n:'删除',attr:`data-mdel="${esc(m.id)}"`}
         ])}
       </tr>`}).join('')}</tbody></table></div>
-      <span class="t-xs mut2">指标是在你这台机器的浏览器里算出来的，换一台也复现得出来。
-</span>`
+`
     :mdlEmpty('训练任务','还没有训练任务','训练任务会保留在这里，包括失败的任务。',
         ALL_MODELS().length)}
     </div></section>`;
@@ -6458,7 +6491,7 @@ function jobDrawer(m){
             <span class="t-sm num" style="word-break:break-all">${esc(m.cols.join('、'))}</span>
           </div>`:''}
           <div class="dw-f">
-            <span class="t-xs mut2 grow">指标在这台机器的浏览器里算出，可复现。</span>
+            <span class="grow"></span>
             <button class="btn" type="button" data-mrep="${esc(m.id)}">${DL_IC}下载报告</button>
             <button class="btn btn-pri" type="button" data-mdl="${esc(m.id)}">${DL_IC}下载权重</button>
           </div>`}
@@ -11138,19 +11171,19 @@ return `<div class="page">
 
   </div>
 
-  <div class="fltrow">
-    <span class="t-sm mut2 fltrow-l">用途类型</span>
-    <span class="fltrow-s">${[['全部','全部类型']].concat(CAPS.map(c=>[c.id,c.sn||c.n])).map(([k,n])=>
-      `<button class="pill${S.shcap===k?' is-on':''}${k==='wet'?' is-wet':''}" type="button"
-        data-shcap="${k}" aria-pressed="${S.shcap===k}">${esc(n)}</button>`).join('')}
-  </span></div>
-
-  <div class="tabs">
-    ${[['SKILL','Skills'],['SCP','SCP'],['MODEL','模型']].map(([k,n])=>
-      `<button class="tab${kind===k?' is-on':''}" type="button" data-use="${k}" aria-selected="${kind===k}">
-        ${n}<span class="tab-c num">${cnt(k)}</span></button>`).join('')}
+  <!-- 第二版：原来「用途类型」一排胶囊、「Skills / SCP / 模型」一排页签，加上市场 / 我的，一共三层。
+       现在工具类型做成分段按钮、用途做成下拉，并在同一行：页面上只剩「市场 / 我的」和这一条工具条两层。 -->
+  <div class="tl-bar">
+    <div class="tl-seg" role="group" aria-label="工具类型">
+      ${[['SKILL','Skills'],['SCP','SCP'],['MODEL','模型']].map(([k,n])=>
+      `<button class="tl-seg-b${kind===k?' is-on':''}" type="button" data-use="${k}" aria-pressed="${kind===k}">
+        ${n}<span class="num">${cnt(k)}</span></button>`).join('')}
+    </div>
     <span class="grow"></span>
-    ${(qq||pick)?'<button class="btn btn-gh" style="min-height:1.625rem;padding:0 8px;font-size:0.75rem" type="button" data-act="shclear">清空筛选</button>':''}
+    <label class="tl-cap"><span>用途</span><span class="ctl ctl-sel"><select class="input" data-shcap-select aria-label="按用途筛选">
+      ${[['全部','全部用途']].concat(CAPS.map(c=>[c.id,c.sn||c.n])).map(([k,n])=>`<option value="${esc(k)}"${S.shcap===k?' selected':''}>${esc(n)}</option>`).join('')}
+    </select><span class="car" aria-hidden="true"></span></span></label>
+    ${(qq||pick)?'<button class="btn btn-gh tl-clear" type="button" data-act="shclear">清空筛选</button>':''}
   </div>
 
   ${L.length?`<div class="sgrid">${L.map(card).join('')}</div>`
@@ -15110,7 +15143,7 @@ function inboxMenu(anchor){
     <div class="ib-h"><span class="t">消息</span>
       ${un?`<button class="ib-x" type="button" data-go="__read">全部标为已读</button>`:''}</div>
     ${L.length?L.map(x=>`<button class="menu-i is-ib${x.read?'':' is-un'}" type="button"
-        data-go="${esc(x.id)}" title="${esc(x.act||'打开')}">
+        data-go="${esc(x.id)}" title="${esc(x.title)}${x.act?' · '+esc(x.act):''}">
         <span class="dot" aria-hidden="true"></span>
         <span style="min-width:0">
           <span class="ib-r1"><span class="nm">${esc(x.title)}</span>
@@ -17004,9 +17037,10 @@ function render(){
   q('[data-dom]',b=>b.onclick=()=>{S.dom=b.dataset.dom;render()});
   q('[data-ptab]',b=>b.onclick=()=>{S.ptab=b.dataset.ptab;render()});
   q('[data-mtab]',b=>b.onclick=()=>{const k=b.dataset.mtab;S.jobPick=null;S.checkpointPick=null;
-    /* 数据集有自己的路由（深链接、回归用例都按它找），所以它是跳页不是换页签 */
-    if(k==='dset'){go('dsets');return}
-    S.mtab=k;if(S.route==='dsets'){go('mdl');return}render()});
+    /* 数据集有自己的路由（深链接、回归用例都按它找），所以它是跳页不是换页签。
+         但在用户眼里它只是同一页的一个页签：跳页时不播整页淡入，否则点页签会闪一下 */
+    if(k==='dset'){go('dsets',{_anim:false});return}
+    S.mtab=k;if(S.route==='dsets'){go('mdl',{_anim:false});return}render()});
   q('[data-pjtab]',b=>b.onclick=()=>{S.pjtab=b.dataset.pjtab;render()});
   q('[data-pjjob]',b=>b.onclick=()=>{S.pjBatch=null;S.jobPick=b.dataset.pjjob;render()});
   q('[data-pjbatch]',b=>b.onclick=()=>{S.jobPick=null;S.pjBatch=b.dataset.pjbatch;render()});
@@ -20534,7 +20568,7 @@ function rsPublishModelDialog(id){
    <dt>发布版本</dt><dd>${esc(asset.version)}</dd>
    <dt>来源课题</dt><dd>${esc(project.name)}</dd>
    <dt>发布范围</dt><dd>${shared?esc(shared.name)+'的成员':'关联课题的共享课题成员'}</dd>
- </dl><p class="rs-help">发布后会保存一份模型版本快照。当前 Demo 将共享记录保存在本机。</p>`;
+ </dl><p class="rs-help">发布后会保存一份模型版本快照。</p>`;
  if(!shared){
    if(!can('edit')||(project.ownerId||'me')!=='me'){toast('需要课题所有者先开启共享');return}
    modal('发布模型',info+'<p class="rs-help">该课题尚未开启共享。继续后可确认课题名称与共享内容。</p>','设置课题共享',()=>{
@@ -20690,12 +20724,13 @@ function rsResourceForm(kind){const gate=rsGate();if(gate)return gate;if(!RS.for
 }
 V.toolnew=()=>rsResourceForm('tool');V.databasenew=()=>rsResourceForm('database');
 const rsBuiltinShelf=V.shelf,rsBuiltinData=V.data;
-function rsMarketTabs(kind){return '<div class="rs-market-tabs" role="group" aria-label="资源范围">'+[['catalog','市场'],['mine','我的']].map(([k,n])=>'<button type="button" data-rs-market-tab="'+k+'" data-rs-kind="'+kind+'" class="'+((RS.marketTab||'catalog')===k?'is-on':'')+'" aria-pressed="'+((RS.marketTab||'catalog')===k)+'">'+n+'</button>').join('')+'</div>';}
+function rsMarketTabs(kind){return '<div class="rs-market-tabs" role="group" aria-label="资源范围">'+(kind==='tool'?[['catalog','市场'],['mine','我的']]:[['catalog','公共数据集'],['mine','我的数据集']]).map(([k,n])=>'<button type="button" data-rs-market-tab="'+k+'" data-rs-kind="'+kind+'" class="'+((RS.marketTab||'catalog')===k?'is-on':'')+'" aria-pressed="'+((RS.marketTab||'catalog')===k)+'">'+n+'</button>').join('')+'</div>';}
 function rsMarketPage(kind,scope=RS.marketTab){const isTool=kind==='tool',personal=S.route==='tools',noun=isTool?'工具':'数据库',title=personal?'工具':isTool?'科研工具':'数据库',create='<button class="btn btn-pri" type="button" data-rs-new-resource="'+kind+'">新建'+noun+'</button>';
- if(scope==='mine'){const items=RS.data.resources.filter(r=>r.kind===kind&&r.owner==='me');return '<div class="page rs">'+rsHeader(title,'管理自己的文件、版本与发布状态。',create)+(personal?'':rsMarketTabs(kind))+'<p class="rs-local-note">私有资源仅在本机可见；公开审核和发布为本机流程演示，未上传到端砚或其他服务。</p>'+(items.length?'<div class="rs-project-grid">'+items.map(rsResourceCard).join('')+'</div>':'<div class="rs-empty"><h2>创建你的第一个'+noun+'</h2><p>上传文件、完善信息，建立可以复用的资源版本。</p>'+create+'</div>')+'</div>';}
+ if(scope==='mine'){const items=RS.data.resources.filter(r=>r.kind===kind&&r.owner==='me');return '<div class="page rs">'+rsHeader(title,'管理自己的文件、版本与发布状态。',create)+(personal?'':rsMarketTabs(kind))+(items.length?'<div class="rs-project-grid">'+items.map(rsResourceCard).join('')+'</div>':'<div class="rs-empty"><h2>创建你的第一个'+noun+'</h2><p>上传文件、完善信息，建立可以复用的资源版本。</p>'+create+'</div>')+'</div>';}
  let html=(isTool?rsBuiltinShelf:rsBuiltinData)();html=html.replace('<h1>'+title+'</h1>','<h1>'+title+'</h1>');
  html=html.replace(isTool?'<label class="fbar-q">':'<div class="field" style="width:auto">',create+(isTool?'<label class="fbar-q">':'<div class="field" style="width:auto">'));
- html=html.replace('<div class="fltrow">',rsMarketTabs(kind)+'<div class="fltrow">');
+ /* 科研工具的筛选收成了一条 .tl-bar；数据库仍是 .fltrow。「市场 / 我的」插在它们前面 */
+ {const bar=isTool?'<div class="tl-bar">':'<div class="fltrow">';html=html.replace(bar,rsMarketTabs(kind)+bar);}
  const query=String(isTool?S.tq||'':S.dq||'').toLowerCase();const pick=isTool?S.shcap:S.dcap;const items=RS.data.resources.filter(r=>r.kind===kind).map(rsPublishedResource).filter(Boolean).filter(r=>!pick||pick==='全部'||r.cap===pick).filter(r=>!query||[r.name,r.slug,r.description,...r.tags].join(' ').toLowerCase().includes(query));
  if(items.length){const cards='<section class="rs-card rs-created-catalog"><div class="rs-card-top"><h2>'+ (isTool?'用户发布的工具':'本机发布的数据库')+'</h2><span class="rs-tag">审核流程演示</span></div><div class="rs-project-grid">'+items.map(rsResourceCard).join('')+'</div></section>';const fragment=document.createElement('template');fragment.innerHTML=html;const anchor=fragment.content.querySelector(isTool?'.sgrid':'.dgrid')||fragment.content.querySelector('.empty');if(anchor){const section=document.createElement('div');section.innerHTML=cards;anchor.before(section.firstElementChild);if(anchor.classList.contains('empty'))anchor.remove();html=fragment.innerHTML;}}
  return html;
@@ -20705,7 +20740,7 @@ V.resdetail=()=>{
  const gate=rsGate();if(gate)return gate;const record=RS.data.resources.find(r=>r.id===RS.resourcePick);if(!record)return '<div class="page rs"><header class="iteration-head"><div><h1>资源不存在</h1><p>该资源可能已移除，或不在当前浏览器保存的记录中。</p></div></header><section class="rs-card"><h2>重新选择资源</h2><p class="rs-help">可返回工具或数据列表，查看可用资源及我的提交。</p><div class="rs-actions"><button class="btn" type="button" data-go="shelf">科研工具</button><button class="btn" type="button" data-go="data">公共数据库</button></div></section></div>';
  const r=RS.resourceVersion&&RS.resourceVersion!==record.version?(record.history||[]).find(v=>v.version===RS.resourceVersion)||record:record,noun=r.kind==='tool'?'工具':'数据库';
  const actions='<button class="btn" type="button" data-rs-back-resource-market="'+r.kind+'">'+(r.kind==='tool'?'返回工具列表':'返回我的提交')+'</button>'+(r===record&&r.state!=='pending'?'<button class="btn btn-pri" type="button" data-rs-edit-resource="'+r.id+'">'+(r.kind==='tool'?'编辑工具':['draft','rejected'].includes(r.state)?'继续编辑':'更新版本')+'</button>':'')+(r===record&&r.state==='pending'? (r.kind==='tool'&&r.owner==='me'?'<button class="btn btn-pri" type="button" data-tl-edit="'+r.id+'">撤回并编辑</button>':'')+'<button class="btn" type="button" data-rs-withdraw="'+r.id+'">撤回审核</button><button class="btn btn-pri" type="button" data-rs-review="'+r.id+'">预览审核流程</button>':'');
- return '<div class="page rs">'+rsHeader(r.name,r.slug+' · '+r.version+' · '+noun,actions)+'<div class="rs-context">'+(r.isExample?'<span class="rs-tag">可编辑示例 · 未执行</span>':'')+'<span class="rs-tag">'+rsResourceStates[r.state]+'</span><span class="rs-help">'+(r.visibility==='public'?'公开范围 · 本机演示':'私有范围 · 当前浏览器')+'</span>'+(r!==record?'<span class="rs-tag">历史公开版本</span>':'')+'</div><p class="rs-local-note">当前保存与审核发生在本机，不会自动执行 Skill、连接数据库或对外发布。文件内容仅作为资源数据处理。</p><section class="rs-card"><h2>资源说明</h2><p class="rs-description">'+esc(r.description||'暂无描述')+'</p><dl class="rs-details"><dt>所属学科</dt><dd>'+esc(r.subjects.join('、')||'未选择')+'</dd><dt>标签</dt><dd>'+esc(r.tags.join('、')||'未选择')+'</dd><dt>GitHub</dt><dd>'+(r.github?'<a href="'+esc(r.github)+'" target="_blank" rel="noopener noreferrer">'+esc(r.github)+'</a>':'未填写')+'</dd>'+(r.kind==='database'?'<dt>数据来源</dt><dd>'+(r.sourceKind==='external'?'<a href="'+esc(r.sourceUrl)+'" target="_blank" rel="noopener noreferrer">'+esc(r.sourceUrl)+'</a>':'上传文件')+'</dd><dt>许可</dt><dd>'+esc(r.license||'未确认')+'</dd>':'')+'</dl>'+(r.review?'<p class="rs-help">本机审核演示：'+esc(r.review.reason||'审核通过')+' · '+esc(r.review.at)+'</p>':'')+'</section>'+
+ return '<div class="page rs">'+rsHeader(r.name,r.slug+' · '+r.version+' · '+noun,actions)+'<div class="rs-context">'+(r.isExample?'<span class="rs-tag">可编辑示例 · 未执行</span>':'')+'<span class="rs-tag">'+rsResourceStates[r.state]+'</span><span class="rs-help">'+(r.visibility==='public'?'公开范围 · 本机演示':'私有范围 · 当前浏览器')+'</span>'+(r!==record?'<span class="rs-tag">历史公开版本</span>':'')+'</div><section class="rs-card"><h2>资源说明</h2><p class="rs-description">'+esc(r.description||'暂无描述')+'</p><dl class="rs-details"><dt>所属学科</dt><dd>'+esc(r.subjects.join('、')||'未选择')+'</dd><dt>标签</dt><dd>'+esc(r.tags.join('、')||'未选择')+'</dd><dt>GitHub</dt><dd>'+(r.github?'<a href="'+esc(r.github)+'" target="_blank" rel="noopener noreferrer">'+esc(r.github)+'</a>':'未填写')+'</dd>'+(r.kind==='database'?'<dt>数据来源</dt><dd>'+(r.sourceKind==='external'?'<a href="'+esc(r.sourceUrl)+'" target="_blank" rel="noopener noreferrer">'+esc(r.sourceUrl)+'</a>':'上传文件')+'</dd><dt>许可</dt><dd>'+esc(r.license||'未确认')+'</dd>':'')+'</dl>'+(r.review?'<p class="rs-help">本机审核演示：'+esc(r.review.reason||'审核通过')+' · '+esc(r.review.at)+'</p>':'')+'</section>'+
  (r.kind==='tool'&&r.toolMode&&r.toolMode!=='skill'?'<section class="rs-card"><h2>'+ (r.toolMode==='code'?'工具代码 · '+esc(r.language):'API 配置')+'</h2>'+(r.toolMode==='code'?'<pre class="rs-code">'+esc(r.code||'')+'</pre>'+(r.requestExample?'<h3>输入示例</h3><pre class="rs-code">'+esc(r.requestExample)+'</pre><h3>输出示例</h3><pre class="rs-code">'+esc(r.responseExample)+'</pre>':''):'<p>'+esc(r.method)+' '+esc(r.endpoint)+'</p><p>认证：'+esc(r.auth)+' · 凭据引用：'+esc(r.credentialRef||'无')+'</p><pre class="rs-code">'+esc(r.requestExample)+'\n'+esc(r.responseExample)+'</pre>')+'<p class="rs-help">配置已保存，尚未接入执行环境。</p></section>':'')+
  (r.manifest.length?'<section class="rs-card"><h2>文件与校验记录</h2><div class="rs-file-list">'+r.manifest.map(f=>'<div><span><strong>'+esc(f.path)+'</strong><small>'+f.size+' bytes · '+esc(f.checksum)+'</small></span><button class="rs-link" type="button" data-rs-download="'+esc(f.id)+'">下载文件</button></div>').join('')+'</div>'+rsPreview(r.preview)+'</section>':'')+'<section class="rs-card"><h2>版本与操作记录</h2><div class="rs-version-list">'+[r,...(r.history||[])].map(v=>'<div><strong>'+esc(v.version)+'</strong><span>'+rsResourceStates[v.state]+' · '+esc(v.at)+'</span></div>').join('')+'</div><div class="rs-log">'+(r.events||[]).slice().reverse().map(e=>'<p>'+esc(e.at)+' · '+esc(e.text)+'</p>').join('')+'</div></section></div>';
 };

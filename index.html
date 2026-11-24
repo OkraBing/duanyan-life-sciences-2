@@ -3085,6 +3085,12 @@ body[data-route=workbench] #view{padding-block:0 var(--s8);padding-inline:max(va
 @media(max-width:1100px){.rh-activity+.rh-activity{padding-left:0!important;border-left:0!important;border-top:1px solid var(--line-2)!important}}
 /* 定时任务产出的动态：时间后面一个「定时」小标签 */
 .rh-activity .rh-tag{font-size:10px;padding:0 6px;border-radius:999px;background:var(--dry-soft);color:var(--dry-ink);line-height:16px}
+/* 学术资讯（示例） */
+.rh-news-note{margin:4px 0 8px;font-size:12px;color:var(--ink-4)}
+.rh-news-type{display:inline-block;font-size:11px;line-height:18px;padding:0 6px;margin-right:8px;border-radius:4px;background:var(--surface-2);color:var(--ink-2)}
+.rh-news-detail p{margin:0 0 10px;font-size:13px;line-height:1.7;color:var(--ink-2)}
+.rh-news-detail h4{margin:14px 0 6px;font-size:13px;font-weight:600;color:var(--ink)}
+.rh-news-meta{font-size:12px!important;color:var(--ink-3)!important}
 
 body[data-route="materials"] #view,body[data-route="files"] #view,body[data-route="shared"] #view{padding:0;background:var(--surface)}
 .ms-shell{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:calc(100vh - 48px);color:var(--ink)}
@@ -3925,10 +3931,10 @@ body[data-route="chat"] .research-top .outbar-hist,body[data-route="chat"] .outb
 
 /* 全局搜索（第二版）：侧栏顶部的触发器 + ⌘K 面板。
    触发器的尺寸和导航项同一把尺子：高 34、左右 12、图标 x=24，所以折叠前后位置不动。 */
-.gs-trigger{display:flex;align-items:center;gap:8px;margin:0 12px 6px;height:34px;padding:0 10px 0 11px;
+.gs-trigger{display:flex;align-items:center;gap:8px;margin:10px 12px 12px;height:34px;padding:0 10px 0 11px;
   border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink-3);
   font:inherit;font-size:13px;cursor:pointer;text-align:left;flex:0 0 auto;width:calc(100% - 24px)}
-.gs-trigger svg{flex:0 0 auto}
+.gs-trigger svg{flex:0 0 auto;display:block}
 .gs-trigger .gs-ph{flex:1;min-width:0}
 .gs-trigger .gs-kbd{font-family:var(--mono,ui-monospace,monospace);font-size:11px;color:var(--ink-4);
   border:1px solid var(--line);border-radius:4px;padding:0 5px;line-height:18px;background:var(--surface-2)}
@@ -3971,6 +3977,16 @@ body[data-route="chat"] .research-top .outbar-hist,body[data-route="chat"] .outb
 .ce-inline:hover{text-decoration:underline}
 .ce-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--line-2);padding-top:10px}
 .ce-dev{margin-top:4px}
+/* 科研工具：一条工具条（左：工具类型分段；右：用途下拉） */
+.tl-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 16px}
+.tl-seg{display:inline-flex;padding:3px;border-radius:9px;background:var(--surface-2);border:1px solid var(--line-2);gap:2px}
+.tl-seg-b{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border:0;border-radius:7px;background:transparent;font:inherit;font-size:13px;color:var(--ink-3);cursor:pointer}
+.tl-seg-b .num{font-size:11px;color:var(--ink-4)}
+.tl-seg-b.is-on{background:var(--surface);color:var(--ink);font-weight:500;box-shadow:0 1px 2px rgba(14,17,22,.08)}
+.tl-seg-b:focus-visible{outline:2px solid var(--dry);outline-offset:1px}
+.tl-cap{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-3)}
+.tl-cap .input{min-height:32px;height:32px;font-size:13px;padding:0 28px 0 10px;width:auto}
+.tl-clear{min-height:28px;padding:0 8px;font-size:12px}
 
 /* ====== 皮肤层：结构与分量的微调；颜色沿用最初的墨砚 token ======
    依据：impeccable（Operate 模式：壳有颜色、一套字族、紧凑刻度、带偏移的软阴影、浏览器默认面也要上色、不许单侧色条）
@@ -4345,16 +4361,99 @@ body[data-route="chat"]:has(.chat-history:not([hidden])) .research-home .researc
 #side[data-collapsed="1"] .brand{justify-content:flex-start!important;align-items:flex-start!important;padding-left:11px!important;padding-top:12px!important}  /* logo 与展开态同一个点：x=16 y=17 */
 #side[data-collapsed="1"] .side-toggle{left:12px!important;transform:none!important}
 
-/* 折叠态的展开按钮：不再单占一行（会压在搜索框上），而是叠在 logo 上。
-   平时看到的是 logo，鼠标移到品牌行或键盘聚焦时换成展开按钮；触屏没有悬停，直接显示按钮。
-   这样展开按钮在两种状态下都在品牌行里，折叠前后不跳位。 */
+
+
+/* 侧栏底部（折叠态）：消息数原来压在头像上，看起来像账户的角标，铃铛本身还被藏掉了。
+   现在铃铛单独一颗按钮放在头像上方，数字挂在铃铛右上角，小号、带一圈底色描边，和头像分开。 */
+#side[data-collapsed="1"] .acct-row{flex-direction:column-reverse!important;align-items:center;height:auto!important;gap:12px!important}
+#side[data-collapsed="1"] .acct-row .bell{position:relative!important;top:auto!important;right:auto!important;
+  width:32px!important;height:32px!important;min-height:32px!important;border-radius:8px;display:grid;place-items:center;color:var(--ink-3)}
+#side[data-collapsed="1"] .acct-row .bell:hover{background:var(--surface-2);color:var(--ink)}
+#side[data-collapsed="1"] .acct-row .bell svg{display:block!important}
+#side[data-collapsed="1"] .acct-row .bell .nav-n{position:absolute!important;top:-3px;right:-5px;min-width:16px;height:16px;padding:0 4px;
+  font-size:10px;line-height:16px;border-radius:8px;box-shadow:0 0 0 2px var(--surface)}
+/* 展开态的角标也收小一号，同一种样子 */
+#side .bell .nav-n{min-width:16px;height:16px;padding:0 4px;font-size:10px;line-height:16px;border-radius:8px;box-shadow:0 0 0 2px var(--surface)}
+/* 对话列表底部的存储说明：去掉分隔线，免得和侧栏底部那条线高低错开；只留一行安静的小字 */
+.history-foot{border-top:0!important;padding:8px 8px 2px!important;color:var(--ink-4)!important}
+
+/* 搜索框图标：两种状态下垂直位置一致（折叠态少了文字，flex 居中会差 1px） */
+.gs-trigger{position:relative}
+.gs-trigger svg{position:absolute;left:11px;top:9px}
+.gs-trigger .gs-ph{margin-left:23px}
+
+/* ---- 折叠按钮：全站同一种样子，并且常驻 ----
+   侧栏、对话列表的折叠/展开按钮统一成 32×32、圆角 8、细描边的方形按钮。
+   侧栏折叠时，展开按钮常驻在原来 logo 的位置（logo 收起），不靠悬停才出现；
+   这样按钮在两种状态下都在品牌行同一高度，下面的搜索框和七个入口也不动。 */
+#side .side-toggle{width:32px!important;height:32px!important;min-height:32px!important;padding:0!important;border:1px solid var(--line)!important;
+  border-radius:8px!important;background:var(--surface)!important;color:var(--ink-3)!important;display:grid!important;place-items:center}
+#side .side-toggle:hover{background:var(--surface-2)!important;color:var(--ink)!important;border-color:var(--ink-4)!important}
 #side[data-collapsed="1"] .brand{position:relative}
-#side[data-collapsed="1"] .side-toggle{top:16px!important;left:17px!important;opacity:0;z-index:2;
-  background:var(--surface)!important;transition:opacity .12s ease}
-#side[data-collapsed="1"] .brand:hover .side-toggle,#side[data-collapsed="1"] .side-toggle:focus-visible{opacity:1}
-#side[data-collapsed="1"] .brand:hover .brand-mark,#side[data-collapsed="1"] .brand:focus-within .brand-mark{opacity:0}
-@media (hover:none){#side[data-collapsed="1"] .side-toggle{opacity:1}#side[data-collapsed="1"] .brand-mark{opacity:0}}
-@media (prefers-reduced-motion:reduce){#side[data-collapsed="1"] .side-toggle{transition:none}}
+#side[data-collapsed="1"] .brand-home{visibility:hidden}
+#side[data-collapsed="1"] .side-toggle{position:absolute!important;top:16px!important;left:20px!important;transform:none!important;opacity:1!important;z-index:2}
+
+/* 对话列表：离开对话页时必须真的藏起来（折叠态的 display:flex!important 曾把 hidden 盖掉，
+   于是在资料空间等页面左上角也露出了展开 / 新建两个按钮） */
+.chat-history[hidden],.chat-history.is-collapsed[hidden]{display:none!important}
+/* 对话列表的折叠按钮：展开态也放在标题左边、同一种方形样式，折叠前后同一个位置 */
+.chat-history:not(.is-collapsed) .chat-history-head{display:flex!important;align-items:center;gap:8px}
+.chat-history:not(.is-collapsed) .chat-history-head-tools{display:contents!important}
+.chat-history:not(.is-collapsed) .history-collapse{order:0}
+.chat-history:not(.is-collapsed) .chat-history-head strong{order:1;margin-right:auto}
+.chat-history:not(.is-collapsed) .history-search-trigger{order:2}
+.chat-history .history-collapse{width:32px!important;height:32px!important;min-height:32px!important;padding:0!important;border:1px solid var(--line)!important;
+  border-radius:8px!important;background:var(--surface)!important;color:var(--ink-3)!important;display:grid!important;place-items:center}
+.chat-history .history-collapse:hover{background:var(--surface-2)!important;color:var(--ink)!important;border-color:var(--ink-4)!important}
+.chat-history.is-collapsed .history-collapse{order:1}
+.chat-history.is-collapsed .chat-history-head strong{order:2}
+.chat-history.is-collapsed .history-new-mini{order:3;margin-left:8px}
+/* 折叠态里更早的规则写死了 28×28，这里按同一把尺子拉回 32 */
+#side[data-collapsed="1"] .side-toggle{width:32px!important;height:32px!important;min-height:32px!important;max-height:32px!important;left:20px!important;top:14px!important}
+/* 对话列表折叠后的按钮行，与展开态的标题行对齐：按钮 y、标题 x 都不动 */
+.chat-history.is-collapsed{top:26px!important}
+.chat-history.is-collapsed .chat-history-head strong{margin-left:2px!important;line-height:32px!important}
+/* 模型制备 / 数据集：页签就是页头的下边界，页头不再多留 16px 底距，免得页签和下面的筛选之间空出一大段 */
+body[data-route="mdl"] #view .pg-hd,body[data-route="dsets"] #view .pg-hd{padding-bottom:0!important}
+/* 对话首页的蛋白质 / DNA 背景：原图是淡蓝色，之前被 grayscale + 30% 透明度压成了灰。
+   恢复原色，透明度提到 0.6；深色主题下仍然压暗，免得抢字 */
+.research-home::before{filter:saturate(1.1)!important;opacity:.6!important}
+:root[data-theme="dark"] .research-home::before{filter:grayscale(.4) brightness(.6)!important;opacity:.35!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .research-home::before{filter:grayscale(.4) brightness(.6)!important;opacity:.35!important}}
+/* 消息列表：小一号，不再撑满屏幕高度；标题与来源各一行，超出用省略号，悬停看全文 */
+.menu:has(.ib-wrap){max-width:min(21rem,calc(100vw - 1.5rem))!important;max-height:min(26rem,62vh)!important;overflow-y:auto!important;padding:4px!important}
+.ib-wrap{width:min(20rem,calc(100vw - 2.5rem))!important}
+.ib-wrap .menu-i.is-ib{padding:7px 8px!important;min-height:0!important}
+.ib-r1 .nm{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:12.5px!important}
+.ib-from{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.ib-r2 .chip{flex:0 0 auto}
+.ib-h{position:sticky;top:-4px;z-index:1;background:var(--surface)}
+
+/* ---- 可点卡片：全站同一套基础样式与悬停 ----
+   项目卡片原来有两条规则打架（一条把悬停描边加深，一条又设成透明），悬停时边框反而消失；
+   实验卡片悬停直接变成深灰描边。统一为：常态浅描边 + 一点阴影；悬停描边深一档、阴影略浮起。 */
+.projects-page .project-card-wrap,.page .lv-exp,.rh-project,.shared-project-card{
+  border:1px solid var(--line)!important;border-radius:12px!important;background:var(--surface)!important;
+  box-shadow:0 1px 2px rgba(19,24,38,.05)!important;transition:border-color .12s ease,box-shadow .12s ease}
+.projects-page .project-card-wrap:hover,.projects-page .project-card-wrap:focus-within,
+.page .lv-exp:hover,.page .lv-exp:focus-visible,.rh-project:hover,.shared-project-card:hover{
+  border-color:color-mix(in srgb,var(--line) 45%,var(--ink-4))!important;
+  box-shadow:0 6px 18px -10px rgba(19,24,38,.22),0 1px 2px rgba(19,24,38,.05)!important}
+.projects-page .project-card-wrap>.pcard,.projects-page .project-card-wrap>.pcard:hover{border:0!important;box-shadow:none!important;background:transparent!important}
+@media (prefers-reduced-motion:reduce){.projects-page .project-card-wrap,.page .lv-exp,.rh-project,.shared-project-card{transition:none}}
+/* 实验卡片右上的批次编号：做成一个小标签 */
+.lv-id-tag{font-size:11px;line-height:20px;padding:0 8px;border-radius:6px;background:var(--surface-2);color:var(--ink-3);border:1px solid var(--line-2);letter-spacing:.02em}
+
+/* 对话列表「更多」：原来是浅灰的三个点，几乎看不见。加深一档，行悬停时出底色 */
+.history-more{color:var(--ink-3)!important;font-weight:700;letter-spacing:1px;width:28px!important;height:28px;min-height:28px!important;border-radius:6px!important;display:grid;place-items:center;align-self:center}
+.history-item:hover .history-more{background:var(--surface-2)!important;color:var(--ink)!important}
+.history-more:hover,.history-more[aria-expanded="true"]{background:var(--surface-3)!important;color:var(--ink)!important}
+/* 菜单里的二级展开 */
+#menu.has-fly{overflow:visible!important}
+#menu .menu-fly{position:absolute;min-width:220px;z-index:201;max-height:60vh;overflow-y:auto}
+#menu .menu-i.has-sub{display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center}
+#menu .menu-i.has-sub .sub-car{color:var(--ink-4);font-size:14px;padding-left:8px}
+#menu .menu-i.has-sub.is-open{background:var(--surface-2)}
 
 
 /* 项目卡标题被挤成两行、断在「结合界 / 面」：标题被写死 max-width:calc(100% - 55px)，
@@ -5444,9 +5543,11 @@ function sessMenu(btn,id){
   const x=SESSIONS.find(y=>y.id===id);if(!x)return;
   const row=(k,n)=>`<button class="menu-i" type="button" data-pick="${k}">
     <span class="ck"></span><span><span class="nm">${n}</span></span></button>`;
+  /* 第二版：「继续对话」去掉——点对话本身就是继续。改绑项目不再关掉菜单再开一个，
+     而是在菜单右边展开课题列表，选完即生效。 */
   menu(btn,'<div class="menu-l">对话</div>'
-    +row('open','继续对话')
-    +row('proj',x.pid?'改绑项目':'添加到项目')
+    +`<button class="menu-i has-sub" type="button" data-sess-sub aria-haspopup="menu" aria-expanded="false">
+       <span class="ck"></span><span><span class="nm">${x.pid?'改绑项目':'添加到项目'}</span></span><span class="sub-car" aria-hidden="true">›</span></button>`
     +row('pin',x.pin?'取消置顶':'置顶')
     +row('rename','重命名')
     +row('arch',x.arch?'取消归档':'归档')
@@ -5454,7 +5555,6 @@ function sessMenu(btn,id){
     +`<button class="menu-i is-danger" type="button" data-pick="del">
        <span class="ck"></span><span><span class="nm">删除</span></span></button>`,
     v=>{
-      if(v==='open')return openSession(x);
       if(v==='proj')return setTimeout(()=>sessProj(btn,x),0);
       if(v==='rename')return sessRename(x);
       if(v==='pin'){x.pin=!x.pin;paintNav(1);render();
@@ -5463,6 +5563,36 @@ function sessMenu(btn,id){
         toast(x.arch?'已归档':'已取消归档');return}
       if(v==='del')return sessDel(x);
     });
+  sessProjFlyout(x);
+}
+function sessProjFlyout(x){
+  const m=document.getElementById('menu'),trig=m&&m.querySelector('[data-sess-sub]');if(!trig)return;
+  m.classList.add('has-fly');
+  const open=(focus)=>{
+    let f=m.querySelector('.menu-fly');
+    if(!f){
+      f=document.createElement('div');f.className='menu menu-fly';f.setAttribute('role','menu');
+      f.innerHTML='<div class="menu-l">绑定到项目</div>'
+        +DB.projects.map(p=>`<button class="menu-i" type="button" data-fly-pid="${esc(p.id)}" aria-checked="${x.pid===p.id}">
+           <span class="ck">${x.pid===p.id?CK:''}</span><span><span class="nm">${esc(p.name)}</span></span></button>`).join('')
+        +'<div class="menu-sep"></div>'
+        +`<button class="menu-i" type="button" data-fly-pid="" aria-checked="${!x.pid}"><span class="ck">${x.pid?'':CK}</span><span><span class="nm">不绑定项目</span></span></button>`;
+      m.appendChild(f);
+      f.querySelectorAll('[data-fly-pid]').forEach(b=>b.onclick=()=>{const v=b.dataset.flyPid;x.pid=v||null;closeMenu();render();
+        toast(v?`已绑定到「${(DB.projects.find(p=>p.id===v)||{}).name}」`:'已解除项目绑定')});
+    }
+    /* 贴着「改绑项目」那一行往右展开；右边放不下就往左 */
+    const mr=m.getBoundingClientRect(),tr=trig.getBoundingClientRect();
+    f.style.top=(tr.top-mr.top-6)+'px';
+    f.style.left=(mr.right+6+f.offsetWidth>innerWidth-8)?(-f.offsetWidth-6)+'px':'calc(100% + 6px)';
+    trig.setAttribute('aria-expanded','true');trig.classList.add('is-open');
+    if(focus)f.querySelector('.menu-i')?.focus();
+  };
+  trig.addEventListener('mouseenter',()=>open(false));
+  trig.addEventListener('click',e=>{e.preventDefault();open(true)});
+  trig.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();open(true)}});
+  /* 鼠标移到别的菜单项上就收起右侧 */
+  m.querySelectorAll(':scope > .menu-i:not([data-sess-sub])').forEach(it=>it.addEventListener('mouseenter',()=>{m.querySelector('.menu-fly')?.remove();trig.setAttribute('aria-expanded','false');trig.classList.remove('is-open')}));
 }
 function sessProj(btn,x){
   menu(btn,'<div class="menu-l">绑定到项目</div>'
@@ -7092,6 +7222,7 @@ V.dsets=()=>{
         <p class="mut t-md pg-sub">用于模型训练的数据集，可按课题筛选</p>
       </div>
       <div class="row wrap" style="gap:var(--s3);flex:0 0 auto">
+        <button class="btn" type="button" data-go="set">模型接入</button>
         <button class="btn btn-pri" type="button" data-nav="dsnew">新建数据集</button>
       </div>
     </div>
@@ -7425,6 +7556,8 @@ V.mdl=(activeTab=S.mtab)=>{
       <!-- flex:0 0 auto：左边标题那一列是 grow，不写这句的话这一排会被压窄、
            自己折成两行（搜索框一行、按钮一行）。 -->
       <div class="row wrap" style="gap:var(--s3);flex:0 0 auto">
+        <!-- 第二版：模型接入（外部大模型的系列与密钥）放在模型制备页右上角，和用到它的地方在一起 -->
+        <button class="btn" type="button" data-go="set">模型接入</button>
         ${tab==='cur'?`<input type="file" id="mdlin" accept=".json" style="display:none"
             aria-label="选择要导入的模型文件">`:''}
         ${tab==='infer'?inferHd():''}
@@ -7571,8 +7704,7 @@ function mdlJob(){
           {n:'删除',attr:`data-mdel="${esc(m.id)}"`}
         ])}
       </tr>`}).join('')}</tbody></table></div>
-      <span class="t-xs mut2">指标是在你这台机器的浏览器里算出来的，换一台也复现得出来。
-</span>`
+`
     :mdlEmpty('训练任务','还没有训练任务','训练任务会保留在这里，包括失败的任务。',
         ALL_MODELS().length)}
     </div></section>`;
@@ -7785,7 +7917,7 @@ function jobDrawer(m){
             <span class="t-sm num" style="word-break:break-all">${esc(m.cols.join('、'))}</span>
           </div>`:''}
           <div class="dw-f">
-            <span class="t-xs mut2 grow">指标在这台机器的浏览器里算出，可复现。</span>
+            <span class="grow"></span>
             <button class="btn" type="button" data-mrep="${esc(m.id)}">${DL_IC}下载报告</button>
             <button class="btn btn-pri" type="button" data-mdl="${esc(m.id)}">${DL_IC}下载权重</button>
           </div>`}
@@ -12465,19 +12597,19 @@ return `<div class="page">
 
   </div>
 
-  <div class="fltrow">
-    <span class="t-sm mut2 fltrow-l">用途类型</span>
-    <span class="fltrow-s">${[['全部','全部类型']].concat(CAPS.map(c=>[c.id,c.sn||c.n])).map(([k,n])=>
-      `<button class="pill${S.shcap===k?' is-on':''}${k==='wet'?' is-wet':''}" type="button"
-        data-shcap="${k}" aria-pressed="${S.shcap===k}">${esc(n)}</button>`).join('')}
-  </span></div>
-
-  <div class="tabs">
-    ${[['SKILL','Skills'],['SCP','SCP'],['MODEL','模型']].map(([k,n])=>
-      `<button class="tab${kind===k?' is-on':''}" type="button" data-use="${k}" aria-selected="${kind===k}">
-        ${n}<span class="tab-c num">${cnt(k)}</span></button>`).join('')}
+  <!-- 第二版：原来「用途类型」一排胶囊、「Skills / SCP / 模型」一排页签，加上市场 / 我的，一共三层。
+       现在工具类型做成分段按钮、用途做成下拉，并在同一行：页面上只剩「市场 / 我的」和这一条工具条两层。 -->
+  <div class="tl-bar">
+    <div class="tl-seg" role="group" aria-label="工具类型">
+      ${[['SKILL','Skills'],['SCP','SCP'],['MODEL','模型']].map(([k,n])=>
+      `<button class="tl-seg-b${kind===k?' is-on':''}" type="button" data-use="${k}" aria-pressed="${kind===k}">
+        ${n}<span class="num">${cnt(k)}</span></button>`).join('')}
+    </div>
     <span class="grow"></span>
-    ${(qq||pick)?'<button class="btn btn-gh" style="min-height:1.625rem;padding:0 8px;font-size:0.75rem" type="button" data-act="shclear">清空筛选</button>':''}
+    <label class="tl-cap"><span>用途</span><span class="ctl ctl-sel"><select class="input" data-shcap-select aria-label="按用途筛选">
+      ${[['全部','全部用途']].concat(CAPS.map(c=>[c.id,c.sn||c.n])).map(([k,n])=>`<option value="${esc(k)}"${S.shcap===k?' selected':''}>${esc(n)}</option>`).join('')}
+    </select><span class="car" aria-hidden="true"></span></span></label>
+    ${(qq||pick)?'<button class="btn btn-gh tl-clear" type="button" data-act="shclear">清空筛选</button>':''}
   </div>
 
   ${L.length?`<div class="sgrid">${L.map(card).join('')}</div>`
@@ -16437,7 +16569,7 @@ function inboxMenu(anchor){
     <div class="ib-h"><span class="t">消息</span>
       ${un?`<button class="ib-x" type="button" data-go="__read">全部标为已读</button>`:''}</div>
     ${L.length?L.map(x=>`<button class="menu-i is-ib${x.read?'':' is-un'}" type="button"
-        data-go="${esc(x.id)}" title="${esc(x.act||'打开')}">
+        data-go="${esc(x.id)}" title="${esc(x.title)}${x.act?' · '+esc(x.act):''}">
         <span class="dot" aria-hidden="true"></span>
         <span style="min-width:0">
           <span class="ib-r1"><span class="nm">${esc(x.title)}</span>
@@ -18331,9 +18463,10 @@ function render(){
   q('[data-dom]',b=>b.onclick=()=>{S.dom=b.dataset.dom;render()});
   q('[data-ptab]',b=>b.onclick=()=>{S.ptab=b.dataset.ptab;render()});
   q('[data-mtab]',b=>b.onclick=()=>{const k=b.dataset.mtab;S.jobPick=null;S.checkpointPick=null;
-    /* 数据集有自己的路由（深链接、回归用例都按它找），所以它是跳页不是换页签 */
-    if(k==='dset'){go('dsets');return}
-    S.mtab=k;if(S.route==='dsets'){go('mdl');return}render()});
+    /* 数据集有自己的路由（深链接、回归用例都按它找），所以它是跳页不是换页签。
+         但在用户眼里它只是同一页的一个页签：跳页时不播整页淡入，否则点页签会闪一下 */
+    if(k==='dset'){go('dsets',{_anim:false});return}
+    S.mtab=k;if(S.route==='dsets'){go('mdl',{_anim:false});return}render()});
   q('[data-pjtab]',b=>b.onclick=()=>{S.pjtab=b.dataset.pjtab;render()});
   q('[data-pjjob]',b=>b.onclick=()=>{S.pjBatch=null;S.jobPick=b.dataset.pjjob;render()});
   q('[data-pjbatch]',b=>b.onclick=()=>{S.jobPick=null;S.pjBatch=b.dataset.pjbatch;render()});
@@ -21892,7 +22025,7 @@ function rsPublishModelDialog(id){
    <dt>发布版本</dt><dd>${esc(asset.version)}</dd>
    <dt>来源课题</dt><dd>${esc(project.name)}</dd>
    <dt>发布范围</dt><dd>${shared?esc(shared.name)+'的成员':'关联课题的共享课题成员'}</dd>
- </dl><p class="rs-help">发布后会保存一份模型版本快照。当前 Demo 将共享记录保存在本机。</p>`;
+ </dl><p class="rs-help">发布后会保存一份模型版本快照。</p>`;
  if(!shared){
    if(!can('edit')||(project.ownerId||'me')!=='me'){toast('需要课题所有者先开启共享');return}
    modal('发布模型',info+'<p class="rs-help">该课题尚未开启共享。继续后可确认课题名称与共享内容。</p>','设置课题共享',()=>{
@@ -22048,12 +22181,13 @@ function rsResourceForm(kind){const gate=rsGate();if(gate)return gate;if(!RS.for
 }
 V.toolnew=()=>rsResourceForm('tool');V.databasenew=()=>rsResourceForm('database');
 const rsBuiltinShelf=V.shelf,rsBuiltinData=V.data;
-function rsMarketTabs(kind){return '<div class="rs-market-tabs" role="group" aria-label="资源范围">'+[['catalog','市场'],['mine','我的']].map(([k,n])=>'<button type="button" data-rs-market-tab="'+k+'" data-rs-kind="'+kind+'" class="'+((RS.marketTab||'catalog')===k?'is-on':'')+'" aria-pressed="'+((RS.marketTab||'catalog')===k)+'">'+n+'</button>').join('')+'</div>';}
+function rsMarketTabs(kind){return '<div class="rs-market-tabs" role="group" aria-label="资源范围">'+(kind==='tool'?[['catalog','市场'],['mine','我的']]:[['catalog','公共数据集'],['mine','我的数据集']]).map(([k,n])=>'<button type="button" data-rs-market-tab="'+k+'" data-rs-kind="'+kind+'" class="'+((RS.marketTab||'catalog')===k?'is-on':'')+'" aria-pressed="'+((RS.marketTab||'catalog')===k)+'">'+n+'</button>').join('')+'</div>';}
 function rsMarketPage(kind,scope=RS.marketTab){const isTool=kind==='tool',personal=S.route==='tools',noun=isTool?'工具':'数据库',title=personal?'工具':isTool?'科研工具':'数据库',create='<button class="btn btn-pri" type="button" data-rs-new-resource="'+kind+'">新建'+noun+'</button>';
- if(scope==='mine'){const items=RS.data.resources.filter(r=>r.kind===kind&&r.owner==='me');return '<div class="page rs">'+rsHeader(title,'管理自己的文件、版本与发布状态。',create)+(personal?'':rsMarketTabs(kind))+'<p class="rs-local-note">私有资源仅在本机可见；公开审核和发布为本机流程演示，未上传到端砚或其他服务。</p>'+(items.length?'<div class="rs-project-grid">'+items.map(rsResourceCard).join('')+'</div>':'<div class="rs-empty"><h2>创建你的第一个'+noun+'</h2><p>上传文件、完善信息，建立可以复用的资源版本。</p>'+create+'</div>')+'</div>';}
+ if(scope==='mine'){const items=RS.data.resources.filter(r=>r.kind===kind&&r.owner==='me');return '<div class="page rs">'+rsHeader(title,'管理自己的文件、版本与发布状态。',create)+(personal?'':rsMarketTabs(kind))+(items.length?'<div class="rs-project-grid">'+items.map(rsResourceCard).join('')+'</div>':'<div class="rs-empty"><h2>创建你的第一个'+noun+'</h2><p>上传文件、完善信息，建立可以复用的资源版本。</p>'+create+'</div>')+'</div>';}
  let html=(isTool?rsBuiltinShelf:rsBuiltinData)();html=html.replace('<h1>'+title+'</h1>','<h1>'+title+'</h1>');
  html=html.replace(isTool?'<label class="fbar-q">':'<div class="field" style="width:auto">',create+(isTool?'<label class="fbar-q">':'<div class="field" style="width:auto">'));
- html=html.replace('<div class="fltrow">',rsMarketTabs(kind)+'<div class="fltrow">');
+ /* 科研工具的筛选收成了一条 .tl-bar；数据库仍是 .fltrow。「市场 / 我的」插在它们前面 */
+ {const bar=isTool?'<div class="tl-bar">':'<div class="fltrow">';html=html.replace(bar,rsMarketTabs(kind)+bar);}
  const query=String(isTool?S.tq||'':S.dq||'').toLowerCase();const pick=isTool?S.shcap:S.dcap;const items=RS.data.resources.filter(r=>r.kind===kind).map(rsPublishedResource).filter(Boolean).filter(r=>!pick||pick==='全部'||r.cap===pick).filter(r=>!query||[r.name,r.slug,r.description,...r.tags].join(' ').toLowerCase().includes(query));
  if(items.length){const cards='<section class="rs-card rs-created-catalog"><div class="rs-card-top"><h2>'+ (isTool?'用户发布的工具':'本机发布的数据库')+'</h2><span class="rs-tag">审核流程演示</span></div><div class="rs-project-grid">'+items.map(rsResourceCard).join('')+'</div></section>';const fragment=document.createElement('template');fragment.innerHTML=html;const anchor=fragment.content.querySelector(isTool?'.sgrid':'.dgrid')||fragment.content.querySelector('.empty');if(anchor){const section=document.createElement('div');section.innerHTML=cards;anchor.before(section.firstElementChild);if(anchor.classList.contains('empty'))anchor.remove();html=fragment.innerHTML;}}
  return html;
@@ -22063,7 +22197,7 @@ V.resdetail=()=>{
  const gate=rsGate();if(gate)return gate;const record=RS.data.resources.find(r=>r.id===RS.resourcePick);if(!record)return '<div class="page rs"><header class="iteration-head"><div><h1>资源不存在</h1><p>该资源可能已移除，或不在当前浏览器保存的记录中。</p></div></header><section class="rs-card"><h2>重新选择资源</h2><p class="rs-help">可返回工具或数据列表，查看可用资源及我的提交。</p><div class="rs-actions"><button class="btn" type="button" data-go="shelf">科研工具</button><button class="btn" type="button" data-go="data">公共数据库</button></div></section></div>';
  const r=RS.resourceVersion&&RS.resourceVersion!==record.version?(record.history||[]).find(v=>v.version===RS.resourceVersion)||record:record,noun=r.kind==='tool'?'工具':'数据库';
  const actions='<button class="btn" type="button" data-rs-back-resource-market="'+r.kind+'">'+(r.kind==='tool'?'返回工具列表':'返回我的提交')+'</button>'+(r===record&&r.state!=='pending'?'<button class="btn btn-pri" type="button" data-rs-edit-resource="'+r.id+'">'+(r.kind==='tool'?'编辑工具':['draft','rejected'].includes(r.state)?'继续编辑':'更新版本')+'</button>':'')+(r===record&&r.state==='pending'? (r.kind==='tool'&&r.owner==='me'?'<button class="btn btn-pri" type="button" data-tl-edit="'+r.id+'">撤回并编辑</button>':'')+'<button class="btn" type="button" data-rs-withdraw="'+r.id+'">撤回审核</button><button class="btn btn-pri" type="button" data-rs-review="'+r.id+'">预览审核流程</button>':'');
- return '<div class="page rs">'+rsHeader(r.name,r.slug+' · '+r.version+' · '+noun,actions)+'<div class="rs-context">'+(r.isExample?'<span class="rs-tag">可编辑示例 · 未执行</span>':'')+'<span class="rs-tag">'+rsResourceStates[r.state]+'</span><span class="rs-help">'+(r.visibility==='public'?'公开范围 · 本机演示':'私有范围 · 当前浏览器')+'</span>'+(r!==record?'<span class="rs-tag">历史公开版本</span>':'')+'</div><p class="rs-local-note">当前保存与审核发生在本机，不会自动执行 Skill、连接数据库或对外发布。文件内容仅作为资源数据处理。</p><section class="rs-card"><h2>资源说明</h2><p class="rs-description">'+esc(r.description||'暂无描述')+'</p><dl class="rs-details"><dt>所属学科</dt><dd>'+esc(r.subjects.join('、')||'未选择')+'</dd><dt>标签</dt><dd>'+esc(r.tags.join('、')||'未选择')+'</dd><dt>GitHub</dt><dd>'+(r.github?'<a href="'+esc(r.github)+'" target="_blank" rel="noopener noreferrer">'+esc(r.github)+'</a>':'未填写')+'</dd>'+(r.kind==='database'?'<dt>数据来源</dt><dd>'+(r.sourceKind==='external'?'<a href="'+esc(r.sourceUrl)+'" target="_blank" rel="noopener noreferrer">'+esc(r.sourceUrl)+'</a>':'上传文件')+'</dd><dt>许可</dt><dd>'+esc(r.license||'未确认')+'</dd>':'')+'</dl>'+(r.review?'<p class="rs-help">本机审核演示：'+esc(r.review.reason||'审核通过')+' · '+esc(r.review.at)+'</p>':'')+'</section>'+
+ return '<div class="page rs">'+rsHeader(r.name,r.slug+' · '+r.version+' · '+noun,actions)+'<div class="rs-context">'+(r.isExample?'<span class="rs-tag">可编辑示例 · 未执行</span>':'')+'<span class="rs-tag">'+rsResourceStates[r.state]+'</span><span class="rs-help">'+(r.visibility==='public'?'公开范围 · 本机演示':'私有范围 · 当前浏览器')+'</span>'+(r!==record?'<span class="rs-tag">历史公开版本</span>':'')+'</div><section class="rs-card"><h2>资源说明</h2><p class="rs-description">'+esc(r.description||'暂无描述')+'</p><dl class="rs-details"><dt>所属学科</dt><dd>'+esc(r.subjects.join('、')||'未选择')+'</dd><dt>标签</dt><dd>'+esc(r.tags.join('、')||'未选择')+'</dd><dt>GitHub</dt><dd>'+(r.github?'<a href="'+esc(r.github)+'" target="_blank" rel="noopener noreferrer">'+esc(r.github)+'</a>':'未填写')+'</dd>'+(r.kind==='database'?'<dt>数据来源</dt><dd>'+(r.sourceKind==='external'?'<a href="'+esc(r.sourceUrl)+'" target="_blank" rel="noopener noreferrer">'+esc(r.sourceUrl)+'</a>':'上传文件')+'</dd><dt>许可</dt><dd>'+esc(r.license||'未确认')+'</dd>':'')+'</dl>'+(r.review?'<p class="rs-help">本机审核演示：'+esc(r.review.reason||'审核通过')+' · '+esc(r.review.at)+'</p>':'')+'</section>'+
  (r.kind==='tool'&&r.toolMode&&r.toolMode!=='skill'?'<section class="rs-card"><h2>'+ (r.toolMode==='code'?'工具代码 · '+esc(r.language):'API 配置')+'</h2>'+(r.toolMode==='code'?'<pre class="rs-code">'+esc(r.code||'')+'</pre>'+(r.requestExample?'<h3>输入示例</h3><pre class="rs-code">'+esc(r.requestExample)+'</pre><h3>输出示例</h3><pre class="rs-code">'+esc(r.responseExample)+'</pre>':''):'<p>'+esc(r.method)+' '+esc(r.endpoint)+'</p><p>认证：'+esc(r.auth)+' · 凭据引用：'+esc(r.credentialRef||'无')+'</p><pre class="rs-code">'+esc(r.requestExample)+'\n'+esc(r.responseExample)+'</pre>')+'<p class="rs-help">配置已保存，尚未接入执行环境。</p></section>':'')+
  (r.manifest.length?'<section class="rs-card"><h2>文件与校验记录</h2><div class="rs-file-list">'+r.manifest.map(f=>'<div><span><strong>'+esc(f.path)+'</strong><small>'+f.size+' bytes · '+esc(f.checksum)+'</small></span><button class="rs-link" type="button" data-rs-download="'+esc(f.id)+'">下载文件</button></div>').join('')+'</div>'+rsPreview(r.preview)+'</section>':'')+'<section class="rs-card"><h2>版本与操作记录</h2><div class="rs-version-list">'+[r,...(r.history||[])].map(v=>'<div><strong>'+esc(v.version)+'</strong><span>'+rsResourceStates[v.state]+' · '+esc(v.at)+'</span></div>').join('')+'</div><div class="rs-log">'+(r.events||[]).slice().reverse().map(e=>'<p>'+esc(e.at)+' · '+esc(e.text)+'</p>').join('')+'</div></section></div>';
 };
@@ -22707,7 +22841,7 @@ labCardV2=function(b){
  const methods=workflow?.source==='autonomous'?alTaskMethods(workflow):b.ctx?.assay?.join('、');
  const context=summary.status==='exception'?summary.detail:summary.status==='conclusion'?workflow?.conclusion?.verdict:summary.current;
  return `<article class="lv-exp is-${summary.status}" role="button" tabindex="0" data-labgo="${esc(b.id)}" aria-label="${action}：${esc(title)}">
-  <div class="row" style="justify-content:space-between;gap:10px">${labBadge(summary.status,summary.label)}<span class="lv-small">${esc(b.id.includes('DEMO')?'':b.id)}</span></div>
+  <div class="row" style="justify-content:space-between;gap:10px">${labBadge(summary.status,summary.label)}${b.id.includes('DEMO')?'':`<span class="lv-id-tag num">${esc(b.id)}</span>`}</div>
   <h2 class="lv-exp-title">${esc(title)}</h2>
   <p class="lv-small">${esc(pnOf(b.pid))} · ${b.n} 个${workflow?.source==='autonomous'?'候选':''}样本</p>
   ${methods?`<p class="lv-small lv-card-summary">${esc(methods)}</p>`:''}
@@ -23339,9 +23473,24 @@ function researchCatalog(projects){
  if(typeof DATASRC==='undefined'||!projects.length)return [];
  return DATASRC.filter(d=>/蛋白质/.test(d.mode||'')).map(d=>({id:'cat:'+d.ab,name:d.n,kind:'公共数据库',project:'蛋白类课题',pid:projects[0].id,meta:d.mode+' · '+(d.wired?'已接入':'未接入'),route:'data'}));
 }
+/* 学术资讯（示例）
+   还没接资讯源，这一页签先用一组示例占位，让版式和交互能被评审。
+   全部是虚构条目：名称里不出现真实机构，不写具体人数、金额；
+   页签顶部和每条详情都写明「示例」，接入资讯源后整段替换。 */
+const RH_NEWS_SAMPLES=[
+ {id:'n1',type:'会议',title:'蛋白质设计与工程研讨会开放摘要投稿',source:'学术会议（示例）',at:'11-22',match:/barnase|结合界面|蛋白/i,summary:'研讨会设蛋白–蛋白相互作用界面设计、稳定性工程与实验验证三个分会场，接受摘要投稿与墙报展示。',next:'核对投稿截止时间与摘要格式要求，评估当前课题的结合界面结果是否适合作为墙报。'},
+ {id:'n2',type:'讲座',title:'线上讲座：从结构预测到湿实验验证的闭环',source:'线上讲座（示例）',at:'11-21',match:/亲和力|barstar|改造/i,summary:'讲座讨论如何把结构预测得到的候选转成可测的实验批次，以及怎样用实测值回头校准打分模型。',next:'讲座与本课题「候选 → 测定 → 重训」的流程相近，可以关注其中关于实测值回流的做法。'},
+ {id:'n3',type:'数据库',title:'某公共蛋白热稳定性数据库发布新版本',source:'数据库更新（示例）',at:'11-20',match:/barnase|稳定|ΔTm|结合界面/i,summary:'新版本补充了一批单点与组合突变的热稳定性测定记录，并统一了测定条件字段。',next:'可以检查新增记录里是否有与本课题位点重叠的突变，作为打分器的外部验证集。'},
+ {id:'n4',type:'基金',title:'合成生物学方向青年项目申报指南发布',source:'科研基金（示例）',at:'11-19',match:/核酸酶|酶|kcat/i,summary:'指南列出酶工程、代谢通路设计等方向，强调计算设计与自动化实验结合。',next:'课题的酶活改造方向与指南重点相符，可以整理已有进展作为预实验基础。'},
+ {id:'n5',type:'平台',title:'自动化湿实验平台开放共享机时预约',source:'平台动态（示例）',at:'11-18',match:/./,summary:'平台开放热稳定性、亲和力表征类设备的共享机时，可按批次预约。',next:'如果下一批候选需要排队表征，可以提前在「实验管理 → 设备管理」里确认可用设备。'},
+ {id:'n6',type:'会议',title:'酶工程年会征集口头报告',source:'学术会议（示例）',at:'11-16',match:/核酸酶|酶/i,summary:'年会征集酶动力学改造、底物特异性与高通量筛选方向的口头报告。',next:'若本轮 kcat 结果稳定，可作为报告素材。'},
+];
+function researchNews(projects){
+ return RH_NEWS_SAMPLES.map(n=>{const hit=projects.filter(p=>n.match.test((p.name||'')+' '+(p.description||'')+' '+(p.target||'')));return {...n,projects:hit.length?hit:projects.slice(0,1)}}).filter(n=>n.projects.length);
+}
 function researchDiscoveries(projects){
  if(RESEARCH_HOME.tab==='resources')return researchResources(projects).map(r=>'<button class="rh-discovery-row" type="button" data-rh-resource="'+esc(r.id)+'" data-rh-pid="'+esc(r.pid)+'" data-rh-route="'+r.route+'"><span class="rh-discovery-icon">'+rhIcon(r.kind==='模型'?'model':'paper')+'</span><span class="rh-discovery-copy"><strong>'+esc(r.name)+'</strong><small>'+esc(r.kind)+' · 关联：'+esc(r.project)+' · '+esc(r.meta||researchTime(r.at))+'</small></span>'+rhIcon('right')+'</button>');
- if(RESEARCH_HOME.tab==='news')return [];
+ if(RESEARCH_HOME.tab==='news')return researchNews(projects).map(n=>'<button class="rh-discovery-row rh-news-row" type="button" data-rh-news="'+esc(n.id)+'"><span class="rh-discovery-icon">'+rhIcon(n.type==='会议'||n.type==='讲座'?'calendar':n.type==='数据库'?'chart':'book')+'</span><span class="rh-discovery-copy"><strong>'+esc(n.title)+'</strong><small><span class="rh-news-type">'+esc(n.type)+'</span>关联：'+esc(n.projects.slice(0,2).map(p=>p.name).join('、')+(n.projects.length>2?' 等 '+n.projects.length+' 个课题':''))+'　|　'+esc(n.source.replace('（示例）',''))+'　|　'+esc(n.at)+'</small></span>'+rhIcon('right')+'</button>');
  return dashboardPapers(projects).map(p=>{const source=WB_PAPERS.find(x=>x.id===p.id),names=projects.filter(x=>(p.pids||[p.pid]).includes(x.id)).map(x=>x.name);return '<a class="rh-discovery-row" href="'+esc(wbViewHref(p.url))+'" target="_blank" rel="noopener noreferrer"><span class="rh-discovery-icon">'+rhIcon('paper')+'</span><span class="rh-discovery-copy"><strong>'+esc(source?.shortTitle||p.shortTitle||p.title)+'</strong><small>关联：'+esc(names.join('、'))+(source?.journal?'　|　来源：'+esc(source.journal):'')+'</small></span>'+rhIcon('right')+'</a>';});
 }
 function researchCard(p,i){
@@ -23353,7 +23502,7 @@ V.workbench=()=>{
  const start=Math.min(RESEARCH_HOME.start,Math.max(0,Math.ceil(ps.length/3)-1)*3);RESEARCH_HOME.start=start;
  const items=ps.slice(start,start+3),activities=researchActivities(),rows=researchDiscoveries(all);
  const date=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short',timeZone:'Asia/Shanghai'}),resources=researchResources(all);
- return '<div class="page wb wb-workstation"><header class="rh-header"><div><h1>工作台</h1><p>聚焦课题进展，推进下一步研究</p></div><div class="rh-header-actions"><button class="rh-link" type="button" data-go="schedules">定时任务</button><button class="rh-new" data-wb-start type="button">进入对话</button></div></header><section class="rh-activities-wrap" aria-labelledby="rh-activity-title"><div class="rh-project-toolbar"><h2 id="rh-activity-title">'+rhIcon('calendar')+'近期研究动态</h2><button class="rh-link" data-rh-activities type="button">查看全部 '+rhIcon('right')+'</button></div><div class="rh-activities"><div class="rh-activity-grid">'+activities.slice(0,3).map(researchActivityHTML).join('')+(!activities.length?'<p class="rh-empty">暂无研究动态，进入课题开始记录研究。</p>':'')+'</div></div></section><section class="rh-projects" aria-labelledby="rh-projects-title"><div class="rh-project-toolbar"><h2 id="rh-projects-title">'+rhIcon('layers')+'我的课题 <span>('+all.length+')</span></h2>'+(ps.length>3?'<div class="rh-pager"><button class="rh-pager-btn" type="button" data-rh-project-page="prev" aria-label="上一页课题"'+(start<=0?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><span class="rh-pager-n num" aria-live="polite">'+(Math.floor(start/3)+1)+' / '+Math.max(1,Math.ceil(ps.length/3))+'</span><button class="rh-pager-btn" type="button" data-rh-project-page="next" aria-label="下一页课题"'+(start+3>=ps.length?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div>':'')+''+(all.length>6||RESEARCH_HOME.query?'<label class="rh-search">'+rhIcon('search')+'<input type="search" aria-label="搜索课题名称或关键词" placeholder="搜索课题名称或关键词" value="'+esc(RESEARCH_HOME.query)+'" data-rh-search></label>':'')+'<button class="rh-link" data-rh-projects type="button">查看全部 '+rhIcon('right')+'</button></div><div class="rh-project-grid">'+items.map(researchCard).join('')+(!items.length?'<div class="rh-empty"><p>'+(all.length?'没有匹配课题，请调整搜索词。':'还没有课题，创建第一个研究课题。')+'</p><button class="rh-new" data-wb-create-project type="button">新建课题</button></div>':'')+'</div>'+'</section><section class="rh-discoveries-wrap" aria-labelledby="rh-discover-title"><div class="rh-project-toolbar"><h2 id="rh-discover-title">'+rhIcon('book')+'课题相关发现</h2></div><div class="rh-discoveries"><div class="rh-discover-heading"><div class="rh-tabs" role="tablist" aria-label="相关发现类型">'+[['papers','文献'],['news','学术资讯'],['resources','平台资源更新']].map(([k,n])=>'<button id="rh-tab-'+k+'" role="tab" aria-selected="'+(RESEARCH_HOME.tab===k)+'" aria-controls="rh-feed" tabindex="'+(RESEARCH_HOME.tab===k?'0':'-1')+'" data-rh-tab="'+k+'" type="button">'+n+(k==='resources'?'<span>'+resources.length+'</span>':'')+'</button>').join('')+'</div></div><div id="rh-feed" role="tabpanel" aria-labelledby="rh-tab-'+RESEARCH_HOME.tab+'">'+rows.slice(0,6).join('')+(!rows.length?'<p class="rh-empty">'+(RESEARCH_HOME.tab==='news'?'暂无学术资讯，相关研究论文可在“文献”中查看。':RESEARCH_HOME.tab==='resources'?'暂无与课题匹配的已发布平台资源更新。':'暂无匹配文献。')+'</p>':'')+'</div></div>'+'</section></div>';
+ return '<div class="page wb wb-workstation"><header class="rh-header"><div><h1>工作台</h1><p>聚焦课题进展，推进下一步研究</p></div><div class="rh-header-actions"><button class="btn" type="button" data-go="schedules">定时任务</button><button class="rh-new" data-wb-start type="button">进入对话</button></div></header><section class="rh-activities-wrap" aria-labelledby="rh-activity-title"><div class="rh-project-toolbar"><h2 id="rh-activity-title">'+rhIcon('calendar')+'近期研究动态</h2><button class="rh-link" data-rh-activities type="button">查看全部 '+rhIcon('right')+'</button></div><div class="rh-activities"><div class="rh-activity-grid">'+activities.slice(0,3).map(researchActivityHTML).join('')+(!activities.length?'<p class="rh-empty">暂无研究动态，进入课题开始记录研究。</p>':'')+'</div></div></section><section class="rh-projects" aria-labelledby="rh-projects-title"><div class="rh-project-toolbar"><h2 id="rh-projects-title">'+rhIcon('layers')+'我的课题 <span>('+all.length+')</span></h2>'+(ps.length>3?'<div class="rh-pager"><button class="rh-pager-btn" type="button" data-rh-project-page="prev" aria-label="上一页课题"'+(start<=0?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><span class="rh-pager-n num" aria-live="polite">'+(Math.floor(start/3)+1)+' / '+Math.max(1,Math.ceil(ps.length/3))+'</span><button class="rh-pager-btn" type="button" data-rh-project-page="next" aria-label="下一页课题"'+(start+3>=ps.length?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div>':'')+''+(all.length>6||RESEARCH_HOME.query?'<label class="rh-search">'+rhIcon('search')+'<input type="search" aria-label="搜索课题名称或关键词" placeholder="搜索课题名称或关键词" value="'+esc(RESEARCH_HOME.query)+'" data-rh-search></label>':'')+'<button class="rh-link" data-rh-projects type="button">查看全部 '+rhIcon('right')+'</button></div><div class="rh-project-grid">'+items.map(researchCard).join('')+(!items.length?'<div class="rh-empty"><p>'+(all.length?'没有匹配课题，请调整搜索词。':'还没有课题，创建第一个研究课题。')+'</p><button class="rh-new" data-wb-create-project type="button">新建课题</button></div>':'')+'</div>'+'</section><section class="rh-discoveries-wrap" aria-labelledby="rh-discover-title"><div class="rh-project-toolbar"><h2 id="rh-discover-title">'+rhIcon('book')+'课题相关发现</h2></div><div class="rh-discoveries"><div class="rh-discover-heading"><div class="rh-tabs" role="tablist" aria-label="相关发现类型">'+[['papers','文献'],['news','学术资讯'],['resources','平台资源更新']].map(([k,n])=>'<button id="rh-tab-'+k+'" role="tab" aria-selected="'+(RESEARCH_HOME.tab===k)+'" aria-controls="rh-feed" tabindex="'+(RESEARCH_HOME.tab===k?'0':'-1')+'" data-rh-tab="'+k+'" type="button">'+n+(k==='resources'?'<span>'+resources.length+'</span>':'')+'</button>').join('')+'</div></div><div id="rh-feed" role="tabpanel" aria-labelledby="rh-tab-'+RESEARCH_HOME.tab+'">'+(RESEARCH_HOME.tab==='news'&&rows.length?'<p class="rh-news-note">示例资讯：还没接入资讯源，以下条目为虚构，仅用于展示版式与交互。</p>':'')+rows.slice(0,6).join('')+(!rows.length?'<p class="rh-empty">'+(RESEARCH_HOME.tab==='news'?'暂无学术资讯，相关研究论文可在“文献”中查看。':RESEARCH_HOME.tab==='resources'?'暂无与课题匹配的已发布平台资源更新。':'暂无匹配文献。')+'</p>':'')+'</div></div>'+'</section></div>';
 };
 const researchOriginalBind=wbBind;
 wbBind=function(root){
@@ -23384,6 +23533,9 @@ wbBind=function(root){
   const same=view.querySelector('[data-rh-project-page="'+b.dataset.rhProjectPage+'"]');
   (same&&!same.disabled?same:view.querySelector('[data-rh-project-page]:not([disabled])'))?.focus();
  }));
+ root.querySelectorAll('[data-rh-news]').forEach(b=>b.onclick=()=>{const n=researchNews(workbenchData().projects).find(x=>x.id===b.dataset.rhNews);if(!n)return;
+  modal(n.title,'<div class="rh-news-detail"><p class="rh-news-meta"><span class="rh-news-type">'+esc(n.type)+'</span>'+esc(n.source)+'　·　'+esc(n.at)+'</p><p>'+esc(n.summary)+'</p><h4>和你的课题</h4><p>关联：'+esc(n.projects.map(p=>p.name).join('、'))+'</p><p>'+esc(n.next)+'</p><p class="rh-news-note">示例资讯，内容为虚构；接入资讯源后这里显示原文链接与发布方。</p></div>','知道了',()=>true);
+  const d=document.getElementById('dlg');const cancel=d?.querySelector('button[value="cancel"]');if(cancel)cancel.hidden=true;});
  root.querySelectorAll('[data-rh-resource]').forEach(b=>b.onclick=()=>{if(b.dataset.rhRoute==='data'){go('data');return;}if(b.dataset.rhRoute==='resdetail'){RS.resourcePick=b.dataset.rhResource;RS.resourceVersion=null;go('resdetail');}else if(b.dataset.rhRoute==='mdl')go('mdl',{pid:b.dataset.rhPid,mdlProj:b.dataset.rhPid,mtab:'cur'});else go('dsets',{pid:b.dataset.rhPid,dsProj:b.dataset.rhPid});});
 };
 
@@ -23528,7 +23680,7 @@ function stCloseDialog(){const d=document.getElementById('st-dialog');if(d){d.cl
 function stOpenDialog(){
  let d=document.getElementById('st-dialog');if(d){stRenderDialog();return;}
  d=document.createElement('dialog');d.id='st-dialog';d.className='st-dialog';d.setAttribute('aria-labelledby','st-dialog-title');document.body.appendChild(d);
- d.addEventListener('cancel',e=>{e.preventDefault();stCloseDialog();});d.addEventListener('close',()=>{if(d.isConnected){d.remove();ST.form=null;ST.errors=[];}});
+ d.addEventListener('cancel',e=>{e.preventDefault();stCloseDialog();});d.addEventListener('close',()=>{if(d.isConnected){d.remove();ST.form=null;ST.errors=[];ST.stay=false;}});
  stRenderDialog();d.showModal();d.querySelector('[name=name]')?.focus();
 }
 function stRenderDialog(){const d=document.getElementById('st-dialog');if(!d)return;const top=d.scrollTop,active=d.querySelector(':focus')?.name;d.innerHTML=stForm();stBindForm(d);d.querySelectorAll('[data-st-action=cancel]').forEach(b=>b.onclick=stCloseDialog);d.scrollTop=top;if(active)d.querySelector('[name="'+active+'"]')?.focus({preventScroll:true});}
@@ -23837,7 +23989,7 @@ function navigationTeamOpen(s,invite){
 }
 function navigationJoinDialog(){
  if(!RS.ready||RS.error){toast(RS.error||'课题数据仍在加载，请稍后重试');return;}
- modal('申请加入课题','<label class="rs-field"><span>课题编号 *</span><input class="input" id="project-join-code" placeholder="请输入课题创建者提供的共享课题编号" maxlength="100"></label><label class="rs-field"><span>申请说明</span><textarea class="input" id="project-join-reason" maxlength="500" rows="3" placeholder="介绍研究方向与协作目的"></textarea></label><p class="rs-help">申请通过后加入课题；当前申请仅保存在本机工作空间。</p>','提交申请',()=>rsModalSave(async()=>{
+ modal('申请加入课题','<label class="rs-field"><span>课题编号 *</span><input class="input" id="project-join-code" placeholder="请输入课题创建者提供的共享课题编号" maxlength="100"></label><label class="rs-field"><span>申请说明</span><textarea class="input" id="project-join-reason" maxlength="500" rows="3" placeholder="介绍研究方向与协作目的"></textarea></label><p class="rs-help">申请通过后加入课题。</p>','提交申请',()=>rsModalSave(async()=>{
  const code=document.getElementById('project-join-code').value.trim(),reason=document.getElementById('project-join-reason').value.trim();
  if(!code)throw new Error('请填写课题编号');
  const shared=RS.data.shared.find(s=>s.id===code);
@@ -24699,28 +24851,50 @@ rsBind=function(root){
    - 功能按名字和别称匹配；别称写在功能旁边，加功能时一起加。
    - 功能排在最前；其余按类型分组，每组最多 5 条。 */
 const GS_FEATURES=[
- {id:'workbench',name:'工作台',where:'研究',alias:['首页','待处理','研究动态','主页'],go:()=>go('workbench')},
- {id:'chat',name:'科研对话',where:'研究',alias:['对话','提问','助手','新对话','聊天'],go:()=>go('chat')},
- {id:'projects',name:'课题项目',where:'研究',alias:['课题','项目','我的课题'],go:()=>go('projects')},
- {id:'lab',name:'实验管理',where:'实验',alias:['实验','批次','湿实验','实验记录'],go:()=>go('lab')},
- {id:'mdl',name:'模型制备',where:'资源',alias:['模型','模型库','模型训练','模型评测','模型推理','训练','评测','推理'],go:()=>{S.mtab='cur';go('mdl')}},
- {id:'shelf',name:'科研工具',where:'资源',alias:['工具','工具市场'],go:()=>{RS.marketTab='catalog';go('shelf')}},
- {id:'data',name:'数据库',where:'资源',alias:['公共数据库','数据源'],go:()=>{RS.marketTab='catalog';go('data')}},
- {id:'schedules',name:'定时任务',where:'工作台右上 · 课题详情「定时」',alias:['定时','周报','每天','每周','每月','计划','提醒','自动','定期','追踪'],go:()=>go('schedules')},
- {id:'materials',name:'资料空间',where:'课题项目右上',alias:['资料','文件','文献','上传文件','知识库','与你共享','附件'],go:()=>go('materials')},
- {id:'devices',name:'设备管理',where:'实验管理右上',alias:['设备','仪器','接入设备','申请接入'],go:()=>go('devices')},
- {id:'dsets',name:'数据集',where:'模型制备 · 数据集页签',alias:['训练数据','训练集','数据集列表'],go:()=>go('dsets')},
- {id:'tools',name:'我的工具',where:'科研工具 · 我的',alias:['自建工具','接入工具','管理工具'],go:()=>go('tools')},
- {id:'mydata',name:'我的数据库',where:'数据库 · 我的',alias:['自建数据库','接入数据库'],go:()=>{RS.marketTab='mine';go('data')}},
- {id:'set',name:'模型接入',where:'账户 · 设置',alias:['密钥','API Key','apikey','key','模型配置','接入模型','大模型','凭证'],go:()=>go('set')},
- {id:'settings',name:'设置',where:'账户',alias:['偏好','系统设置'],go:()=>go('settings')},
- {id:'me',name:'个人中心',where:'账户',alias:['账户','账号','我的信息'],go:()=>go('me')},
- {id:'shared',name:'共享课题',where:'课题详情 · 资料空间「与你共享」',alias:['共享','协作','申请','审批','共享给我'],go:()=>go('shared')},
- {id:'new-schedule',name:'新建定时任务',where:'带当前课题',alias:['设定时','新计划','定时提醒'],go:()=>gsNewSchedule()},
- {id:'new-project',name:'新建课题',where:'课题项目',alias:['创建课题','新课题'],go:()=>{go('projects');const b=document.querySelector('[data-act="newproj"]');if(b)act('newproj',b)}},
- {id:'new-dataset',name:'新建数据集',where:'模型制备 · 数据集',alias:['上传数据集','导入数据集','创建数据集'],go:()=>go('dsnew')},
- {id:'new-lab',name:'发起实验',where:'实验管理',alias:['新建实验','新实验'],go:()=>go('labnew')},
+ {id:'workbench',grp:'研究',name:'工作台',where:'研究',alias:['首页','待处理','研究动态','主页'],go:()=>go('workbench')},
+ {id:'chat',grp:'研究',name:'科研对话',where:'研究',alias:['对话','提问','助手','新对话','聊天'],go:()=>go('chat')},
+ {id:'projects',grp:'研究',name:'课题项目',where:'研究',alias:['课题','项目','我的课题'],go:()=>go('projects')},
+ {id:'lab',grp:'实验',name:'实验管理',where:'实验',alias:['实验','批次','湿实验','实验记录'],go:()=>go('lab')},
+ {id:'mdl',grp:'资源',name:'模型制备',where:'资源',alias:['模型','模型库','模型训练','模型评测','模型推理','训练','评测','推理'],go:()=>{S.mtab='cur';go('mdl')}},
+ {id:'shelf',grp:'资源',name:'科研工具',where:'资源',alias:['工具','工具市场'],go:()=>{RS.marketTab='catalog';go('shelf')}},
+ {id:'data',grp:'资源',name:'数据库',where:'资源',alias:['公共数据库','数据源'],go:()=>{RS.marketTab='catalog';go('data')}},
+ {id:'schedules',grp:'研究',name:'定时任务',where:'工作台右上 · 课题详情「定时」',alias:['定时','周报','每天','每周','每月','计划','提醒','自动','定期','追踪'],go:()=>go('schedules')},
+ {id:'materials',grp:'研究',name:'资料空间',where:'课题项目右上',alias:['资料','文件','文献','上传文件','知识库','与你共享','附件'],go:()=>go('materials')},
+ {id:'devices',grp:'实验',name:'设备管理',where:'实验管理右上',alias:['设备','仪器','接入设备','申请接入'],go:()=>go('devices')},
+ {id:'dsets',grp:'资源',name:'数据集',where:'模型制备 · 数据集页签',alias:['训练数据','训练集','数据集列表'],go:()=>go('dsets')},
+ {id:'tools',grp:'资源',name:'我的工具',where:'科研工具 · 我的',alias:['自建工具','接入工具','管理工具'],go:()=>go('tools')},
+ {id:'mydata',grp:'资源',name:'我的数据库',where:'数据库 · 我的',alias:['自建数据库','接入数据库'],go:()=>{RS.marketTab='mine';go('data')}},
+ {id:'set',grp:'账户',name:'模型接入',where:'账户 · 设置',alias:['密钥','API Key','apikey','key','模型配置','接入模型','大模型','凭证'],go:()=>go('set')},
+ {id:'settings',grp:'账户',name:'设置',where:'账户',alias:['偏好','系统设置'],go:()=>go('settings')},
+ {id:'me',grp:'账户',name:'个人中心',where:'账户',alias:['账户','账号','我的信息'],go:()=>go('me')},
+ {id:'shared',grp:'研究',name:'共享课题',where:'课题详情 · 资料空间「与你共享」',alias:['共享','协作','申请','审批','共享给我'],go:()=>go('shared')},
+ {id:'new-schedule',grp:'快捷新建',name:'新建定时任务',where:'带当前课题',alias:['设定时','新计划','定时提醒'],go:()=>gsNewSchedule()},
+ {id:'new-project',grp:'快捷新建',name:'新建课题',where:'课题项目',alias:['创建课题','新课题'],go:()=>{go('projects');const b=document.querySelector('[data-act="newproj"]');if(b)act('newproj',b)}},
+ {id:'new-dataset',grp:'资源',name:'新建数据集',where:'模型制备 · 数据集',alias:['上传数据集','导入数据集','创建数据集'],go:()=>go('dsnew')},
+ {id:'new-lab',grp:'实验',name:'发起实验',where:'实验管理',alias:['新建实验','新实验'],go:()=>go('labnew')},
 ];
+/* 每个功能一个自己的图标：侧栏七个入口取导航里同一个图形，其余按含义配 */
+const GS_FIC={
+ schedules:'M12 7v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z',
+ materials:'M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h4',
+ shared:'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c.6-3.4 3.3-5.5 6.5-5.5s5.9 2.1 6.5 5.5M16 4.3a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .7 3.2 2.6 3.5 5.2',
+ devices:'M4 6h16v10H4zM8 20h8M12 16v4M8 10h3',
+ 'new-lab':'M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3M12 13v4M10 15h4',
+ dsets:'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3',
+ 'new-dataset':'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v6c0 1.7 3.6 3 8 3M20 6v5M17 15v6M14 18h6',
+ tools:'M14.7 6.3a4 4 0 0 0-5.4 5.2L3.5 17.3a1.8 1.8 0 0 0 2.6 2.6l5.8-5.8a4 4 0 0 0 5.2-5.4l-2.4 2.4-2.1-.4-.4-2.1z',
+ mydata:'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3M20 6v4M16.5 17a2.5 2.5 0 1 0 0-.1M13 22c.4-1.8 1.8-3 3.5-3s3.1 1.2 3.5 3',
+ set:'M15.5 3.5a5 5 0 0 0-4.8 6.5L3 17.7V21h3.3v-2h2v-2h2l1.6-1.6a5 5 0 1 0 3.6-11.9zM16.5 7.5h.01',
+ settings:'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z',
+ me:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 21c.8-4 3.8-6.5 7.5-6.5s6.7 2.5 7.5 6.5',
+ 'new-schedule':'M12 7v5l3 2M20.5 13A8.5 8.5 0 1 1 12 3.5M18 3v6M15 6h6',
+ 'new-project':'M3.5 7.5A1.5 1.5 0 0 1 5 6h4l2 2h8a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5zM12 11v5M9.5 13.5h5',
+};
+function gsFeatureIcon(id){
+ let d=GS_FIC[id];
+ if(!d&&typeof NAV!=='undefined'){for(const g of NAV)for(const it of g[2])if(it[0]===id)d=it[2];}
+ return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+(d||'M4 6h16M4 12h10M4 18h7')+'"/></svg>';
+}
 const GS={open:false,q:'',i:0,rows:[]};
 function gsCurrentPid(){
  if(S.route==='project'&&S.pid)return S.pid;
@@ -24744,14 +24918,16 @@ function gsRemember(row){
 function gsIndex(){
  const out=[];
  const add=(kind,key,label,sub,open,extra)=>out.push({kind,key,label,sub,open,hay:[label,sub,...(extra||[])].join(' ').toLowerCase()});
- GS_FEATURES.forEach(f=>out.push({kind:'功能',key:'f:'+f.id,label:f.name,sub:f.where,open:f.go,feature:f,hay:[f.name,...f.alias].join(' ').toLowerCase()}));
+ /* 侧栏入口的第二行写它是做什么的（取导航自己的说明），不再重复一遍分组名 */
+ const navDesc=id=>{if(typeof NAV==='undefined')return '';for(const g of NAV)for(const it of g[2])if(it[0]===id)return it[3]||'';return ''};
+ GS_FEATURES.forEach(f=>out.push({kind:'功能',key:'f:'+f.id,label:f.name,sub:f.where===f.grp?(navDesc(f.id)||'侧栏入口'):f.where,open:f.go,feature:f,hay:[f.name,...f.alias].join(' ').toLowerCase()}));
  (DB.projects||[]).forEach(p=>add('课题','p:'+p.id,p.name||p.id,p.target||p.desc||'',()=>workbenchOpenProject(p.id),[p.dom||'']));
  if(typeof SESSIONS!=='undefined')SESSIONS.forEach(x=>{const p=DB.projects.find(p=>p.id===x.pid);
   add('对话','s:'+x.id,x.title||'未命名对话',[p?.name,x.at].filter(Boolean).join(' · '),()=>{go('chat');openSession(x)},[x.q||'']);});
  try{workbenchData().tasks.forEach(t=>add(t.kind==='experiment'?'实验':'模型任务','t:'+t.key,t.name,[t.projectName,t.statusText].filter(Boolean).join(' · '),()=>workbenchOpenTask(t.key)));}catch(e){}
  try{(typeof ALL_DSETS==='function'?ALL_DSETS():[]).forEach(d=>add('数据集','d:'+d.id,d.n||d.name||d.id,d.id,()=>{S.dsPick=d.id;go('dsets')}));}catch(e){}
  try{if(typeof stLoad==='function')stLoad();(ST.items||[]).forEach(t=>{const p=DB.projects.find(p=>p.id===t.pid);
-  add('定时任务','st:'+t.id,t.name,[p?.name,typeof stPlan==='function'?stPlan(t):'',t.enabled?'已开启':'已暂停'].filter(Boolean).join(' · '),()=>{ST.pick=t.id;LS.set('scheduled_pick',t.id);go('scheduledetail')},[t.content||'']);});}catch(e){}
+  add('定时任务','st:'+t.id,t.name,[p?.name||'课题已删除',typeof stPlan==='function'?stPlan(t):'',typeof stState==='function'?stState(t).label:(t.enabled?'已开启':'已暂停')].filter(Boolean).join(' · '),()=>{ST.pick=t.id;LS.set('scheduled_pick',t.id);go('scheduledetail')},[t.content||'']);});}catch(e){}
  try{if(typeof materialsRows==='function')materialsRows().forEach(x=>{const p=DB.projects.find(p=>p.id===x.pid);
   add('资料','m:'+x.id,x.name,p?.name||'公共资料',()=>{Object.assign(MATERIALS,{tab:'all',space:'',type:'all',query:x.name});go('materials',{keepTab:1})});});}catch(e){}
  return out;
@@ -24773,8 +24949,9 @@ function gsSearch(q){
  if(!q){
   const byKey=new Map(idx.map(r=>[r.key,r]));
   const recent=gsRecent().map(x=>byKey.get(x.key)).filter(Boolean).map(r=>({...r,group:'最近打开'}));
-  const common=['f:schedules','f:materials','f:dsets','f:devices','f:set'].map(k=>byKey.get(k)).filter(Boolean).filter(r=>!recent.some(x=>x.key===r.key)).map(r=>({...r,group:'常用功能'}));
-  return recent.concat(common);
+  /* 空输入时把全部能力列出来，按 研究 / 实验 / 资源 / 账户 / 快捷新建 分组——不知道叫什么的时候，翻一遍就能找到 */
+  const all=['研究','实验','资源','账户','快捷新建'].flatMap(g=>GS_FEATURES.filter(f=>f.grp===g).map(f=>({...byKey.get('f:'+f.id),group:'全部能力 · '+g})));
+  return recent.concat(all);
  }
  const hits=idx.map(r=>({...r,score:gsScore(r,q)})).filter(r=>r.score>0);
  /* 组的先后按组里最好的那一条排；同分时功能在前。
@@ -24808,7 +24985,7 @@ function gsPaint(){
  let last='';
  list.innerHTML=GS.rows.map((r,i)=>{
   const head=r.group!==last?'<div class="gs-group" role="presentation">'+esc(r.group)+'</div>':'';last=r.group;
-  return head+'<div class="gs-row'+(i===GS.i?' is-on':'')+'" role="option" id="gs-opt-'+i+'" aria-selected="'+(i===GS.i)+'" data-gs-i="'+i+'"><span class="gs-ic">'+gsIcon(r.kind)+'</span><span class="gs-tx"><span class="gs-label">'+esc(r.label)+'</span>'+(r.sub?'<span class="gs-sub">'+esc(r.sub)+'</span>':'')+'</span>'+(i===GS.i?'<span class="gs-enter" aria-hidden="true">↵</span>':'')+'</div>';
+  return head+'<div class="gs-row'+(i===GS.i?' is-on':'')+'" role="option" id="gs-opt-'+i+'" aria-selected="'+(i===GS.i)+'" data-gs-i="'+i+'"><span class="gs-ic">'+(r.feature?gsFeatureIcon(r.feature.id):gsIcon(r.kind))+'</span><span class="gs-tx"><span class="gs-label">'+esc(r.label)+'</span>'+(r.sub?'<span class="gs-sub">'+esc(r.sub)+'</span>':'')+'</span>'+(i===GS.i?'<span class="gs-enter" aria-hidden="true">↵</span>':'')+'</div>';
  }).join('');
  d.querySelector('.gs-input').setAttribute('aria-activedescendant','gs-opt-'+GS.i);
  list.querySelectorAll('[data-gs-i]').forEach(el=>{
@@ -24948,6 +25125,9 @@ if(typeof INBOX==='function'){
   return base.concat(ceSharedInbox().map(x=>Object.assign(x,{read:R.indexOf(x.id)>=0})));
  };
 }
+
+/* 科研工具：用途下拉（原来是一排胶囊，和 Skills / SCP / 模型 页签叠成了三层） */
+document.addEventListener('change',e=>{const el=e.target.closest('[data-shcap-select]');if(!el)return;S.shcap=el.value;render();});
 
 
 keepLoad();

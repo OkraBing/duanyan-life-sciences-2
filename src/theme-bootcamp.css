@@ -371,13 +371,96 @@ body[data-route="chat"]:has(.chat-history:not([hidden])) .research-home .researc
 #side[data-collapsed="1"] .brand{justify-content:flex-start!important;align-items:flex-start!important;padding-left:11px!important;padding-top:12px!important}  /* logo 与展开态同一个点：x=16 y=17 */
 #side[data-collapsed="1"] .side-toggle{left:12px!important;transform:none!important}
 
-/* 折叠态的展开按钮：不再单占一行（会压在搜索框上），而是叠在 logo 上。
-   平时看到的是 logo，鼠标移到品牌行或键盘聚焦时换成展开按钮；触屏没有悬停，直接显示按钮。
-   这样展开按钮在两种状态下都在品牌行里，折叠前后不跳位。 */
+
+
+/* 侧栏底部（折叠态）：消息数原来压在头像上，看起来像账户的角标，铃铛本身还被藏掉了。
+   现在铃铛单独一颗按钮放在头像上方，数字挂在铃铛右上角，小号、带一圈底色描边，和头像分开。 */
+#side[data-collapsed="1"] .acct-row{flex-direction:column-reverse!important;align-items:center;height:auto!important;gap:12px!important}
+#side[data-collapsed="1"] .acct-row .bell{position:relative!important;top:auto!important;right:auto!important;
+  width:32px!important;height:32px!important;min-height:32px!important;border-radius:8px;display:grid;place-items:center;color:var(--ink-3)}
+#side[data-collapsed="1"] .acct-row .bell:hover{background:var(--surface-2);color:var(--ink)}
+#side[data-collapsed="1"] .acct-row .bell svg{display:block!important}
+#side[data-collapsed="1"] .acct-row .bell .nav-n{position:absolute!important;top:-3px;right:-5px;min-width:16px;height:16px;padding:0 4px;
+  font-size:10px;line-height:16px;border-radius:8px;box-shadow:0 0 0 2px var(--surface)}
+/* 展开态的角标也收小一号，同一种样子 */
+#side .bell .nav-n{min-width:16px;height:16px;padding:0 4px;font-size:10px;line-height:16px;border-radius:8px;box-shadow:0 0 0 2px var(--surface)}
+/* 对话列表底部的存储说明：去掉分隔线，免得和侧栏底部那条线高低错开；只留一行安静的小字 */
+.history-foot{border-top:0!important;padding:8px 8px 2px!important;color:var(--ink-4)!important}
+
+/* 搜索框图标：两种状态下垂直位置一致（折叠态少了文字，flex 居中会差 1px） */
+.gs-trigger{position:relative}
+.gs-trigger svg{position:absolute;left:11px;top:9px}
+.gs-trigger .gs-ph{margin-left:23px}
+
+/* ---- 折叠按钮：全站同一种样子，并且常驻 ----
+   侧栏、对话列表的折叠/展开按钮统一成 32×32、圆角 8、细描边的方形按钮。
+   侧栏折叠时，展开按钮常驻在原来 logo 的位置（logo 收起），不靠悬停才出现；
+   这样按钮在两种状态下都在品牌行同一高度，下面的搜索框和七个入口也不动。 */
+#side .side-toggle{width:32px!important;height:32px!important;min-height:32px!important;padding:0!important;border:1px solid var(--line)!important;
+  border-radius:8px!important;background:var(--surface)!important;color:var(--ink-3)!important;display:grid!important;place-items:center}
+#side .side-toggle:hover{background:var(--surface-2)!important;color:var(--ink)!important;border-color:var(--ink-4)!important}
 #side[data-collapsed="1"] .brand{position:relative}
-#side[data-collapsed="1"] .side-toggle{top:16px!important;left:17px!important;opacity:0;z-index:2;
-  background:var(--surface)!important;transition:opacity .12s ease}
-#side[data-collapsed="1"] .brand:hover .side-toggle,#side[data-collapsed="1"] .side-toggle:focus-visible{opacity:1}
-#side[data-collapsed="1"] .brand:hover .brand-mark,#side[data-collapsed="1"] .brand:focus-within .brand-mark{opacity:0}
-@media (hover:none){#side[data-collapsed="1"] .side-toggle{opacity:1}#side[data-collapsed="1"] .brand-mark{opacity:0}}
-@media (prefers-reduced-motion:reduce){#side[data-collapsed="1"] .side-toggle{transition:none}}
+#side[data-collapsed="1"] .brand-home{visibility:hidden}
+#side[data-collapsed="1"] .side-toggle{position:absolute!important;top:16px!important;left:20px!important;transform:none!important;opacity:1!important;z-index:2}
+
+/* 对话列表：离开对话页时必须真的藏起来（折叠态的 display:flex!important 曾把 hidden 盖掉，
+   于是在资料空间等页面左上角也露出了展开 / 新建两个按钮） */
+.chat-history[hidden],.chat-history.is-collapsed[hidden]{display:none!important}
+/* 对话列表的折叠按钮：展开态也放在标题左边、同一种方形样式，折叠前后同一个位置 */
+.chat-history:not(.is-collapsed) .chat-history-head{display:flex!important;align-items:center;gap:8px}
+.chat-history:not(.is-collapsed) .chat-history-head-tools{display:contents!important}
+.chat-history:not(.is-collapsed) .history-collapse{order:0}
+.chat-history:not(.is-collapsed) .chat-history-head strong{order:1;margin-right:auto}
+.chat-history:not(.is-collapsed) .history-search-trigger{order:2}
+.chat-history .history-collapse{width:32px!important;height:32px!important;min-height:32px!important;padding:0!important;border:1px solid var(--line)!important;
+  border-radius:8px!important;background:var(--surface)!important;color:var(--ink-3)!important;display:grid!important;place-items:center}
+.chat-history .history-collapse:hover{background:var(--surface-2)!important;color:var(--ink)!important;border-color:var(--ink-4)!important}
+.chat-history.is-collapsed .history-collapse{order:1}
+.chat-history.is-collapsed .chat-history-head strong{order:2}
+.chat-history.is-collapsed .history-new-mini{order:3;margin-left:8px}
+/* 折叠态里更早的规则写死了 28×28，这里按同一把尺子拉回 32 */
+#side[data-collapsed="1"] .side-toggle{width:32px!important;height:32px!important;min-height:32px!important;max-height:32px!important;left:20px!important;top:14px!important}
+/* 对话列表折叠后的按钮行，与展开态的标题行对齐：按钮 y、标题 x 都不动 */
+.chat-history.is-collapsed{top:26px!important}
+.chat-history.is-collapsed .chat-history-head strong{margin-left:2px!important;line-height:32px!important}
+/* 模型制备 / 数据集：页签就是页头的下边界，页头不再多留 16px 底距，免得页签和下面的筛选之间空出一大段 */
+body[data-route="mdl"] #view .pg-hd,body[data-route="dsets"] #view .pg-hd{padding-bottom:0!important}
+/* 对话首页的蛋白质 / DNA 背景：原图是淡蓝色，之前被 grayscale + 30% 透明度压成了灰。
+   恢复原色，透明度提到 0.6；深色主题下仍然压暗，免得抢字 */
+.research-home::before{filter:saturate(1.1)!important;opacity:.6!important}
+:root[data-theme="dark"] .research-home::before{filter:grayscale(.4) brightness(.6)!important;opacity:.35!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .research-home::before{filter:grayscale(.4) brightness(.6)!important;opacity:.35!important}}
+/* 消息列表：小一号，不再撑满屏幕高度；标题与来源各一行，超出用省略号，悬停看全文 */
+.menu:has(.ib-wrap){max-width:min(21rem,calc(100vw - 1.5rem))!important;max-height:min(26rem,62vh)!important;overflow-y:auto!important;padding:4px!important}
+.ib-wrap{width:min(20rem,calc(100vw - 2.5rem))!important}
+.ib-wrap .menu-i.is-ib{padding:7px 8px!important;min-height:0!important}
+.ib-r1 .nm{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:12.5px!important}
+.ib-from{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.ib-r2 .chip{flex:0 0 auto}
+.ib-h{position:sticky;top:-4px;z-index:1;background:var(--surface)}
+
+/* ---- 可点卡片：全站同一套基础样式与悬停 ----
+   项目卡片原来有两条规则打架（一条把悬停描边加深，一条又设成透明），悬停时边框反而消失；
+   实验卡片悬停直接变成深灰描边。统一为：常态浅描边 + 一点阴影；悬停描边深一档、阴影略浮起。 */
+.projects-page .project-card-wrap,.page .lv-exp,.rh-project,.shared-project-card{
+  border:1px solid var(--line)!important;border-radius:12px!important;background:var(--surface)!important;
+  box-shadow:0 1px 2px rgba(19,24,38,.05)!important;transition:border-color .12s ease,box-shadow .12s ease}
+.projects-page .project-card-wrap:hover,.projects-page .project-card-wrap:focus-within,
+.page .lv-exp:hover,.page .lv-exp:focus-visible,.rh-project:hover,.shared-project-card:hover{
+  border-color:color-mix(in srgb,var(--line) 45%,var(--ink-4))!important;
+  box-shadow:0 6px 18px -10px rgba(19,24,38,.22),0 1px 2px rgba(19,24,38,.05)!important}
+.projects-page .project-card-wrap>.pcard,.projects-page .project-card-wrap>.pcard:hover{border:0!important;box-shadow:none!important;background:transparent!important}
+@media (prefers-reduced-motion:reduce){.projects-page .project-card-wrap,.page .lv-exp,.rh-project,.shared-project-card{transition:none}}
+/* 实验卡片右上的批次编号：做成一个小标签 */
+.lv-id-tag{font-size:11px;line-height:20px;padding:0 8px;border-radius:6px;background:var(--surface-2);color:var(--ink-3);border:1px solid var(--line-2);letter-spacing:.02em}
+
+/* 对话列表「更多」：原来是浅灰的三个点，几乎看不见。加深一档，行悬停时出底色 */
+.history-more{color:var(--ink-3)!important;font-weight:700;letter-spacing:1px;width:28px!important;height:28px;min-height:28px!important;border-radius:6px!important;display:grid;place-items:center;align-self:center}
+.history-item:hover .history-more{background:var(--surface-2)!important;color:var(--ink)!important}
+.history-more:hover,.history-more[aria-expanded="true"]{background:var(--surface-3)!important;color:var(--ink)!important}
+/* 菜单里的二级展开 */
+#menu.has-fly{overflow:visible!important}
+#menu .menu-fly{position:absolute;min-width:220px;z-index:201;max-height:60vh;overflow-y:auto}
+#menu .menu-i.has-sub{display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center}
+#menu .menu-i.has-sub .sub-car{color:var(--ink-4);font-size:14px;padding-left:8px}
+#menu .menu-i.has-sub.is-open{background:var(--surface-2)}

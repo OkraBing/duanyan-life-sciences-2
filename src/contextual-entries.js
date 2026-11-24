@@ -77,3 +77,6 @@ if(typeof INBOX==='function'){
   return base.concat(ceSharedInbox().map(x=>Object.assign(x,{read:R.indexOf(x.id)>=0})));
  };
 }
+
+/* 科研工具：用途下拉（原来是一排胶囊，和 Skills / SCP / 模型 页签叠成了三层） */
+document.addEventListener('change',e=>{const el=e.target.closest('[data-shcap-select]');if(!el)return;S.shcap=el.value;render();});
