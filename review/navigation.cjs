@@ -28,7 +28,7 @@ assert.equal(await p.locator('#navA [data-navid="shared"]').count(),0);
 assert.deepEqual(await p.locator('#navA .nav-tx').allTextContents(),['工作台','科研对话','课题项目']);
 assert.deepEqual(await p.locator('#navB .nav-tx').allTextContents(),['实验管理']);
 assert.equal(await p.locator('#navC .lbl').innerText(),'资源');
-assert.deepEqual(await p.locator('#navC .nav-tx').allTextContents(),['模型训练及评测','科研工具','数据库']);
+assert.deepEqual(await p.locator('#navC .nav-tx').allTextContents(),['模型制备','科研工具','数据库']);
 assert.equal(await p.locator('#navD').count(),0,'市场分组应已并入资源');
 assert.equal(await p.locator('#side [data-navid="settings"]').count(),0,'设置不该再占导航');
 assert.equal(await p.locator('#view .navigation-tab').count(),0);
@@ -37,7 +37,7 @@ assert(await p.locator('#view .navigation-project-source').allTextContents().the
 assert(await p.locator('#view .project-update').count()>0);
 await p.waitForTimeout(300);await p.screenshot({path:out+'/expanded.png'});await checkExperimentSelection(p);
 await p.locator('.side-toggle').click();assert.equal(Math.round((await p.locator('#side').boundingBox()).width),72);
-await p.locator('[data-navid="mdl"]').hover();await p.waitForTimeout(100);assert.equal(await p.locator('#navigation-tooltip').innerText(),'模型训练及评测');assert(await p.locator('#navigation-tooltip').isVisible());
+await p.locator('[data-navid="mdl"]').hover();await p.waitForTimeout(100);assert.equal(await p.locator('#navigation-tooltip').innerText(),'模型制备');assert(await p.locator('#navigation-tooltip').isVisible());
 await p.screenshot({path:out+'/collapsed.png'});await p.keyboard.press('Escape');assert(!(await p.locator('#navigation-tooltip').isVisible()));
 /* 资料空间的入口搬到了课题项目页右上角，从那里进去，导航高亮课题项目 */
 await p.locator('[data-navid="projects"]').click();await p.waitForTimeout(200);

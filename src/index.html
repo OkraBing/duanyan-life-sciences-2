@@ -3982,7 +3982,7 @@ const NAV_PARENT={toolnew:'shelf',databasenew:'data',resdetail:'shelf',sharednew
   schedules:'workbench',schedulenew:'workbench',scheduledetail:'workbench'};
 const NAV=[
   /* 第二版的导航只留三组七个入口。被拿掉的入口不是删功能，是换了归属：
-     资料空间 → 课题项目页右上；设备管理 → 实验管理页；数据集 → 模型页的一个页签；
+     资料空间 → 课题项目页右上；设备管理 → 实验管理页；数据集 → 模型制备页的一个页签；
      我的工具 → 科研工具的「我的」页签；定时任务 → 工作台右上；设置 → 账户。
      路由全部保留，老链接照样能打开。 */
   ['A','研究',[
@@ -3993,7 +3993,7 @@ const NAV=[
   ['B','实验',[
     ['lab','实验管理',"M9.5 3.5v5.6L4.7 17.6A2.2 2.2 0 0 0 6.6 21h10.8a2.2 2.2 0 0 0 1.9-3.4L14.5 9.1V3.5M8 3.5h8M7.3 14.5h9.4",'查看实验环节进度、异常与结论，并管理设备']]],
   ['C','资源',[
-    ['mdl','模型训练及评测',"M6.5 5a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM17.5 5a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM12 15a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM8.5 7h7M7.4 8.8l3.6 6.5M16.6 8.8 13 15.3",'数据集、训练、评测与推理'],
+    ['mdl','模型制备',"M6.5 5a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM17.5 5a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM12 15a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM8.5 7h7M7.4 8.8l3.6 6.5M16.6 8.8 13 15.3",'数据集、训练、评测与推理'],
     ['shelf','科研工具',"M4.5 4.5h6v6h-6zM13.5 4.5h6v6h-6zM4.5 13.5h6v6h-6zM16.5 13.5v6M13.5 16.5h6",'市场里的工具，以及我自己的工具'],
     ['data','数据库',"M5 7c0-1.7 3.1-3 7-3s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3zM5 7v10c0 1.7 3.1 3 7 3s7-1.3 7-3V7M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3",'市场里的数据库，以及我自己的数据库']]],
 ];
@@ -5753,14 +5753,14 @@ V.labdet=()=>{
 
 /* ================= 数据集 ================= */
 V.dsets=()=>{
-  /* 第二版：数据集是「模型训练及评测」下的一个页签，所以套同一个页头与页签条。
+  /* 第二版：数据集是「模型制备」下的一个页签，所以套同一个页头与页签条。
      这一页只管自己建的：有目标列、切分和指纹，能拿去训；
      外部公共库在「资源 → 数据库」，那边只有许可和接口，只能取回。 */
   return `<div class="page">
   <div class="pg-hd">
     <div class="row wrap" style="align-items:flex-end">
       <div class="col grow" style="gap:6px">
-        <h1>模型训练及评测</h1>
+        <h1>模型制备</h1>
         <p class="mut t-md pg-sub">用于模型训练的数据集，可按课题筛选</p>
       </div>
       <div class="row wrap" style="gap:var(--s3);flex:0 0 auto">
@@ -5908,7 +5908,7 @@ function toolDetail(n){
 }
 
 function mdlTabsBar(selected){return `<div class="tabs">${MDL_TABS.map(([k,n])=>{const c=mdlCount(k);return `<button class="tab${selected===k?' is-on':''}" type="button" data-mtab="${k}" aria-selected="${selected===k}">${esc(n)}${c==null?'':`<span class="tab-c num">${c}</span>`}</button>`}).join('')}</div>`}
-const MDL_TABS=[['dset','数据集'],['cur','模型库'],['job','模型制备'],['eval','模型评测'],['batch','模型推理']];
+const MDL_TABS=[['cur','模型库'],['dset','数据集'],['job','模型训练'],['eval','模型评测'],['batch','模型推理']];
 const MDL_SUB={
   cur:'查看模型、评测结果与部署状态',
   job:'跟踪训练任务的进度与结果',
@@ -6091,7 +6091,7 @@ V.mdl=(activeTab=S.mtab)=>{
   <div class="pg-hd">
     <div class="row wrap" style="align-items:flex-end">
       <div class="col grow" style="gap:6px">
-        <h1>模型训练及评测</h1>
+        <h1>模型制备</h1>
         <p class="mut t-md pg-sub">${esc(MDL_SUB[tab]||MDL_SUB.cur)}</p>
       </div>
       <!-- flex:0 0 auto：左边标题那一列是 grow，不写这句的话这一排会被压窄、
@@ -9810,7 +9810,7 @@ function pjExpTab(p){
     const st=(TRAIN_ST[m.st]||TRAIN_ST.done);
     const rho=(typeof m.rho==='number'&&isFinite(m.rho))?m.rho:null;
     return `<button class="pjx-card" type="button" data-pjjob="${esc(m.id)}"
-      title="在「模型 → 模型制备」中查看训练详情">
+      title="在「模型制备 → 模型训练」中查看训练详情">
       <span class="pjx-card-h">
         <span class="pjx-card-ic is-dry">${ICON_TRAIN}</span>
         <span class="pjx-card-n">${esc(m.name||(m.target?'打分器 · '+tgtName(m.target):'训练任务'))}</span>
@@ -14428,6 +14428,8 @@ function FILES(pid){
 }
 /* 导航栏列了哪些路由。和 NAVNAME 同源，别另维护一张表。 */
 const NAV_ROUTE=(function(){const m={};NAV.forEach(g=>g[2].forEach(([k])=>m[k]=1));return m})();
+/* 数据集虽然自己有路由，但它是模型制备页的一个页签，页签条就是出路，不要再补「返回」键 */
+NAV_ROUTE.dsets=1;
 /* 路由的中文名只有一份，导航表就是那一份 */
 const NAVNAME=(function(){const m={};NAV.forEach(g=>g[2].forEach(([k,n])=>m[k]=n));
   Object.assign(m,{results:'结果',wetlab:'送检与回流',loop:'设计',round:'轮次概览',
@@ -18167,21 +18169,31 @@ function act(a,el){
   if(a==='pjswitch'){const p=PRJ();
     const L=SESSIONS.filter(x=>x.pid===p.id);
     const cur=pjSid(p.id);
-    const html='<div class="menu-l">'+esc(p.name)+' 的对话</div>'
-      +(L.length?L.slice(0,10).map(x=>
-        `<button class="menu-i" type="button" data-pick="${esc(x.id)}"
+    /* 当前这段放在最上面、单独一组，底下才是可以切过去的其他对话；
+       「新建对话」留在最后，点之前先说清当前这段不会丢。 */
+    const curS=L.find(x=>x.id===cur);
+    const others=L.filter(x=>x.id!==cur).slice(0,10);
+    const line=x=>`<button class="menu-i" type="button" data-pick="${esc(x.id)}"
           aria-checked="${x.id===cur?'true':'false'}">
           <span class="ck">${x.id===cur?CK:''}</span>
           <span><span class="nm">${esc(x.title||'未命名')}</span>
           <span class="sb">${esc(x.at||'')}${x.q?'　'+esc(String(x.q).slice(0,18)):''}</span></span>
-        </button>`).join('')
-       :'<div class="menu-i" style="cursor:default"><span class="ck"></span>'
-        +'<span><span class="nm">暂无其他对话</span>'
-        +'<span class="sb">新建对话后，原对话会保留在这里</span></span></div>')
+        </button>`;
+    const html='<div class="menu-l">当前对话</div>'
+      +(curS?line(curS)
+        :'<div class="menu-i" style="cursor:default"><span class="ck">'+CK+'</span>'
+         +'<span><span class="nm">新对话</span>'
+         +'<span class="sb">'+esc(p.name)+'　还没有保存</span></span></div>')
       +'<div class="menu-sep"></div>'
-      +'<button class="menu-i is-go" type="button" data-go="__new"><span class="ck"></span>'
-      +'<span><span class="nm">科研对话</span>'
-      +'<span class="sb">当前对话会保留在列表中</span></span></button>';
+      +'<div class="menu-l">'+esc(p.name)+' 的其他对话</div>'
+      +(others.length?others.map(line).join('')
+        :'<div class="menu-i" style="cursor:default"><span class="ck"></span>'
+         +'<span><span class="nm">暂无其他对话</span>'
+         +'<span class="sb">新建一段后，这段会收进这里</span></span></div>')
+      +'<div class="menu-sep"></div>'
+      +'<button class="menu-i is-go" type="button" data-go="__new"><span class="ck">＋</span>'
+      +'<span><span class="nm">新建对话</span>'
+      +'<span class="sb">当前这段会收进上面的列表</span></span></button>';
     menu(el,html,v=>{
       if(v==='__new'){act('pjnew',el);return}
       const x=SESSIONS.find(y=>y.id===v);if(!x)return;
