@@ -38,3 +38,9 @@
 .st-col-side .st-when{flex-direction:column;align-items:stretch}
 .st-col-side .st-when .st-field{min-width:0}
 @media(max-width:1180px){.st-cols{grid-template-columns:minmax(0,1fr)}.st-col-side{position:static}}
+/* 工作台页头原来被写死 40px 高、下边距 0；副标题挪到标题下方后会压住下面的区块 */
+#view .rh-header{height:auto!important;min-height:0!important;margin-bottom:28px!important}
+
+/* 对话输入栏：领域 Agent 标签放在左边，紧跟附件按钮；尺寸与原来右侧那一组一致 */
+.ask-bar>.research-agent{align-self:center;flex-shrink:0;margin-left:8px;font-size:.6875rem;gap:.3rem;padding:.25rem .5rem}
+.ask-bar>.research-agent svg{width:.8rem;height:.8rem}

@@ -4618,6 +4618,12 @@ body[data-route="mdl"] #view .pg-hd,body[data-route="dsets"] #view .pg-hd{paddin
 .st-col-side .st-when{flex-direction:column;align-items:stretch}
 .st-col-side .st-when .st-field{min-width:0}
 @media(max-width:1180px){.st-cols{grid-template-columns:minmax(0,1fr)}.st-col-side{position:static}}
+/* 工作台页头原来被写死 40px 高、下边距 0；副标题挪到标题下方后会压住下面的区块 */
+#view .rh-header{height:auto!important;min-height:0!important;margin-bottom:28px!important}
+
+/* 对话输入栏：领域 Agent 标签放在左边，紧跟附件按钮；尺寸与原来右侧那一组一致 */
+.ask-bar>.research-agent{align-self:center;flex-shrink:0;margin-left:8px;font-size:.6875rem;gap:.3rem;padding:.25rem .5rem}
+.ask-bar>.research-agent svg{width:.8rem;height:.8rem}
 
 
 /* 项目卡标题被挤成两行、断在「结合界 / 面」：标题被写死 max-width:calc(100% - 55px)，
@@ -6885,8 +6891,9 @@ function composer(){
         <button class="ctl ctl-ic${land?' research-upload':''}" type="button" data-act="askfile" aria-label="上传文件" title="上传文件">
           <svg width="16" height="16" style="width:0.9375rem;height:0.9375rem" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18.4 11.3 12 17.7a4.1 4.1 0 0 1-5.8-5.8l7.1-7.1a2.7 2.7 0 1 1 3.9 3.9l-7.1 7.1a1.4 1.4 0 0 1-1.9-1.9l6.4-6.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         ${research||ROUTE_HOME(S.route)==='project'?'':projBtn()}
+        ${research?researchAgentTag():''}
         <span class="grow"></span>
-        ${research?'<div class="research-send-controls">'+researchAgentTag():''}
+        ${research?'<div class="research-send-controls">':''}
         ${hsBtn()}${mdlBtn()}
         <button class="ctl ctl-go" type="button" data-act="chatsend" aria-label="发送">${land||ROUTE_HOME(S.route)==='project'?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V4m-7 7 7-7 7 7"/></svg>':'发送'}</button>
         ${research?'</div>':''}
@@ -11130,11 +11137,12 @@ function bindChat(view){
     const input=view.querySelector('#ask');if(input)S.ask=input.value;
     if(id)RESEARCH_AGENTS[S.sid||'new']=id;else delete RESEARCH_AGENTS[S.sid||'new'];
     // 原位更新标签和选中态，不重建滚动栏，避免恢复 scrollLeft 触发回滑。
-    const controls=view.querySelector('.research-send-controls');
-    if(controls){
-      const old=controls.querySelector('.research-agent');if(old)old.remove();
-      const tag=researchAgentTag();if(tag)controls.insertAdjacentHTML('afterbegin',tag);
-      const remove=controls.querySelector('[data-agent-remove]');if(remove)remove.onclick=()=>pickAgent(null);
+    /* 标签放在左边、紧跟附件按钮（第二版），原位替换，不重建整条输入栏 */
+    const bar=view.querySelector('.ask-bar'),attach=bar&&bar.querySelector('[data-act="askfile"]');
+    if(bar&&attach){
+      bar.querySelectorAll('.research-agent').forEach(x=>x.remove());
+      const tag=researchAgentTag();if(tag)attach.insertAdjacentHTML('afterend',tag);
+      const remove=bar.querySelector('[data-agent-remove]');if(remove)remove.onclick=()=>pickAgent(null);
     }
     q('[data-research-agent]',b=>b.setAttribute('aria-pressed',b.dataset.researchAgent===id?'true':'false'));
     const prompts=view.querySelector('.research-home .qks');if(prompts)prompts.innerHTML=researchPromptButtons();
