@@ -9890,7 +9890,9 @@ function pjExpTab(p){
   </div>`;
 }
 V.project=()=>{
-  const p=PRJ(), tab=S.pjtab||'kb';
+  if(S.pjtab==null)S.pjtab=LS.get('pjtab','kb');
+  const p=PRJ(), tab=['kb','tool','exp','st'].includes(S.pjtab)?S.pjtab:'kb';
+  if(LS.get('pjtab','kb')!==tab)LS.set('pjtab',tab);  /* 不管从哪儿切过来的，刷新都回到同一个页签 */
   const L=convOf(pjSid(p.id));
   const F=FILES(p.id).filter(e=>e.kind!=='kb'), up=(p.kb||[]), DC=DOCS(p.id);/* 知识库条目已在 up 里列了，FILES 里那份不再重复列一遍 */
   const docCur=DC.find(x=>x.key===S.docPick)||null;
@@ -16910,7 +16912,9 @@ function dressHead(root){
    判定「这页自己已经有返回」只看控件，不看文案：
    流程图里的「← 已有产物」是个 <i>，它不是出路，不该把返回键挡掉。 */
 function addBack(p,hd){
-  if(!hd||NAV_ROUTE[S.route]||S.route==='bnew')return;
+  /* 模型接入是设置页的一个分页，平时不补返回；但从模型制备右上角进来时，要能回去 */
+  const fromOutside=S.route==='set'&&(()=>{const pv=backPrev();return pv&&!['settings','me','set'].includes(pv.r)})();
+  if(!hd||NAV_ROUTE[S.route]&&!fromOutside||S.route==='bnew')return;
   const own=p.querySelector('[data-jlaunch],[data-jlist],[data-crumb],[data-act="goback"]')
     ||[...p.querySelectorAll('button,a,[role="button"]')].some(e=>/^\s*←/.test(e.textContent||''));
   if(own)return;
@@ -17043,7 +17047,7 @@ function render(){
          但在用户眼里它只是同一页的一个页签：跳页时不播整页淡入，否则点页签会闪一下 */
     if(k==='dset'){go('dsets',{_anim:false});return}
     S.mtab=k;if(S.route==='dsets'){go('mdl',{_anim:false});return}render()});
-  q('[data-pjtab]',b=>b.onclick=()=>{S.pjtab=b.dataset.pjtab;render()});
+  q('[data-pjtab]',b=>b.onclick=()=>{S.pjtab=b.dataset.pjtab;LS.set('pjtab',S.pjtab);render()});
   q('[data-pjjob]',b=>b.onclick=()=>{S.pjBatch=null;S.jobPick=b.dataset.pjjob;render()});
   q('[data-pjbatch]',b=>b.onclick=()=>{S.jobPick=null;S.pjBatch=b.dataset.pjbatch;render()});
   q('[data-dwclose]',b=>b.onclick=()=>act(b.dataset.dwclose,b));

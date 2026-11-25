@@ -71,7 +71,7 @@ function researchSchedulesHTML(){
  stLoad();
  const items=(ST.items||[]).filter(t=>DB.projects.some(p=>p.id===t.pid)).map(t=>({t,next:stNext(t)||Infinity}))
   .sort((a,b)=>(b.t.enabled-a.t.enabled)||(a.next-b.next)).slice(0,2);
- const total=(ST.items||[]).length;
+ const total=(ST.items||[]).filter(t=>DB.projects.some(p=>p.id===t.pid)).length;
  const card=({t})=>{const st=stState(t),p=DB.projects.find(x=>x.id===t.pid);
   return '<button class="rh-sched" type="button" data-rh-sched="'+esc(t.id)+'"><span class="rh-sched-ic" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/></svg></span><span class="rh-sched-copy"><strong title="'+esc(t.name)+'">'+esc(t.name)+'</strong><small>'+esc(p?.name||'')+' · '+esc(stPlan(t))+'</small></span><span class="rh-sched-state is-'+st.tone+'">'+esc(st.k==='on'?st.label.replace('下次 ','下次 '):st.label)+'</span></button>';};
  return '<section class="rh-sched-wrap" aria-labelledby="rh-sched-title"><div class="rh-project-toolbar"><h2 id="rh-sched-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/></svg>定时任务'+(total?' <span>('+total+')</span>':'')+'</h2><button class="rh-link" type="button" data-go="schedules">查看全部 '+rhIcon('right')+'</button></div>'

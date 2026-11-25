@@ -5,13 +5,14 @@
    node review/v2-dataflow.cjs          全跑
    node review/v2-dataflow.cjs --list   只列用例 */
 const {chromium}=require('../test-browser.cjs');
+const {blockExternalNetwork}=require('./offline-network.cjs');
 const path=require('node:path');
 const FILE='file://'+path.resolve(__dirname,'..','index.html');
 const CASES=[];const T=(id,name,fn)=>CASES.push({id,name,fn});
 const R=[];
 async function fresh(b,opt={}){const p=await b.newPage({viewport:{width:1440,height:900}});p.__errs=[];p.on('pageerror',e=>p.__errs.push(String(e).slice(0,160)));
  if(opt.keep)await p.addInitScript(()=>{try{localStorage.dy_keepTest='1'}catch(e){}});
- await p.goto('about:blank');await p.goto(FILE);await p.waitForTimeout(1200);return p}
+ await blockExternalNetwork(p);await p.goto('about:blank');await p.goto(FILE,{waitUntil:'domcontentloaded'});await p.waitForTimeout(1200);return p}
 const $route=p=>p.evaluate(()=>S.route);
 function expect(cond,detail){if(!cond)throw new Error(detail||'断言失败')}
 
@@ -87,7 +88,7 @@ T('A12','侧栏：入口行高 34、间距 3px；折叠前后 logo / 搜索 / �
 });
 T('A13','老链接全部能打开并有标题',async p=>{
  const bad=[];for(const r of ['materials','files','shared','devices','dsets','dsnew','schedules','schedulenew','settings','tools','set']){
-  await p.goto('about:blank');await p.goto(FILE+'#'+r);await p.waitForTimeout(600);
+  await p.goto('about:blank');await p.goto(FILE+'#'+r,{waitUntil:'domcontentloaded'});await p.waitForTimeout(600);
   if(!(await p.locator('#view h1, #view h2').count()))bad.push(r);}
  expect(!bad.length,'打不开：'+bad.join(','));
 });
@@ -193,12 +194,12 @@ T('UC10','消息已读：点开一条后记为已读，角标减一，刷新后�
  await p.click('#menu [data-go="'+id+'"]');
  await p.waitForTimeout(300);
  const u1=await p.evaluate(()=>inboxUnread());expect(u1===u0-1,u0+' → '+u1);
- await p.goto('about:blank');await p.goto(FILE);await p.waitForTimeout(900);
+ await blockExternalNetwork(p);await p.goto('about:blank');await p.goto(FILE,{waitUntil:'domcontentloaded'});await p.waitForTimeout(900);
  expect(await p.evaluate(id=>INBOX().find(x=>x.id===id)?.read===true,id),'刷新后不是已读');
 });
 T('UC11','最近打开：搜索打开一个对象 → 记入本机 → 重载后空输入第一条就是它',async p=>{
  await p.evaluate(()=>{gsOpen();GS.q='文献追踪';gsPaint();const i=GS.rows.findIndex(r=>r.kind==='定时任务');gsPick(i)});await p.waitForTimeout(400);
- await p.goto('about:blank');await p.goto(FILE);await p.waitForTimeout(900);
+ await blockExternalNetwork(p);await p.goto('about:blank');await p.goto(FILE,{waitUntil:'domcontentloaded'});await p.waitForTimeout(900);
  const first=await p.evaluate(()=>{const r=gsSearch('');return r[0]?.group+'|'+r[0]?.label});
  expect(/^最近打开\|每日文献追踪$/.test(first),first);
 });

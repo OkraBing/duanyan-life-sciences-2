@@ -56,3 +56,10 @@
 .tl-cap{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-3)}
 .tl-cap .input{min-height:32px;height:32px;font-size:13px;padding:0 28px 0 10px;width:auto}
 .tl-clear{min-height:28px;padding:0 8px;font-size:12px}
+
+/* 右上角关闭：可以直接点；底部按键提示弱化成一行浅灰小字 */
+.gs-close{font-family:var(--mono,ui-monospace,monospace);font-size:11px;height:24px;padding:0 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink-3);cursor:pointer;flex:0 0 auto}
+.gs-close:hover{background:var(--surface-2);color:var(--ink);border-color:var(--ink-4)}
+.gs-close:focus-visible{outline:2px solid var(--dry);outline-offset:1px}
+.gs-foot{gap:14px!important;padding:6px 14px!important;font-size:11px!important;color:var(--ink-4)!important;opacity:.85;border-top-color:var(--line-2)!important}
+.gs-foot kbd{border:0!important;background:none!important;padding:0!important;margin-right:3px!important;font-size:11px!important;color:var(--ink-4)!important}

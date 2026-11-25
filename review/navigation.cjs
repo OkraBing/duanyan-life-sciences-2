@@ -55,8 +55,8 @@ assert((await settingsMenu.boundingBox()).x < (await p.locator('#view h1').bound
 await settingsMenu.getByRole('link',{name:'模型接入'}).click();
 assert.equal(await p.locator('#view h1').first().innerText(),'模型接入');
 assert.equal(await currentSetting.innerText(),'模型接入');
-/* 设置没有导航入口了，所以侧栏不该有任何高亮项 */
-assert.equal(await p.locator('#side .nav[aria-current="page"]').count(),0,'设置页不该高亮任何导航入口');
+/* 第二版：「模型接入」归到模型制备（入口在模型制备右上角），所以侧栏高亮模型制备 */
+assert.equal(await p.locator('#side .nav[aria-current="page"]').getAttribute('data-navid'),'mdl','模型接入页应高亮模型制备');
 assert.equal(await p.locator('#view .navigation-tab, #view [role="tablist"]').count(),0);
 await p.screenshot({path:out+'/settings-desktop.png'});
 await p.goBack();

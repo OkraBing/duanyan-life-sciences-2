@@ -123,3 +123,7 @@ body[data-route=workbench] #view{padding-block:0 var(--s8);padding-inline:max(va
 .rh-sched-state.is-err{background:color-mix(in srgb,var(--err,#B34236) 10%,var(--surface));color:var(--err,#B34236)}
 .rh-sched-empty{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border:1px dashed var(--line);border-radius:12px;font-size:13px;color:var(--ink-3)}
 @media(max-width:760px){.rh-sched-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* 状态字在浅底色上要够深：绿 / 红都往墨色里压一点，保证 4.5 以上 */
+.rh-sched-state.is-on{color:color-mix(in srgb,var(--ok,#336950) 72%,var(--ink))}
+.rh-sched-state.is-err{color:color-mix(in srgb,var(--err,#B34236) 80%,var(--ink))}

@@ -12,13 +12,13 @@ const GS_FEATURES=[
  {id:'mdl',grp:'资源',name:'模型制备',where:'资源',alias:['模型','模型库','模型训练','模型评测','模型推理','训练','评测','推理'],go:()=>{S.mtab='cur';go('mdl')}},
  {id:'shelf',grp:'资源',name:'科研工具',where:'资源',alias:['工具','工具市场'],go:()=>{RS.marketTab='catalog';go('shelf')}},
  {id:'data',grp:'资源',name:'数据库',where:'资源',alias:['公共数据库','数据源'],go:()=>{RS.marketTab='catalog';go('data')}},
- {id:'schedules',grp:'研究',name:'定时任务',where:'工作台右上 · 课题详情「定时」',alias:['定时','周报','每天','每周','每月','计划','提醒','自动','定期','追踪'],go:()=>go('schedules')},
+ {id:'schedules',grp:'研究',name:'定时任务',where:'工作台 · 课题详情「定时」',alias:['定时','周报','每天','每周','每月','计划','提醒','自动','定期','追踪'],go:()=>go('schedules')},
  {id:'materials',grp:'研究',name:'资料空间',where:'课题项目右上',alias:['资料','文件','文献','上传文件','知识库','与你共享','附件'],go:()=>go('materials')},
  {id:'devices',grp:'实验',name:'设备管理',where:'实验管理右上',alias:['设备','仪器','接入设备','申请接入'],go:()=>go('devices')},
  {id:'dsets',grp:'资源',name:'数据集',where:'模型制备 · 数据集页签',alias:['训练数据','训练集','数据集列表'],go:()=>go('dsets')},
  {id:'tools',grp:'资源',name:'我的工具',where:'科研工具 · 我的',alias:['自建工具','接入工具','管理工具'],go:()=>go('tools')},
  {id:'mydata',grp:'资源',name:'我的数据库',where:'数据库 · 我的',alias:['自建数据库','接入数据库'],go:()=>{RS.marketTab='mine';go('data')}},
- {id:'set',grp:'账户',name:'模型接入',where:'账户 · 设置',alias:['密钥','API Key','apikey','key','模型配置','接入模型','大模型','凭证'],go:()=>go('set')},
+ {id:'set',grp:'资源',name:'模型接入',where:'模型制备右上 · 账户设置',alias:['密钥','API Key','apikey','key','模型配置','接入模型','大模型','凭证'],go:()=>go('set')},
  {id:'settings',grp:'账户',name:'设置',where:'账户',alias:['偏好','系统设置'],go:()=>go('settings')},
  {id:'me',grp:'账户',name:'个人中心',where:'账户',alias:['账户','账号','我的信息'],go:()=>go('me')},
  {id:'shared',grp:'研究',name:'共享课题',where:'课题详情 · 资料空间「与你共享」',alias:['共享','协作','申请','审批','共享给我'],go:()=>go('shared')},
@@ -61,7 +61,7 @@ function gsNewSchedule(prefill){
  const pid=prefill?.pid||gsCurrentPid();
  stStart(null,Object.assign(stBlank(),{pid},prefill||{}));
 }
-function gsRecent(){try{const v=LS.get('gs_recent',[]);return Array.isArray(v)?v:[]}catch(e){return []}}
+function gsRecent(){try{const v=LS.get('gs_recent',[]);return Array.isArray(v)?v.filter(x=>x&&typeof x==='object'&&typeof x.key==='string'):[]}catch(e){return []}}
 function gsRemember(row){
  if(!row||!row.key)return;
  const list=gsRecent().filter(x=>x.key!==row.key);
@@ -162,7 +162,7 @@ function gsOpen(){
  let d=document.getElementById('gs-dlg');
  if(!d){
   d=document.createElement('dialog');d.id='gs-dlg';d.className='gs-dlg';d.setAttribute('aria-label','搜索');
-  d.innerHTML='<div class="gs-box"><div class="gs-bar">'+gsIcon('搜索')+'<input class="gs-input" type="text" role="combobox" aria-expanded="true" aria-controls="gs-list" aria-autocomplete="list" placeholder="搜索功能、课题、对话、任务、资料…" autocomplete="off" spellcheck="false"><kbd class="gs-esc">esc</kbd></div><div class="gs-list" id="gs-list" role="listbox" aria-label="搜索结果"></div><div class="gs-foot"><span><kbd>↑</kbd><kbd>↓</kbd> 选择</span><span><kbd>↵</kbd> 打开</span><span><kbd>esc</kbd> 关闭</span></div></div>';
+  d.innerHTML='<div class="gs-box"><div class="gs-bar">'+gsIcon('搜索')+'<input class="gs-input" type="text" role="combobox" aria-expanded="true" aria-controls="gs-list" aria-autocomplete="list" placeholder="搜索功能、课题、对话、任务、资料…" autocomplete="off" spellcheck="false"><button type="button" class="gs-close" data-gs-close aria-label="关闭搜索" title="关闭（esc）">esc</button></div><div class="gs-list" id="gs-list" role="listbox" aria-label="搜索结果"></div><div class="gs-foot"><span><kbd>↑</kbd><kbd>↓</kbd> 选择</span><span><kbd>↵</kbd> 打开</span><span><kbd>esc</kbd> 关闭</span></div></div>';
   document.body.appendChild(d);
   const input=d.querySelector('.gs-input');
   input.addEventListener('input',()=>{GS.q=input.value;GS.i=0;gsPaint()});
@@ -172,7 +172,7 @@ function gsOpen(){
    else if(e.key==='ArrowUp'){e.preventDefault();if(GS.rows.length){GS.i=(GS.i-1+GS.rows.length)%GS.rows.length;gsPaint()}}
    else if(e.key==='Enter'){e.preventDefault();if(GS.rows.length)gsPick(GS.i);else d.querySelector('[data-gs-ask]')?.click()}
   });
-  d.addEventListener('click',e=>{if(e.target===d)gsClose()});
+  d.addEventListener('click',e=>{if(e.target===d||e.target.closest('[data-gs-close]'))gsClose()});
   d.addEventListener('close',()=>{GS.open=false;const t=document.querySelector('.gs-trigger');t?.setAttribute('aria-expanded','false')});
  }
  GS.q='';GS.i=0;GS.open=true;

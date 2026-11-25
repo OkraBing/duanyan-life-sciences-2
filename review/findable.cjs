@@ -3,10 +3,11 @@
    折叠前后侧栏不跳位；定时任务、模型接入、资料、数据集、工具、设备、共享各自的入口点得通。
    每条检查前真重载，避免状态串到下一条。跑构建产物，不跑 src。 */
 const {chromium}=require('../test-browser.cjs');
+const {blockExternalNetwork}=require('./offline-network.cjs');
 const path=require('node:path');
 const FILE='file://'+path.resolve(__dirname,'..','index.html');
 const R=[];const ok=(n,c,d='')=>R.push({n,c:!!c,d});
-async function fresh(b){const p=await b.newPage({viewport:{width:1440,height:900}});p.__errs=[];p.on('pageerror',e=>p.__errs.push(String(e).slice(0,160)));await p.goto('about:blank');await p.goto(FILE);await p.waitForTimeout(1200);return p}
+async function fresh(b){const p=await b.newPage({viewport:{width:1440,height:900}});p.__errs=[];p.on('pageerror',e=>p.__errs.push(String(e).slice(0,160)));await blockExternalNetwork(p);await p.goto('about:blank');await p.goto(FILE,{waitUntil:'domcontentloaded'});await p.waitForTimeout(1200);return p}
 (async()=>{
  const b=await chromium.launch();
  /* —— 全局搜索 —— */

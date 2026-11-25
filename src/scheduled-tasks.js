@@ -104,8 +104,12 @@ function stApplyNL(t,text){
   if(!DB.projects.some(p=>p.id===t.pid)||!stNext(t))return {err:'恢复前请先在执行计划里选一个将来的时间，并确认关联课题还在。'};
   next.enabled=true;effect='已开启';}
  else{
-  const r=typeof stParsePeriod==='function'?stParsePeriod(s):null;
-  const wkd=/工作日/.test(s);
+  let r=typeof stParsePeriod==='function'?stParsePeriod(s):null;
+  let wkd=/工作日/.test(s);
+  /* 「每天的新论文只看 Nature」里有「每天」，但它是在说内容，不是在改计划 */
+  const rest=s.replace(/每(天|日)|每个?(周|星期|礼拜)[一二三四五六日天末]?|每个?月(的)?(\d{1,2}[号日])?|工作日|天天|(早上|上午|中午|下午|傍晚|晚上)?\s*\d{1,2}\s*(点|:|：)\s*(半|\d{1,2})?(分)?|早上|上午|中午|下午|傍晚|晚上|改成|改为|改到|换成|换到|调成|调到|设为|设成|挪到|执行|运行|跑|一次|[，,。.、\s吧]/g,'');
+  const verb=/(改|换|调|设|挪)(成|为|到)/.test(s);
+  if((r||wkd)&&!verb&&rest.length>2){r=null;wkd=false;}
   const tm=s.match(/(早上|上午|中午|下午|傍晚|晚上)?\s*(\d{1,2})\s*(?:点|:|：)\s*(半|\d{1,2})?/);
   if(r||wkd){Object.assign(next,{period:wkd?'weekdays':r.period,weekday:r?r.weekday:next.weekday,monthday:r?r.monthday:next.monthday,time:tm&&r?r.time:(r&&r.time!=='08:30'?r.time:next.time)});
    if(tm&&!r){let h=+tm[2],mi=tm[3]==='半'?30:tm[3]?+tm[3]:0;if(/下午|傍晚|晚上/.test(tm[1]||'')&&h<12)h+=12;if(h<24&&mi<60)next.time=String(h).padStart(2,'0')+':'+String(mi).padStart(2,'0');}
@@ -133,7 +137,8 @@ function stBindForm(root){
 }
 function stPage(mode){stLoad();return '<div class="st-layout" data-mode="'+mode+'">'+stSidebar()+(mode==='detail'||mode==='new'&&ST.pick?stDetail():stHome())+'</div>';}
 V.schedules=()=>stPage('home');V.schedulenew=()=>stPage('new');V.scheduledetail=()=>stPage('detail');
-NAV_PARENT.schedulenew='schedules';NAV_PARENT.scheduledetail='schedules';
+/* 侧栏高亮只往上找一层，所以直接挂到工作台，不经过 schedules */
+NAV_PARENT.schedulenew='workbench';NAV_PARENT.scheduledetail='workbench';
 function stSave(){const f={...ST.form,content:String(ST.form.content||'').trim()};f.name=String(f.name||'').trim()||stTitleFrom(f.content);ST.errors=[];
  if(!DB.projects.some(p=>p.id===f.pid))ST.errors.push('选一个关联课题。');
  if(!f.content)ST.errors.push('用一句话写下要做什么。');
