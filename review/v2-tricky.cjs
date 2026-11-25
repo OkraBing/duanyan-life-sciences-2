@@ -104,12 +104,12 @@ R(6,'对话',[
 ]);
 /* ===== 第 7 轮：工作台 ===== */
 R(7,'工作台',[
- ['一个定时任务都没有：区块给新建入口，点开是新建表单',async p=>{await p.evaluate(()=>{stLoad();ST.items=[];go('workbench')});await p.waitForTimeout(300);
+ ['一个定时任务都没有：区块给新建入口，点开是新建表单',async p=>{await p.evaluate(()=>{stLoad();ST.items=[];RESEARCH_HOME.schedOpen=true;go('workbench')});await p.waitForTimeout(300);
    must(await p.locator('[data-rh-sched-new]').count()===1,'没有新建入口');await p.click('[data-rh-sched-new]');await p.waitForTimeout(200);must(await p.evaluate(()=>!!document.getElementById('st-dialog')?.open),'没打开新建表单');await p.keyboard.press('Escape');}],
- ['区块标题的个数与卡片口径一致（不数课题已删除的）',async p=>{const r=await p.evaluate(()=>{ST.items=null;LS.set('scheduled_plans_v1',null);stLoad();const t=ST.items[0];ST.items.push({...t,id:'orphan-x',pid:'no-such'});go('workbench');
+ ['区块标题的个数与卡片口径一致（不数课题已删除的）',async p=>{const r=await p.evaluate(()=>{ST.items=null;LS.set('scheduled_plans_v1',null);stLoad();const t=ST.items[0];ST.items.push({...t,id:'orphan-x',pid:'no-such'});RESEARCH_HOME.schedOpen=true;go('workbench');
    const title=document.getElementById('rh-sched-title').textContent;const valid=ST.items.filter(t=>DB.projects.some(p=>p.id===t.pid)).length;return {title,valid}});must(r.title.includes('('+r.valid+')'),JSON.stringify(r));}],
- ['只有暂停的任务：卡片写「已暂停」',async p=>{const r=await p.evaluate(()=>{ST.items=ST.items.filter(t=>t.id!=='orphan-x').map(t=>({...t,enabled:false}));go('workbench');return [...document.querySelectorAll('.rh-sched-state')].map(e=>e.textContent)});must(r.length&&r.every(x=>x==='已暂停'),r.join('|'));}],
- ['学术资讯：键盘在页签间切换，详情能关掉',async p=>{await p.focus('[data-rh-tab="papers"]');await p.keyboard.press('ArrowRight');await p.waitForTimeout(200);
+ ['只有暂停的任务：卡片写「已暂停」',async p=>{const r=await p.evaluate(()=>{ST.items=ST.items.filter(t=>t.id!=='orphan-x').map(t=>({...t,enabled:false}));RESEARCH_HOME.schedOpen=true;go('workbench');return [...document.querySelectorAll('.rh-sched-state')].map(e=>e.textContent)});must(r.length&&r.every(x=>x==='已暂停'),r.join('|'));}],
+ ['学术资讯：键盘在页签间切换，详情能关掉',async p=>{await p.evaluate(()=>{RESEARCH_HOME.schedOpen=false;render()});await p.focus('[data-rh-tab="papers"]');await p.keyboard.press('ArrowRight');await p.waitForTimeout(200);
    must(await p.evaluate(()=>RESEARCH_HOME.tab)==='news','右方向键没切到学术资讯');await p.click('.rh-news-row >> nth=0');await p.waitForTimeout(150);await p.keyboard.press('Escape');await p.waitForTimeout(100);must(await p.evaluate(()=>!document.getElementById('dlg').open),'详情关不掉');}],
  ['研究动态对不上任务时落到课题的任务列表',async p=>{await p.evaluate(()=>{DB.acts=[{k:'wet',t:'测试动态',p:DB.projects[0].name,at:'今天 23:58',by:'我'}];RESEARCH_HOME.tab='papers';go('workbench')});await p.waitForTimeout(300);
    await p.click('.rh-activity >> nth=0');await p.waitForTimeout(300);must(['lab','labdet'].includes(await route(p)),'落到 '+await route(p));}],
@@ -131,18 +131,18 @@ const contrast=(p,sel)=>p.evaluate(sel=>{const e=document.querySelector(sel);if(
  const L=v=>{const a=v.slice(0,3).map(u=>{u/=255;return u<=0.03928?u/12.92:Math.pow((u+0.055)/1.055,2.4)});return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2]};
  const f=parse(c.color),l1=L(f),l2=L(bg||[255,255,255]);return +( (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05) ).toFixed(2)},sel);
 R(9,'视觉与可访问性',[
- ['浅色：已共享标签、定时卡片状态、页签数量对比度 ≥ 4.5',async p=>{await p.evaluate(()=>go('lab'));await p.waitForTimeout(400);const a=await contrast(p,'.shared-tag');await p.evaluate(()=>go('workbench'));await p.waitForTimeout(300);const b=await contrast(p,'.rh-sched-state');
+ ['浅色：已共享标签、定时卡片状态、页签数量对比度 ≥ 4.5',async p=>{await p.evaluate(()=>go('lab'));await p.waitForTimeout(400);const a=await contrast(p,'.shared-tag');await p.evaluate(()=>{RESEARCH_HOME.schedOpen=true;go('workbench')});await p.waitForTimeout(300);const b=await contrast(p,'.rh-sched-state');
    await p.evaluate(()=>go('mdl'));await p.waitForTimeout(300);const c=await contrast(p,'.tl-seg-b .num, #view .tab .tab-c');must([a,b,c].every(x=>x==null||x>=4.5),JSON.stringify({a,b,c}));}],
- ['深色：同样三处对比度 ≥ 4.5',async p=>{await p.emulateMedia({colorScheme:'dark'});await p.evaluate(()=>go('lab'));await p.waitForTimeout(400);const a=await contrast(p,'.shared-tag');await p.evaluate(()=>go('workbench'));await p.waitForTimeout(300);const b=await contrast(p,'.rh-sched-state');
+ ['深色：同样三处对比度 ≥ 4.5',async p=>{await p.emulateMedia({colorScheme:'dark'});await p.evaluate(()=>go('lab'));await p.waitForTimeout(400);const a=await contrast(p,'.shared-tag');await p.evaluate(()=>{RESEARCH_HOME.schedOpen=true;go('workbench')});await p.waitForTimeout(300);const b=await contrast(p,'.rh-sched-state');
    await p.evaluate(()=>{S.mtab='cur';go('mdl')});await p.waitForTimeout(300);const c=await contrast(p,'#view .tab .tab-c');await p.emulateMedia({colorScheme:'light'});must([a,b,c].every(x=>x==null||x>=4.5),JSON.stringify({a,b,c}));}],
- ['新控件键盘聚焦时有可见的焦点环',async p=>{const out=[];for(const [r,sel] of [['workbench','.rh-sched'],['lab','.lv-share'],['scheduledetail','.st-switch'],['schedules','#side .side-toggle']]){
+ ['新控件键盘聚焦时有可见的焦点环',async p=>{const out=[];for(const [r,sel] of [['workbench','[data-rh-sched-pop]'],['lab','.lv-share'],['scheduledetail','.st-switch'],['schedules','#side .side-toggle']]){
    await p.evaluate(r=>{if(r==='scheduledetail'){stLoad();ST.pick=ST.items[0].id}go(r)},r);await p.waitForTimeout(250);await p.focus(sel).catch(()=>{});await p.keyboard.press('Shift+Tab');await p.keyboard.press('Tab');
    const ok=await p.evaluate(sel=>{const e=document.activeElement;if(!e||!e.matches(sel))return 'nofocus';const c=getComputedStyle(e);return c.outlineStyle!=='none'&&parseFloat(c.outlineWidth)>0||c.boxShadow!=='none'},sel);out.push(sel+':'+ok);}
    must(out.every(x=>x.endsWith(':true')),out.join(' '));}],
  ['360 宽：工作台、定时任务详情、科研工具没有横向溢出',async p=>{await p.setViewportSize({width:360,height:780});const out=[];for(const r of ['workbench','scheduledetail','shelf','dsets']){await p.evaluate(r=>{if(r==='scheduledetail'){stLoad();ST.pick=ST.items[0].id}go(r)},r);await p.waitForTimeout(300);
    const o=await p.evaluate(()=>{const v=document.getElementById('view');return v.scrollWidth-v.clientWidth});if(o>2)out.push(r+':'+o);}await p.setViewportSize({width:1440,height:900});must(!out.length,out.join(' '));}],
  ['同一排的小按钮高度一致（实验卡片「共享」与课题页「共享」）',async p=>{await p.evaluate(()=>go('lab'));await p.waitForTimeout(300);const a=await p.evaluate(()=>Math.round(document.querySelector('.lv-share')?.getBoundingClientRect().height||0));
-   await p.evaluate(()=>go('project',{pid:'p1'}));await p.waitForTimeout(300);const b=await p.evaluate(()=>Math.round(document.querySelector('.pj-share-btn')?.getBoundingClientRect().height||0));must(a===b&&a>0,a+' vs '+b);}],
+   await p.evaluate(()=>go('project',{pid:'p2'}));await p.waitForTimeout(300);const b=await p.evaluate(()=>Math.round(document.querySelector('.pj-share-btn')?.getBoundingClientRect().height||0));must(a===b&&a>0,a+' vs '+b);}],
 ]);
 /* ===== 第 10 轮：旧数据与刷新 ===== */
 R(10,'旧数据与刷新',[

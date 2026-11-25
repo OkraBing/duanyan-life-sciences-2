@@ -30,10 +30,10 @@ T('A03','实验管理有「设备管理」，没有「查看设备列表」',asy
  await p.evaluate(()=>go('lab'));await p.waitForTimeout(300);
  const t=await p.locator('#view').innerText();expect(/设备管理/.test(t)&&!/查看设备列表/.test(t),'文案不对');
 });
-T('A04','设置不在侧栏，账户可达；工作台有定时任务区块',async p=>{
+T('A04','设置不在侧栏，账户可达；工作台右上角有定时任务',async p=>{
  expect(await p.locator('#side .nav[data-navid="settings"]').count()===0,'侧栏还有设置');
  await p.click('#side .acct-b');await p.waitForTimeout(300);expect(['me','settings'].includes(await $route(p)),'账户没去个人中心');
- await p.evaluate(()=>go('workbench'));await p.waitForTimeout(300);expect(await p.locator('#view .rh-sched-wrap [data-go="schedules"]').count()===1,'工作台没有定时任务区块');
+ await p.evaluate(()=>go('workbench'));await p.waitForTimeout(300);expect(await p.locator('#view .rh-header [data-rh-sched-pop]').count()===1,'工作台右上角没有定时任务按钮');
 });
 T('A05','科研工具「市场 / 我的」，数据库「公共数据集 / 我的数据集」；#tools 落到科研工具·我的',async p=>{
  for(const [r,want] of [['shelf',['市场','我的']],['data',['公共数据集','我的数据集']]]){await p.evaluate(r=>go(r),r);await p.waitForTimeout(300);
@@ -257,11 +257,11 @@ T('UC17','定时任务：执行计划用选项修改即存；选到过去的一�
  await p.fill('input[name="p_date"]','2020-01-01');await p.dispatchEvent('input[name="p_date"]','change');await p.waitForTimeout(250);
  expect(await p.evaluate(()=>ST.items.find(x=>x.id===ST.pick).date)!=='2020-01-01','过去的日期被存下了');
 });
-T('UC18','工作台定时任务卡片：最多两张，开启的、下次执行早的在前；点卡片进详情；数据与定时任务列表一致',async p=>{
- await p.evaluate(()=>go('workbench'));await p.waitForTimeout(400);
+T('UC18','工作台定时任务：右上角按钮展开列表，开启的、下次执行早的在前；点卡片进详情；数据与定时任务列表一致',async p=>{
+ await p.evaluate(()=>{RESEARCH_HOME.schedOpen=true;go('workbench')});await p.waitForTimeout(400);
  const shown=await p.$$eval('.rh-sched strong',es=>es.map(e=>e.textContent));
- const want=await p.evaluate(()=>(ST.items||[]).filter(t=>DB.projects.some(p=>p.id===t.pid)).map(t=>({t,n:stNext(t)||Infinity})).sort((a,b)=>(b.t.enabled-a.t.enabled)||(a.n-b.n)).slice(0,2).map(x=>x.t.name));
- expect(shown.length<=2&&JSON.stringify(shown)===JSON.stringify(want),JSON.stringify({shown,want}));
+ const want=await p.evaluate(()=>(ST.items||[]).filter(t=>DB.projects.some(p=>p.id===t.pid)).map(t=>({t,n:stNext(t)||Infinity})).sort((a,b)=>(b.t.enabled-a.t.enabled)||(a.n-b.n)).map(x=>x.t.name));
+ expect(JSON.stringify(shown)===JSON.stringify(want),JSON.stringify({shown,want}));
  const total=await p.evaluate(()=>ST.items.length);expect((await p.locator('#rh-sched-title').innerText()).includes('('+total+')'),'总数不对');
  await p.locator('.rh-sched').first().click();await p.waitForTimeout(300);
  expect((await p.evaluate(()=>S.route+'|'+ST.items.find(x=>x.id===ST.pick)?.name))==='scheduledetail|'+shown[0],'没进到对应详情');
@@ -273,7 +273,7 @@ T('UC19','删除定时任务：站内确认 → 从本机存储、定时任务�
  await p.click('#dlg button[value="ok"]');await p.waitForTimeout(300);
  const r=await p.evaluate(t=>({store:(LS.get('scheduled_plans_v1',[])||[]).some(x=>x.id===t.id),mem:ST.items.some(x=>x.id===t.id),route:S.route}),t);
  expect(!r.store&&!r.mem&&r.route==='schedules',JSON.stringify(r));
- await p.evaluate(()=>go('workbench'));await p.waitForTimeout(300);
+ await p.evaluate(()=>{RESEARCH_HOME.schedOpen=true;go('workbench')});await p.waitForTimeout(300);
  expect(!(await p.$$eval('.rh-sched strong',es=>es.map(e=>e.textContent))).includes(t.name),'工作台还显示已删除的任务');
  await p.evaluate(pid=>{go('project',{pid});S.pjtab='st';render()},t.pid);await p.waitForTimeout(300);
  expect(!(await p.$$eval('.stp-row .pjx-f-n',es=>es.map(e=>e.textContent))).includes(t.name),'课题页签还显示已删除的任务');
@@ -286,8 +286,7 @@ T('UC20','共享：课题页常驻「共享」——没共享过的进「开启�
  await p.click('.pj-share-btn');await p.waitForTimeout(400);
  expect((await p.evaluate(()=>S.route+'|'+RS.sharedForm?.pid))==='sharednew|'+un,'没进开启共享');
  await p.evaluate(()=>go('project',{pid:'p1'}));await p.waitForTimeout(400);
- await p.click('.pj-share-btn');await p.waitForTimeout(400);
- expect((await p.evaluate(()=>S.route+'|'+rsShared()?.projectId))==='shareddetail|p1','已共享课题没进共享课题');
+ expect(await p.locator('.pj-share-btn').count()===0&&await p.locator('.project-shared-badge').count()===1,'已共享课题的页头应只有「共享课题」标识');
 });
 T('UC21','共享：在资产所在处共享 → 写进共享课题 → 那一行出现「已共享」（悬停写共享到哪）→ 移出共享后标签消失',async p=>{
  const id=await p.evaluate(()=>{const s=rsProjectShared('p1');const a=s.assets.find(a=>a.kind==='experiment');s.assets=s.assets.filter(x=>x!==a);return a.sourceId});

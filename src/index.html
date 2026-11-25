@@ -3029,6 +3029,7 @@ dialog.rs-copy-dialog{width:min(600px,calc(100vw - 32px));max-width:600px;overfl
 /* @include autonomous-lab.css */
 /* @include global-search.css */
 /* @include theme-bootcamp.css */
+/* @include visual-v2.css */
 
 /* 项目卡标题被挤成两行、断在「结合界 / 面」：标题被写死 max-width:calc(100% - 55px)，
    而右边那枚「共享」角标其实只有 40px 宽，行上还开了 flex-wrap。
@@ -9903,7 +9904,7 @@ V.project=()=>{
         stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
         ><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>
     <div class="col pjx-title" style="gap:4px;min-width:0">
-      <div class="pjx-title-row"><h1 class="pjx-n">${esc(p.name)}</h1><button class="btn pj-share-btn" type="button" data-ce-share-project="${esc(p.id)}" title="${rsProjectShared(p.id)?'查看成员、继续共享资产':'把这个课题共享给组员'}">${rsSharingIcon()}${rsProjectShared(p.id)?'共享设置':'共享'}</button>${rsProjectShared(p.id)?'<button class="project-shared-badge" type="button" data-project-members="'+esc(rsProjectShared(p.id).id)+'" aria-label="查看协作者" aria-haspopup="dialog">'+rsSharingIcon()+'共享课题</button>':''}</div>
+      <div class="pjx-title-row"><h1 class="pjx-n">${esc(p.name)}</h1>${rsProjectShared(p.id)?'':`<button class="btn pj-share-btn" type="button" data-ce-share-project="${esc(p.id)}" title="把这个课题共享给组员">${rsSharingIcon()}共享</button>`}${rsProjectShared(p.id)?'<button class="project-shared-badge" type="button" data-project-members="'+esc(rsProjectShared(p.id).id)+'" aria-label="查看协作者" aria-haspopup="dialog">'+rsSharingIcon()+'共享课题</button>':''}</div>
       <span class="t-xs mut2" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
         >${esc(goalText(p))}</span>
     </div>

@@ -1,0 +1,40 @@
+/* 第二版视觉整理（只动层级、间距、密度与一致性；颜色 token 一律沿用墨砚定稿，不新增色值）
+   一、页头：所有页同一个结构——标题 22/600，副标题紧贴其下 13/ink-3，操作按钮与标题对齐在右。
+   二、表格：一行只让一个动作发蓝（主动作），其余动作退成灰字；删除类只在悬停时变红；
+       关联课题这类「去别处看看」的链接安静显示，悬停才出下划线。
+   三、只读详情不要长得像输入框；宽屏的详情页用两栏，不在右边留一大片空。 */
+
+/* ---- 一、页头 ---- */
+#view .rh-header{align-items:flex-start!important}
+#view .rh-header>div:first-child{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important}
+#view .rh-header h1,#view .pg-hd h1,#view .iteration-head h1,#view .lv-head h1,#view .al-page-head h1,#view .rs-header h1{font-size:22px!important;font-weight:600!important;line-height:1.35!important;letter-spacing:0!important;margin:0!important}
+#view .rh-header p,#view .pg-hd .pg-sub,#view .iteration-head>div>p,#view .lv-head>div>p,#view .al-page-head>div>p{font-size:13px!important;line-height:1.6!important;color:var(--ink-3)!important;margin:4px 0 0!important}
+
+/* ---- 二、表格动作 ---- */
+#view .acts{gap:14px!important;flex-wrap:nowrap}
+#view .acts .alnk{color:var(--ink-3)!important;text-decoration:none!important;font-weight:400!important;background:none!important}
+#view .acts .alnk:first-child:not(:disabled){color:var(--dry-ink)!important}
+#view .acts .alnk:hover:not(:disabled){color:var(--ink)!important;text-decoration:underline!important;text-underline-offset:3px}
+#view .acts .alnk:first-child:hover:not(:disabled){color:var(--dry-ink)!important}
+#view .acts .alnk:is([data-mdel],[data-dsdel],[data-bdel],[data-jdel]):hover:not(:disabled){color:var(--err)!important}
+#view .acts .alnk:disabled{color:var(--ink-4)!important;opacity:.55;cursor:not-allowed}
+#view tbody .lnk{color:var(--ink-2)!important;text-decoration:none!important}
+#view tbody .lnk:hover{color:var(--dry-ink)!important;text-decoration:underline!important;text-underline-offset:3px}
+#view tbody td.c-nm strong{font-weight:600}
+
+/* ---- 三、只读详情 ---- */
+/* 查看实验：字段是只读的，去掉输入框外壳，写成「字段名 / 值」；没填的值用浅灰 */
+.al-page .al-field-value{border:0!important;background:none!important;padding:2px 0 0!important;min-height:0!important;font-size:14px;color:var(--ink)}
+.al-page .al-field:has(.al-field-value){gap:2px!important;padding-bottom:12px;border-bottom:1px solid var(--line-2)}
+.al-page .al-field-value.is-empty{color:var(--ink-4)}
+
+/* 定时任务详情：宽屏两栏——左边任务与运行记录，右边执行计划，跟着滚动 */
+.st-main.st-v2{max-width:none!important}
+.st-v2>*{width:100%;max-width:1120px}
+.st-cols{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.st-col-main{display:flex;flex-direction:column;gap:16px;min-width:0}
+.st-col-side{position:sticky;top:16px}
+.st-col-side .st-pills{gap:6px}
+.st-col-side .st-when{flex-direction:column;align-items:stretch}
+.st-col-side .st-when .st-field{min-width:0}
+@media(max-width:1180px){.st-cols{grid-template-columns:minmax(0,1fr)}.st-col-side{position:static}}

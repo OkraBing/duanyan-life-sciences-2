@@ -3110,6 +3110,22 @@ body[data-route=workbench] #view{padding-block:0 var(--s8);padding-inline:max(va
 /* 状态字在浅底色上要够深：绿 / 红都往墨色里压一点，保证 4.5 以上 */
 .rh-sched-state.is-on{color:color-mix(in srgb,var(--ok,#336950) 72%,var(--ink))}
 .rh-sched-state.is-err{color:color-mix(in srgb,var(--err,#B34236) 80%,var(--ink))}
+/* 页头右上角「定时任务」按钮 + 弹出面板 */
+.rh-header-actions{display:flex;align-items:center;gap:10px}
+.rh-sched-anchor{position:relative}
+.rh-sched-btn{display:inline-flex;align-items:center;gap:6px}
+.rh-sched-btn svg{color:var(--ink-3)}
+.rh-sched-n{font-size:11px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--surface-2);color:var(--ink-2);display:inline-grid;place-items:center}
+.rh-sched-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:40;width:min(420px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh-3);padding:14px;display:flex;flex-direction:column;gap:10px}
+.rh-sched-pop-h{display:flex;align-items:center;justify-content:space-between}
+.rh-sched-pop-h h2{font-size:14px;font-weight:600;margin:0}
+.rh-sched-pop-h h2 span{color:var(--ink-3);font-weight:400}
+.rh-sched-list{display:flex;flex-direction:column;gap:8px;max-height:min(360px,55vh);overflow-y:auto}
+.rh-sched-pop .rh-sched{box-shadow:none;padding:10px 12px}
+.rh-sched-empty-t{margin:4px 0;font-size:13px;color:var(--ink-3)}
+.rh-sched-pop-f{display:flex;justify-content:flex-end;border-top:1px solid var(--line-2);padding-top:10px}
+/* 面板要压在下面各区块之上：页头单独抬一层 */
+#view .rh-header{position:relative;z-index:30}
 
 body[data-route="materials"] #view,body[data-route="files"] #view,body[data-route="shared"] #view{padding:0;background:var(--surface)}
 .ms-shell{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:calc(100vh - 48px);color:var(--ink)}
@@ -4561,6 +4577,47 @@ body[data-route="mdl"] #view .pg-hd,body[data-route="dsets"] #view .pg-hd{paddin
 .lv-share:hover{border-color:var(--ink-4);color:var(--ink)}
 .pj-share-btn{display:inline-flex;align-items:center;gap:6px;height:28px!important;min-height:28px!important;padding:0 10px!important;font-size:12px!important;margin-left:10px}
 .pj-share-btn svg{width:14px;height:14px}
+
+/* 第二版视觉整理（只动层级、间距、密度与一致性；颜色 token 一律沿用墨砚定稿，不新增色值）
+   一、页头：所有页同一个结构——标题 22/600，副标题紧贴其下 13/ink-3，操作按钮与标题对齐在右。
+   二、表格：一行只让一个动作发蓝（主动作），其余动作退成灰字；删除类只在悬停时变红；
+       关联课题这类「去别处看看」的链接安静显示，悬停才出下划线。
+   三、只读详情不要长得像输入框；宽屏的详情页用两栏，不在右边留一大片空。 */
+
+/* ---- 一、页头 ---- */
+#view .rh-header{align-items:flex-start!important}
+#view .rh-header>div:first-child{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important}
+#view .rh-header h1,#view .pg-hd h1,#view .iteration-head h1,#view .lv-head h1,#view .al-page-head h1,#view .rs-header h1{font-size:22px!important;font-weight:600!important;line-height:1.35!important;letter-spacing:0!important;margin:0!important}
+#view .rh-header p,#view .pg-hd .pg-sub,#view .iteration-head>div>p,#view .lv-head>div>p,#view .al-page-head>div>p{font-size:13px!important;line-height:1.6!important;color:var(--ink-3)!important;margin:4px 0 0!important}
+
+/* ---- 二、表格动作 ---- */
+#view .acts{gap:14px!important;flex-wrap:nowrap}
+#view .acts .alnk{color:var(--ink-3)!important;text-decoration:none!important;font-weight:400!important;background:none!important}
+#view .acts .alnk:first-child:not(:disabled){color:var(--dry-ink)!important}
+#view .acts .alnk:hover:not(:disabled){color:var(--ink)!important;text-decoration:underline!important;text-underline-offset:3px}
+#view .acts .alnk:first-child:hover:not(:disabled){color:var(--dry-ink)!important}
+#view .acts .alnk:is([data-mdel],[data-dsdel],[data-bdel],[data-jdel]):hover:not(:disabled){color:var(--err)!important}
+#view .acts .alnk:disabled{color:var(--ink-4)!important;opacity:.55;cursor:not-allowed}
+#view tbody .lnk{color:var(--ink-2)!important;text-decoration:none!important}
+#view tbody .lnk:hover{color:var(--dry-ink)!important;text-decoration:underline!important;text-underline-offset:3px}
+#view tbody td.c-nm strong{font-weight:600}
+
+/* ---- 三、只读详情 ---- */
+/* 查看实验：字段是只读的，去掉输入框外壳，写成「字段名 / 值」；没填的值用浅灰 */
+.al-page .al-field-value{border:0!important;background:none!important;padding:2px 0 0!important;min-height:0!important;font-size:14px;color:var(--ink)}
+.al-page .al-field:has(.al-field-value){gap:2px!important;padding-bottom:12px;border-bottom:1px solid var(--line-2)}
+.al-page .al-field-value.is-empty{color:var(--ink-4)}
+
+/* 定时任务详情：宽屏两栏——左边任务与运行记录，右边执行计划，跟着滚动 */
+.st-main.st-v2{max-width:none!important}
+.st-v2>*{width:100%;max-width:1120px}
+.st-cols{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.st-col-main{display:flex;flex-direction:column;gap:16px;min-width:0}
+.st-col-side{position:sticky;top:16px}
+.st-col-side .st-pills{gap:6px}
+.st-col-side .st-when{flex-direction:column;align-items:stretch}
+.st-col-side .st-when .st-field{min-width:0}
+@media(max-width:1180px){.st-cols{grid-template-columns:minmax(0,1fr)}.st-col-side{position:static}}
 
 
 /* 项目卡标题被挤成两行、断在「结合界 / 面」：标题被写死 max-width:calc(100% - 55px)，
@@ -11436,7 +11493,7 @@ V.project=()=>{
         stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
         ><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>
     <div class="col pjx-title" style="gap:4px;min-width:0">
-      <div class="pjx-title-row"><h1 class="pjx-n">${esc(p.name)}</h1><button class="btn pj-share-btn" type="button" data-ce-share-project="${esc(p.id)}" title="${rsProjectShared(p.id)?'查看成员、继续共享资产':'把这个课题共享给组员'}">${rsSharingIcon()}${rsProjectShared(p.id)?'共享设置':'共享'}</button>${rsProjectShared(p.id)?'<button class="project-shared-badge" type="button" data-project-members="'+esc(rsProjectShared(p.id).id)+'" aria-label="查看协作者" aria-haspopup="dialog">'+rsSharingIcon()+'共享课题</button>':''}</div>
+      <div class="pjx-title-row"><h1 class="pjx-n">${esc(p.name)}</h1>${rsProjectShared(p.id)?'':`<button class="btn pj-share-btn" type="button" data-ce-share-project="${esc(p.id)}" title="把这个课题共享给组员">${rsSharingIcon()}共享</button>`}${rsProjectShared(p.id)?'<button class="project-shared-badge" type="button" data-project-members="'+esc(rsProjectShared(p.id).id)+'" aria-label="查看协作者" aria-haspopup="dialog">'+rsSharingIcon()+'共享课题</button>':''}</div>
       <span class="t-xs mut2" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
         >${esc(goalText(p))}</span>
     </div>
@@ -23603,18 +23660,26 @@ function researchNews(projects){
 }
 /* 工作台的定时任务：最多两张卡，按下次执行时间排；开启的优先。
    没有任务时给一个新建入口，不留空白区块。 */
-function researchSchedulesHTML(){
- if(typeof stLoad!=='function')return '';
+/* 工作台的定时任务：收在页头右上角一个按钮里，点开才在下方弹出列表（全部计划的卡片 + 新建 + 管理全部）。
+   开启的、下次执行早的在前；关联课题已删除的不列、也不计数。 */
+const CLOCK_IC='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/></svg>';
+function researchSchedules(){
+ if(typeof stLoad!=='function')return [];
  stLoad();
- const items=(ST.items||[]).filter(t=>DB.projects.some(p=>p.id===t.pid)).map(t=>({t,next:stNext(t)||Infinity}))
-  .sort((a,b)=>(b.t.enabled-a.t.enabled)||(a.next-b.next)).slice(0,2);
- const total=(ST.items||[]).filter(t=>DB.projects.some(p=>p.id===t.pid)).length;
- const card=({t})=>{const st=stState(t),p=DB.projects.find(x=>x.id===t.pid);
-  return '<button class="rh-sched" type="button" data-rh-sched="'+esc(t.id)+'"><span class="rh-sched-ic" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/></svg></span><span class="rh-sched-copy"><strong title="'+esc(t.name)+'">'+esc(t.name)+'</strong><small>'+esc(p?.name||'')+' · '+esc(stPlan(t))+'</small></span><span class="rh-sched-state is-'+st.tone+'">'+esc(st.k==='on'?st.label.replace('下次 ','下次 '):st.label)+'</span></button>';};
- return '<section class="rh-sched-wrap" aria-labelledby="rh-sched-title"><div class="rh-project-toolbar"><h2 id="rh-sched-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/></svg>定时任务'+(total?' <span>('+total+')</span>':'')+'</h2><button class="rh-link" type="button" data-go="schedules">查看全部 '+rhIcon('right')+'</button></div>'
-  +(items.length?'<div class="rh-sched-grid">'+items.map(card).join('')+'</div>'
-   :'<div class="rh-sched-empty"><span>还没有定时任务。让端砚定期追文献、出周报。</span><button class="btn" type="button" data-rh-sched-new>新建定时任务</button></div>')
-  +'</section>';
+ return (ST.items||[]).filter(t=>DB.projects.some(p=>p.id===t.pid)).map(t=>({t,next:stNext(t)||Infinity}))
+  .sort((a,b)=>(b.t.enabled-a.t.enabled)||(a.next-b.next)).map(x=>x.t);
+}
+function researchSchedulesButton(){
+ const n=researchSchedules().length,open=!!RESEARCH_HOME.schedOpen;
+ return '<div class="rh-sched-anchor"><button class="btn rh-sched-btn" type="button" data-rh-sched-pop aria-haspopup="dialog" aria-expanded="'+open+'">'+CLOCK_IC+'定时任务'+(n?'<span class="rh-sched-n num">'+n+'</span>':'')+'</button>'+(open?researchSchedulesPop():'')+'</div>';
+}
+function researchSchedulesPop(){
+ const items=researchSchedules();
+ const card=t=>{const st=stState(t),p=DB.projects.find(x=>x.id===t.pid);
+  return '<button class="rh-sched" type="button" data-rh-sched="'+esc(t.id)+'"><span class="rh-sched-ic" aria-hidden="true">'+CLOCK_IC+'</span><span class="rh-sched-copy"><strong title="'+esc(t.name)+'">'+esc(t.name)+'</strong><small>'+esc(p?.name||'')+' · '+esc(stPlan(t))+'</small></span><span class="rh-sched-state is-'+st.tone+'">'+esc(st.label)+'</span></button>';};
+ return '<div class="rh-sched-pop" role="dialog" aria-labelledby="rh-sched-title"><div class="rh-sched-pop-h"><h2 id="rh-sched-title">定时任务'+(items.length?' <span>('+items.length+')</span>':'')+'</h2><button class="rh-link" type="button" data-go="schedules">管理全部</button></div>'
+  +(items.length?'<div class="rh-sched-list">'+items.map(card).join('')+'</div>':'<p class="rh-sched-empty-t">还没有定时任务。让端砚定期追文献、出周报。</p>')
+  +'<div class="rh-sched-pop-f"><button class="btn" type="button" data-rh-sched-new>＋ 新建定时任务</button></div></div>';
 }
 function researchDiscoveries(projects){
  if(RESEARCH_HOME.tab==='resources')return researchResources(projects).map(r=>'<button class="rh-discovery-row" type="button" data-rh-resource="'+esc(r.id)+'" data-rh-pid="'+esc(r.pid)+'" data-rh-route="'+r.route+'"><span class="rh-discovery-icon">'+rhIcon(r.kind==='模型'?'model':'paper')+'</span><span class="rh-discovery-copy"><strong>'+esc(r.name)+'</strong><small>'+esc(r.kind)+' · 关联：'+esc(r.project)+' · '+esc(r.meta||researchTime(r.at))+'</small></span>'+rhIcon('right')+'</button>');
@@ -23630,7 +23695,7 @@ V.workbench=()=>{
  const start=Math.min(RESEARCH_HOME.start,Math.max(0,Math.ceil(ps.length/3)-1)*3);RESEARCH_HOME.start=start;
  const items=ps.slice(start,start+3),activities=researchActivities(),rows=researchDiscoveries(all);
  const date=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short',timeZone:'Asia/Shanghai'}),resources=researchResources(all);
- return '<div class="page wb wb-workstation"><header class="rh-header"><div><h1>工作台</h1><p>聚焦课题进展，推进下一步研究</p></div><div class="rh-header-actions"><button class="rh-new" data-wb-start type="button">进入对话</button></div></header><section class="rh-activities-wrap" aria-labelledby="rh-activity-title"><div class="rh-project-toolbar"><h2 id="rh-activity-title">'+rhIcon('calendar')+'近期研究动态</h2><button class="rh-link" data-rh-activities type="button">查看全部 '+rhIcon('right')+'</button></div><div class="rh-activities"><div class="rh-activity-grid">'+activities.slice(0,3).map(researchActivityHTML).join('')+(!activities.length?'<p class="rh-empty">暂无研究动态，进入课题开始记录研究。</p>':'')+'</div></div></section>'+researchSchedulesHTML()+'<section class="rh-projects" aria-labelledby="rh-projects-title"><div class="rh-project-toolbar"><h2 id="rh-projects-title">'+rhIcon('layers')+'我的课题 <span>('+all.length+')</span></h2>'+(ps.length>3?'<div class="rh-pager"><button class="rh-pager-btn" type="button" data-rh-project-page="prev" aria-label="上一页课题"'+(start<=0?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><span class="rh-pager-n num" aria-live="polite">'+(Math.floor(start/3)+1)+' / '+Math.max(1,Math.ceil(ps.length/3))+'</span><button class="rh-pager-btn" type="button" data-rh-project-page="next" aria-label="下一页课题"'+(start+3>=ps.length?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div>':'')+''+(all.length>6||RESEARCH_HOME.query?'<label class="rh-search">'+rhIcon('search')+'<input type="search" aria-label="搜索课题名称或关键词" placeholder="搜索课题名称或关键词" value="'+esc(RESEARCH_HOME.query)+'" data-rh-search></label>':'')+'<button class="rh-link" data-rh-projects type="button">查看全部 '+rhIcon('right')+'</button></div><div class="rh-project-grid">'+items.map(researchCard).join('')+(!items.length?'<div class="rh-empty"><p>'+(all.length?'没有匹配课题，请调整搜索词。':'还没有课题，创建第一个研究课题。')+'</p><button class="rh-new" data-wb-create-project type="button">新建课题</button></div>':'')+'</div>'+'</section><section class="rh-discoveries-wrap" aria-labelledby="rh-discover-title"><div class="rh-project-toolbar"><h2 id="rh-discover-title">'+rhIcon('book')+'课题相关发现</h2></div><div class="rh-discoveries"><div class="rh-discover-heading"><div class="rh-tabs" role="tablist" aria-label="相关发现类型">'+[['papers','文献'],['news','学术资讯'],['resources','平台资源更新']].map(([k,n])=>'<button id="rh-tab-'+k+'" role="tab" aria-selected="'+(RESEARCH_HOME.tab===k)+'" aria-controls="rh-feed" tabindex="'+(RESEARCH_HOME.tab===k?'0':'-1')+'" data-rh-tab="'+k+'" type="button">'+n+(k==='resources'?'<span>'+resources.length+'</span>':'')+'</button>').join('')+'</div></div><div id="rh-feed" role="tabpanel" aria-labelledby="rh-tab-'+RESEARCH_HOME.tab+'">'+(RESEARCH_HOME.tab==='news'&&rows.length?'<p class="rh-news-note">示例资讯：还没接入资讯源，以下条目为虚构，仅用于展示版式与交互。</p>':'')+rows.slice(0,6).join('')+(!rows.length?'<p class="rh-empty">'+(RESEARCH_HOME.tab==='news'?'暂无学术资讯，相关研究论文可在“文献”中查看。':RESEARCH_HOME.tab==='resources'?'暂无与课题匹配的已发布平台资源更新。':'暂无匹配文献。')+'</p>':'')+'</div></div>'+'</section></div>';
+ return '<div class="page wb wb-workstation"><header class="rh-header"><div><h1>工作台</h1><p>聚焦课题进展，推进下一步研究</p></div><div class="rh-header-actions">'+researchSchedulesButton()+'<button class="rh-new" data-wb-start type="button">进入对话</button></div></header><section class="rh-activities-wrap" aria-labelledby="rh-activity-title"><div class="rh-project-toolbar"><h2 id="rh-activity-title">'+rhIcon('calendar')+'近期研究动态</h2><button class="rh-link" data-rh-activities type="button">查看全部 '+rhIcon('right')+'</button></div><div class="rh-activities"><div class="rh-activity-grid">'+activities.slice(0,3).map(researchActivityHTML).join('')+(!activities.length?'<p class="rh-empty">暂无研究动态，进入课题开始记录研究。</p>':'')+'</div></div></section><section class="rh-projects" aria-labelledby="rh-projects-title"><div class="rh-project-toolbar"><h2 id="rh-projects-title">'+rhIcon('layers')+'我的课题 <span>('+all.length+')</span></h2>'+(ps.length>3?'<div class="rh-pager"><button class="rh-pager-btn" type="button" data-rh-project-page="prev" aria-label="上一页课题"'+(start<=0?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><span class="rh-pager-n num" aria-live="polite">'+(Math.floor(start/3)+1)+' / '+Math.max(1,Math.ceil(ps.length/3))+'</span><button class="rh-pager-btn" type="button" data-rh-project-page="next" aria-label="下一页课题"'+(start+3>=ps.length?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div>':'')+''+(all.length>6||RESEARCH_HOME.query?'<label class="rh-search">'+rhIcon('search')+'<input type="search" aria-label="搜索课题名称或关键词" placeholder="搜索课题名称或关键词" value="'+esc(RESEARCH_HOME.query)+'" data-rh-search></label>':'')+'<button class="rh-link" data-rh-projects type="button">查看全部 '+rhIcon('right')+'</button></div><div class="rh-project-grid">'+items.map(researchCard).join('')+(!items.length?'<div class="rh-empty"><p>'+(all.length?'没有匹配课题，请调整搜索词。':'还没有课题，创建第一个研究课题。')+'</p><button class="rh-new" data-wb-create-project type="button">新建课题</button></div>':'')+'</div>'+'</section><section class="rh-discoveries-wrap" aria-labelledby="rh-discover-title"><div class="rh-project-toolbar"><h2 id="rh-discover-title">'+rhIcon('book')+'课题相关发现</h2></div><div class="rh-discoveries"><div class="rh-discover-heading"><div class="rh-tabs" role="tablist" aria-label="相关发现类型">'+[['papers','文献'],['news','学术资讯'],['resources','平台资源更新']].map(([k,n])=>'<button id="rh-tab-'+k+'" role="tab" aria-selected="'+(RESEARCH_HOME.tab===k)+'" aria-controls="rh-feed" tabindex="'+(RESEARCH_HOME.tab===k?'0':'-1')+'" data-rh-tab="'+k+'" type="button">'+n+(k==='resources'?'<span>'+resources.length+'</span>':'')+'</button>').join('')+'</div></div><div id="rh-feed" role="tabpanel" aria-labelledby="rh-tab-'+RESEARCH_HOME.tab+'">'+(RESEARCH_HOME.tab==='news'&&rows.length?'<p class="rh-news-note">示例资讯：还没接入资讯源，以下条目为虚构，仅用于展示版式与交互。</p>':'')+rows.slice(0,6).join('')+(!rows.length?'<p class="rh-empty">'+(RESEARCH_HOME.tab==='news'?'暂无学术资讯，相关研究论文可在“文献”中查看。':RESEARCH_HOME.tab==='resources'?'暂无与课题匹配的已发布平台资源更新。':'暂无匹配文献。')+'</p>':'')+'</div></div>'+'</section></div>';
 };
 const researchOriginalBind=wbBind;
 wbBind=function(root){
@@ -23640,6 +23705,8 @@ wbBind=function(root){
  root.querySelector('[data-rh-projects]')?.addEventListener('click',()=>go('projects'));
  root.querySelectorAll('[data-rh-sched]').forEach(b=>b.onclick=()=>{ST.pick=b.dataset.rhSched;LS.set('scheduled_pick',ST.pick);go('scheduledetail');});
  root.querySelectorAll('[data-rh-sched-new]').forEach(b=>b.onclick=()=>{if(typeof gsNewSchedule==='function')gsNewSchedule();});
+ root.querySelectorAll('[data-rh-sched-pop]').forEach(b=>b.onclick=e=>{e.stopPropagation();RESEARCH_HOME.schedOpen=!RESEARCH_HOME.schedOpen;render();
+  if(RESEARCH_HOME.schedOpen)setTimeout(()=>view.querySelector('.rh-sched-pop .rh-sched, .rh-sched-pop [data-rh-sched-new]')?.focus(),20);});
  /* 研究动态点进去看的是任务本身，不是课题的对话流 */
  root.querySelectorAll('[data-rh-act-list]').forEach(b=>b.onclick=()=>{
   if(b.dataset.rhActSchedule){ST.pick=b.dataset.rhActSchedule;LS.set('scheduled_pick',ST.pick);go('scheduledetail');return;}
@@ -23669,6 +23736,10 @@ wbBind=function(root){
  root.querySelectorAll('[data-rh-resource]').forEach(b=>b.onclick=()=>{if(b.dataset.rhRoute==='data'){go('data');return;}if(b.dataset.rhRoute==='resdetail'){RS.resourcePick=b.dataset.rhResource;RS.resourceVersion=null;go('resdetail');}else if(b.dataset.rhRoute==='mdl')go('mdl',{pid:b.dataset.rhPid,mdlProj:b.dataset.rhPid,mtab:'cur'});else go('dsets',{pid:b.dataset.rhPid,dsProj:b.dataset.rhPid});});
 };
 
+
+/* 弹出面板：点外面、按 Esc 都收起；收起时焦点回到按钮 */
+document.addEventListener('click',e=>{if(!RESEARCH_HOME.schedOpen||S.route!=='workbench')return;if(e.target.closest('.rh-sched-anchor'))return;RESEARCH_HOME.schedOpen=false;render();},true);
+document.addEventListener('keydown',e=>{if(e.key!=='Escape'||!RESEARCH_HOME.schedOpen||S.route!=='workbench'||document.querySelector('dialog[open]'))return;e.preventDefault();RESEARCH_HOME.schedOpen=false;render();setTimeout(()=>view.querySelector('[data-rh-sched-pop]')?.focus(),20);},true);
 
 /* 课题名称、成员与归档状态从现有课题派生；文件字节保存在本机 IndexedDB。 */
 const MATERIALS={tab:'all',space:'',type:'all',query:'',grid:LS.get('materials_grid',false),sort:'new',records:[],ready:false,error:'',busy:false};
@@ -23821,13 +23892,14 @@ function stDetail(){
  const revs=Array.isArray(t.revisions)?t.revisions:[],hist=Array.isArray(t.history)?t.history:[];
  return '<main class="st-main st-content-main st-v2"><header class="st-content-head"><div><h2>'+esc(t.name)+'</h2><p class="st-subtitle"><span class="st-state is-'+st.tone+'">'+esc(st.label)+'</span>'+(project?'<button class="lv-link ce-inline" type="button" data-st-project="'+esc(project.id)+'">'+esc(project.name)+'</button>':'<span>课题已删除</span>')+(t.example?'<span class="st-tag">示例</span>':'')+'</p></div>'
   +'<div class="st-head-actions"><button class="st-switch" type="button" role="switch" data-st-action="toggle" aria-checked="'+t.enabled+'" aria-label="'+(t.enabled?'暂停这个任务':'开启这个任务')+'"><i></i><span>'+(t.enabled?'已开启':'已暂停')+'</span></button><button class="btn st-danger" type="button" data-st-action="delete">删除</button></div></header>'
-  +'<section class="st-card2"><h3>任务</h3><p class="st-instruction">'+esc(t.content)+'</p>'
+  +'<div class="st-cols"><div class="st-col-main"><section class="st-card2"><h3>任务</h3><p class="st-instruction">'+esc(t.content)+'</p>'
   +(revs.length?'<div class="st-revs"><h4>补充要求<small>按添加顺序执行，后加的优先</small></h4><ul>'+revs.map((r,i)=>'<li><span>'+esc(r.text)+'</span><button class="st-rev-x" type="button" data-st-rev-del="'+i+'" aria-label="撤回这条补充要求">撤回</button></li>').join('')+'</ul></div>':'')
   +'<form class="st-nl" data-st-nl><input class="input" name="nl" maxlength="300" autocomplete="off" placeholder="用一句话修改，例如「只看近一周发表的论文」「改成每周五早上 9 点」「暂停」"><button class="btn" type="submit">修改</button></form>'
   +(hist.length?'<details class="st-hist"><summary>修改记录 '+hist.length+'</summary><ul>'+hist.slice().reverse().map(h=>'<li><time>'+esc(h.at)+'</time><span>「'+esc(h.text)+'」</span><em>'+esc(h.effect)+'</em></li>').join('')+'</ul></details>':'')
   +'</section>'
-  +'<section class="st-card2"><h3>执行计划</h3><form class="st-plan" data-st-plan>'+stScheduleFields(t,'p_')+'</form><p class="st-next">'+(t.enabled?(stNext(t)?'下次执行：'+esc(stWhen(stNext(t),t.zone)):'没有下一次执行时间，请重新选择'):'已暂停，开启后按这个计划执行')+'</p></section>'
   +'<section class="st-card2"><h3>运行记录</h3>'+(runs.length?runs.slice().reverse().map(r=>'<article class="st-run'+(r.ok===false?' is-failed':'')+'"><time>'+esc(r.at||'')+'</time><p>'+esc(r.content)+'</p></article>').join(''):'<p class="st-empty-runs">还没有运行记录。</p>'+(t.example&&typeof stSampleOutput==='function'?'<details class="st-sample"><summary>示例输出（不是运行结果）</summary>'+stSampleOutput(t)+'</details>':''))+'</section>'
+  +'</div><aside class="st-col-side"><section class="st-card2"><h3>执行计划</h3><form class="st-plan" data-st-plan>'+stScheduleFields(t,'p_')+'</form><p class="st-next">'+(t.enabled?(stNext(t)?'下次执行：'+esc(stWhen(stNext(t),t.zone)):'没有下一次执行时间，请重新选择'):'已暂停，开启后按这个计划执行')+'</p></section></aside></div>'
+
   +'</main>';
 }
 /* 一句话修改：能识别的指令（暂停 / 恢复 / 删除 / 频次 / 时间）直接改计划；
@@ -24664,7 +24736,7 @@ function alReadMode(html,readonly){
   const output=document.createElement('span');
   output.className='al-field-value';
   output.dataset.alField=control.dataset.alField;
-  output.textContent=value||'未填写';
+  output.textContent=value||'未填写';if(!value)output.classList.add('is-empty');
   control.replaceWith(output);
  });
  template.content.querySelectorAll('[data-al-origin]').forEach(radio=>radio.disabled=true);
@@ -24899,7 +24971,7 @@ function alLegacyView(batch){
  map?.remove();
  return `<div class="page al-page">
   <header class="al-page-head">
-   <div><button class="rs-link" data-go="lab">← 实验管理</button><h1>查看实验</h1><p>${esc(batch.id)} · 历史实验记录</p></div>
+   <div><button class="rs-link" data-go="lab">← 实验管理</button><h1>${esc(String(batch.name||batch.id).replace(' · 异常示例',''))}</h1><p>${esc(batch.id)} · 历史实验记录</p></div>
    <div class="rs-actions">${actions}</div>
   </header>
   ${alComposerContent(alLegacyForm(batch),true,execution)}
@@ -24914,7 +24986,7 @@ V.labdet=()=>{
  const draft=batch.workflow.phase==='draft',editable=can('edit');
  return `<div class="page al-page">
   <header class="al-page-head">
-   <div><button class="rs-link" data-go="lab">← 实验管理</button><h1>查看实验</h1><p>${esc(batch.id)} · 方案快照</p></div>
+   <div><button class="rs-link" data-go="lab">← 实验管理</button><h1>${esc(String(batch.workflow?.snapshot?.name||batch.name||batch.id))}</h1><p>${esc(batch.id)} · 方案快照</p></div>
    <div class="rs-actions"><span class="al-tag">${draft?'草稿':'待就绪'}</span>${editable?`<button class="btn" data-al-copy="${esc(batch.id)}">${draft?'继续编辑':'复制为新实验'}</button>`:''}<button class="btn" data-al-export="${esc(batch.id)}">导出方案</button></div>
   </header>
   ${alComposerContent(form,true)}

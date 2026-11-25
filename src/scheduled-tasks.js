@@ -83,13 +83,14 @@ function stDetail(){
  const revs=Array.isArray(t.revisions)?t.revisions:[],hist=Array.isArray(t.history)?t.history:[];
  return '<main class="st-main st-content-main st-v2"><header class="st-content-head"><div><h2>'+esc(t.name)+'</h2><p class="st-subtitle"><span class="st-state is-'+st.tone+'">'+esc(st.label)+'</span>'+(project?'<button class="lv-link ce-inline" type="button" data-st-project="'+esc(project.id)+'">'+esc(project.name)+'</button>':'<span>课题已删除</span>')+(t.example?'<span class="st-tag">示例</span>':'')+'</p></div>'
   +'<div class="st-head-actions"><button class="st-switch" type="button" role="switch" data-st-action="toggle" aria-checked="'+t.enabled+'" aria-label="'+(t.enabled?'暂停这个任务':'开启这个任务')+'"><i></i><span>'+(t.enabled?'已开启':'已暂停')+'</span></button><button class="btn st-danger" type="button" data-st-action="delete">删除</button></div></header>'
-  +'<section class="st-card2"><h3>任务</h3><p class="st-instruction">'+esc(t.content)+'</p>'
+  +'<div class="st-cols"><div class="st-col-main"><section class="st-card2"><h3>任务</h3><p class="st-instruction">'+esc(t.content)+'</p>'
   +(revs.length?'<div class="st-revs"><h4>补充要求<small>按添加顺序执行，后加的优先</small></h4><ul>'+revs.map((r,i)=>'<li><span>'+esc(r.text)+'</span><button class="st-rev-x" type="button" data-st-rev-del="'+i+'" aria-label="撤回这条补充要求">撤回</button></li>').join('')+'</ul></div>':'')
   +'<form class="st-nl" data-st-nl><input class="input" name="nl" maxlength="300" autocomplete="off" placeholder="用一句话修改，例如「只看近一周发表的论文」「改成每周五早上 9 点」「暂停」"><button class="btn" type="submit">修改</button></form>'
   +(hist.length?'<details class="st-hist"><summary>修改记录 '+hist.length+'</summary><ul>'+hist.slice().reverse().map(h=>'<li><time>'+esc(h.at)+'</time><span>「'+esc(h.text)+'」</span><em>'+esc(h.effect)+'</em></li>').join('')+'</ul></details>':'')
   +'</section>'
-  +'<section class="st-card2"><h3>执行计划</h3><form class="st-plan" data-st-plan>'+stScheduleFields(t,'p_')+'</form><p class="st-next">'+(t.enabled?(stNext(t)?'下次执行：'+esc(stWhen(stNext(t),t.zone)):'没有下一次执行时间，请重新选择'):'已暂停，开启后按这个计划执行')+'</p></section>'
   +'<section class="st-card2"><h3>运行记录</h3>'+(runs.length?runs.slice().reverse().map(r=>'<article class="st-run'+(r.ok===false?' is-failed':'')+'"><time>'+esc(r.at||'')+'</time><p>'+esc(r.content)+'</p></article>').join(''):'<p class="st-empty-runs">还没有运行记录。</p>'+(t.example&&typeof stSampleOutput==='function'?'<details class="st-sample"><summary>示例输出（不是运行结果）</summary>'+stSampleOutput(t)+'</details>':''))+'</section>'
+  +'</div><aside class="st-col-side"><section class="st-card2"><h3>执行计划</h3><form class="st-plan" data-st-plan>'+stScheduleFields(t,'p_')+'</form><p class="st-next">'+(t.enabled?(stNext(t)?'下次执行：'+esc(stWhen(stNext(t),t.zone)):'没有下一次执行时间，请重新选择'):'已暂停，开启后按这个计划执行')+'</p></section></aside></div>'
+
   +'</main>';
 }
 /* 一句话修改：能识别的指令（暂停 / 恢复 / 删除 / 频次 / 时间）直接改计划；

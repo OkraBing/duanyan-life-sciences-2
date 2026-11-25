@@ -179,7 +179,7 @@ function alReadMode(html,readonly){
   const output=document.createElement('span');
   output.className='al-field-value';
   output.dataset.alField=control.dataset.alField;
-  output.textContent=value||'未填写';
+  output.textContent=value||'未填写';if(!value)output.classList.add('is-empty');
   control.replaceWith(output);
  });
  template.content.querySelectorAll('[data-al-origin]').forEach(radio=>radio.disabled=true);
@@ -414,7 +414,7 @@ function alLegacyView(batch){
  map?.remove();
  return `<div class="page al-page">
   <header class="al-page-head">
-   <div><button class="rs-link" data-go="lab">← 实验管理</button><h1>查看实验</h1><p>${esc(batch.id)} · 历史实验记录</p></div>
+   <div><button class="rs-link" data-go="lab">← 实验管理</button><h1>${esc(String(batch.name||batch.id).replace(' · 异常示例',''))}</h1><p>${esc(batch.id)} · 历史实验记录</p></div>
    <div class="rs-actions">${actions}</div>
   </header>
   ${alComposerContent(alLegacyForm(batch),true,execution)}
@@ -429,7 +429,7 @@ V.labdet=()=>{
  const draft=batch.workflow.phase==='draft',editable=can('edit');
  return `<div class="page al-page">
   <header class="al-page-head">
-   <div><button class="rs-link" data-go="lab">← 实验管理</button><h1>查看实验</h1><p>${esc(batch.id)} · 方案快照</p></div>
+   <div><button class="rs-link" data-go="lab">← 实验管理</button><h1>${esc(String(batch.workflow?.snapshot?.name||batch.name||batch.id))}</h1><p>${esc(batch.id)} · 方案快照</p></div>
    <div class="rs-actions"><span class="al-tag">${draft?'草稿':'待就绪'}</span>${editable?`<button class="btn" data-al-copy="${esc(batch.id)}">${draft?'继续编辑':'复制为新实验'}</button>`:''}<button class="btn" data-al-export="${esc(batch.id)}">导出方案</button></div>
   </header>
   ${alComposerContent(form,true)}
