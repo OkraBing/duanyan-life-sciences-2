@@ -56,10 +56,12 @@ T('A07','工作台「进入对话」直达对话、无中间弹窗、输入框�
  expect(await $route(p)==='chat'&&!(await p.evaluate(()=>document.querySelector('dialog[open]'))),'没直达或有弹窗');
  expect(await p.evaluate(()=>document.activeElement?.id)==='ask','输入框没聚焦');
 });
-T('A08','工作台：先列「待你处理」，课题一行一个且全部列出（不再翻页）',async p=>{
+T('A08','工作台课题「上一页 / 下一页」分页，首页上一页禁用、末页下一页禁用',async p=>{
  await p.evaluate(()=>go('workbench'));await p.waitForTimeout(300);
- const r=await p.evaluate(()=>({q:document.querySelectorAll('.rh-q').length,pending:rhPending().length,rows:document.querySelectorAll('.rh-prow').length,projects:workbenchData().projects.length,pager:document.querySelectorAll('[data-rh-project-page]').length}));
- expect(r.q===Math.min(5,r.pending)&&r.rows===Math.min(6,r.projects)&&r.pager===0,JSON.stringify(r));
+ const prev=p.locator('[data-rh-project-page="prev"]'),next=p.locator('[data-rh-project-page="next"]');
+ expect(await prev.isDisabled(),'第一页上一页没禁用');
+ let guard=0;while(!(await next.isDisabled())&&guard++<10){await next.click();await p.waitForTimeout(150);}
+ expect(await next.isDisabled()&&/^\d+ \/ \d+$/.test(await p.locator('.rh-pager-n').innerText()),'末页状态不对');
 });
 T('A09','研究动态点进任务（详情或列表），不进课题对话流',async p=>{
  await p.evaluate(()=>go('workbench'));await p.waitForTimeout(300);

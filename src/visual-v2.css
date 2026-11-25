@@ -44,3 +44,59 @@
 /* 对话输入栏：领域 Agent 标签放在左边，紧跟附件按钮；尺寸与原来右侧那一组一致 */
 .ask-bar>.research-agent{align-self:center;flex-shrink:0;margin-left:8px;font-size:.6875rem;gap:.3rem;padding:.25rem .5rem}
 .ask-bar>.research-agent svg{width:.8rem;height:.8rem}
+
+/* ===== 工作台视觉（结构不变：动态 → 我的课题 → 课题相关发现） ===== */
+#view .page.wb.wb-workstation{display:flex!important;flex-direction:column;gap:0!important;padding:28px 0 40px!important}
+#view .rh-header{margin-bottom:32px!important;align-items:center!important}
+#view .wb-workstation .rh-activities-wrap,#view .wb-workstation .rh-projects,#view .wb-workstation .rh-discoveries-wrap{margin:0!important}
+#view .wb-workstation .rh-projects,#view .wb-workstation .rh-discoveries-wrap{margin-top:36px!important}
+/* 区块标题：16/600，图标降为辅色，「查看全部」轻量 */
+#view .wb-workstation .rh-project-toolbar{height:auto!important;min-height:32px;padding:0 0 12px!important;gap:12px!important}
+#view .wb-workstation .rh-project-toolbar h2{font-size:16px!important;line-height:24px!important;font-weight:600!important;gap:8px!important}
+#view .wb-workstation .rh-project-toolbar h2>.rh-icon{width:18px!important;height:18px!important;color:var(--ink-3)!important}
+#view .wb-workstation .rh-project-toolbar h2 span{font-weight:400;color:var(--ink-3)}
+#view .wb-workstation .rh-link{font-size:13px!important;font-weight:500!important;color:var(--ink-2)!important;gap:2px!important}
+#view .wb-workstation .rh-link:hover{color:var(--dry-ink)!important}
+#view .wb-workstation .rh-link .wb-icon{width:14px!important;height:14px!important}
+/* 动态：做成完整的白卡，三列用竖线分开 */
+#view .wb-workstation .rh-activities{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:12px!important;padding:0!important;overflow:hidden}
+#view .wb-workstation .rh-activity{padding:14px 18px!important;align-items:center!important}
+#view .wb-workstation .rh-activity+.rh-activity{padding-left:18px!important;border-left:1px solid var(--line-2)!important}
+#view .wb-workstation .rh-activity .rh-avatar{width:28px!important;height:28px!important;margin-top:0;border:0!important;font-size:12px!important}
+#view .wb-workstation .rh-activity-copy strong{font-size:13px!important;line-height:20px}
+/* 课题卡：标题、标签、正文三级字号；状态色只留在圆点 */
+#view .wb-workstation .rh-project-grid{gap:16px!important}
+#view .wb-workstation .rh-project{padding:18px 18px 14px!important;gap:12px!important;grid-template-rows:auto auto auto auto auto!important;border-radius:12px!important;transition:border-color .12s ease-out}
+#view .wb-workstation .rh-project header{align-items:center!important;gap:10px!important;min-height:0!important}
+#view .wb-workstation .rh-project-symbol{width:32px!important;height:32px!important;border-radius:8px!important}
+#view .wb-workstation .rh-project-symbol .rh-icon{width:18px!important;height:18px!important}
+#view .wb-workstation .rh-project header h3{font-size:15px!important;line-height:22px!important;font-weight:600!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#view .wb-workstation .rh-project header .rh-badge{margin:0!important;border:0!important;background:var(--surface-2)!important;color:var(--ink-2)!important;font-size:12px!important;line-height:18px!important;font-weight:500!important;padding:2px 8px!important;border-radius:999px!important}
+#view .wb-workstation .rh-card-section{gap:0!important}
+#view .wb-workstation .rh-card-section>.rh-icon{display:none}
+#view .wb-workstation .rh-card-section h4{font-size:12px!important;line-height:18px!important;font-weight:400!important;color:var(--ink-3)!important;margin:0 0 2px!important}
+#view .wb-workstation .rh-card-section p{font-size:13px!important;line-height:20px!important;min-height:40px!important;color:var(--ink)!important}
+#view .wb-workstation .rh-project .rh-next{border-top:0!important;background:var(--surface-2)!important;border-radius:8px!important;padding:8px 10px!important;font-size:13px!important;gap:8px!important}
+#view .wb-workstation .rh-project .rh-next>.rh-icon{width:15px!important;height:15px!important;color:var(--ink-3)!important}
+#view .wb-workstation .rh-project .rh-enter{justify-content:flex-start!important;height:28px!important;min-height:28px!important;padding:0!important;font-size:13px!important;font-weight:500!important;color:var(--ink-2)!important;border:0!important;background:none!important}
+#view .wb-workstation .rh-project:hover .rh-enter,#view .wb-workstation .rh-project .rh-enter:hover{color:var(--dry-ink)!important}
+#view .wb-workstation .rh-project .rh-enter .rh-icon{width:14px!important;height:14px!important}
+/* 发现：页签放进卡头，行更紧凑 */
+#view .wb-workstation .rh-discoveries{border-radius:12px!important;padding:0 8px 6px!important}
+#view .wb-workstation .rh-discover-heading{min-height:46px!important;height:46px!important;padding:0 10px!important;border-bottom:1px solid var(--line-2)!important}
+#view .wb-workstation .rh-tabs{gap:22px!important}
+#view .wb-workstation .rh-tabs button{font-size:13px!important;font-weight:500!important;padding:0 2px!important;border-bottom-width:2px!important}
+#view .wb-workstation .rh-tabs button[aria-selected=true]{color:var(--ink)!important;border-bottom-color:var(--ink)!important}
+#view .wb-workstation .rh-discovery-row{padding:12px 10px!important;gap:12px!important;border-radius:8px}
+#view .wb-workstation .rh-discovery-icon{width:32px!important;height:32px!important;border-radius:8px!important}
+#view .wb-workstation .rh-discovery-icon .rh-icon,#view .wb-workstation .rh-discovery-icon .wb-icon{width:17px!important;height:17px!important}
+#view .wb-workstation .rh-discovery-copy strong{font-size:14px!important;font-weight:500!important;line-height:21px!important}
+#view .wb-workstation .rh-discovery-copy small{font-size:12px!important;color:var(--ink-3)!important}
+#view .wb-workstation .rh-discovery-row>.wb-icon{width:15px!important;height:15px!important;color:var(--ink-4)}
+@media(max-width:1100px){#view .wb-workstation .rh-activity+.rh-activity{padding-left:18px!important;border-left:0!important;border-top:1px solid var(--line-2)!important}}
+#view .wb-workstation .rh-project .rh-enter{box-shadow:none!important}
+#view .wb-workstation .rh-project .rh-next-action{padding:0!important;line-height:20px!important}
+#view .wb-workstation .rh-project .rh-next-action:hover{text-decoration:none!important;color:var(--dry-ink)}
+#view .wb-workstation .rh-project .rh-next{min-height:0!important;height:auto!important;margin:0!important}
+#view .wb-workstation .rh-project{display:flex!important;flex-direction:column}#view .wb-workstation .rh-project .rh-next{margin-top:auto!important}
+#view .wb-workstation .rh-project .rh-next{padding:4px 10px!important}

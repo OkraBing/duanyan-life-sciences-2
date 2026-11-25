@@ -103,63 +103,6 @@ V.workbench=()=>{
  const date=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short',timeZone:'Asia/Shanghai'}),resources=researchResources(all);
  return '<div class="page wb wb-workstation"><header class="rh-header"><div><h1>工作台</h1><p>聚焦课题进展，推进下一步研究</p></div><div class="rh-header-actions">'+researchSchedulesButton()+'<button class="rh-new" data-wb-start type="button">进入对话</button></div></header><section class="rh-activities-wrap" aria-labelledby="rh-activity-title"><div class="rh-project-toolbar"><h2 id="rh-activity-title">'+rhIcon('calendar')+'近期研究动态</h2><button class="rh-link" data-rh-activities type="button">查看全部 '+rhIcon('right')+'</button></div><div class="rh-activities"><div class="rh-activity-grid">'+activities.slice(0,3).map(researchActivityHTML).join('')+(!activities.length?'<p class="rh-empty">暂无研究动态，进入课题开始记录研究。</p>':'')+'</div></div></section><section class="rh-projects" aria-labelledby="rh-projects-title"><div class="rh-project-toolbar"><h2 id="rh-projects-title">'+rhIcon('layers')+'我的课题 <span>('+all.length+')</span></h2>'+(ps.length>3?'<div class="rh-pager"><button class="rh-pager-btn" type="button" data-rh-project-page="prev" aria-label="上一页课题"'+(start<=0?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><span class="rh-pager-n num" aria-live="polite">'+(Math.floor(start/3)+1)+' / '+Math.max(1,Math.ceil(ps.length/3))+'</span><button class="rh-pager-btn" type="button" data-rh-project-page="next" aria-label="下一页课题"'+(start+3>=ps.length?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div>':'')+''+(all.length>6||RESEARCH_HOME.query?'<label class="rh-search">'+rhIcon('search')+'<input type="search" aria-label="搜索课题名称或关键词" placeholder="搜索课题名称或关键词" value="'+esc(RESEARCH_HOME.query)+'" data-rh-search></label>':'')+'<button class="rh-link" data-rh-projects type="button">查看全部 '+rhIcon('right')+'</button></div><div class="rh-project-grid">'+items.map(researchCard).join('')+(!items.length?'<div class="rh-empty"><p>'+(all.length?'没有匹配课题，请调整搜索词。':'还没有课题，创建第一个研究课题。')+'</p><button class="rh-new" data-wb-create-project type="button">新建课题</button></div>':'')+'</div>'+'</section><section class="rh-discoveries-wrap" aria-labelledby="rh-discover-title"><div class="rh-project-toolbar"><h2 id="rh-discover-title">'+rhIcon('book')+'课题相关发现</h2></div><div class="rh-discoveries"><div class="rh-discover-heading"><div class="rh-tabs" role="tablist" aria-label="相关发现类型">'+[['papers','文献'],['news','学术资讯'],['resources','平台资源更新']].map(([k,n])=>'<button id="rh-tab-'+k+'" role="tab" aria-selected="'+(RESEARCH_HOME.tab===k)+'" aria-controls="rh-feed" tabindex="'+(RESEARCH_HOME.tab===k?'0':'-1')+'" data-rh-tab="'+k+'" type="button">'+n+(k==='resources'?'<span>'+resources.length+'</span>':'')+'</button>').join('')+'</div></div><div id="rh-feed" role="tabpanel" aria-labelledby="rh-tab-'+RESEARCH_HOME.tab+'">'+(RESEARCH_HOME.tab==='news'&&rows.length?'<p class="rh-news-note">示例资讯：还没接入资讯源，以下条目为虚构，仅用于展示版式与交互。</p>':'')+rows.slice(0,6).join('')+(!rows.length?'<p class="rh-empty">'+(RESEARCH_HOME.tab==='news'?'暂无学术资讯，相关研究论文可在“文献”中查看。':RESEARCH_HOME.tab==='resources'?'暂无与课题匹配的已发布平台资源更新。':'暂无匹配文献。')+'</p>':'')+'</div></div>'+'</section></div>';
 };
-/* ---------- 工作台 v3 ----------
-   旧版把「动态 / 课题 / 发现」三块平铺，每块一样重，打开以后得自己找今天该干什么。
-   新版先回答「今天哪些事要你动手」，再回答「每个课题走到哪了」：
-   - 页头下一行用本机数出来的数说清现状：几个课题、几项待你处理。
-   - 「待你处理」是页面的主角：异常、待查看的结论，按轻重排，一行一件事，点了直接进那件事。
-     口径与课题上的「N 项待处理」同一个来源（wbAttentionTasks），两处的数对得上。
-   - 右侧「最近动态」竖排，时间在前，扫一眼就知道谁刚做了什么。
-   - 课题从三张高卡片改成一行一个：目标、当前轮次、待处理、下一步、进入，一屏看全。 */
-function rhPending(){
- const L=wbAttentionTasks(workbenchData().tasks||[]).filter(t=>t.status==='failed'||t.needsAction);
- const rank=t=>t.status==='failed'?0:t.status==='done'?1:2;
- return L.slice().sort((a,b)=>rank(a)-rank(b));
-}
-function rhPendingLabel(t){return t.status==='failed'?['异常','err']:t.status==='done'?['待查看结论','ready']:['待处理','wait'];}
-function rhPendingRow(t){
- const [lab,tone]=rhPendingLabel(t),why=String(t.detail||'').replace(/\s*·\s*演示流程$/,'');
- return '<button class="rh-q" type="button" data-wb-task-open="'+esc(t.key)+'"><span class="rh-q-tag is-'+tone+'">'+lab+'</span><span class="rh-q-copy"><strong>'+esc(t.name)+'</strong><small>'+esc(t.projectName||'')+(why?' · '+esc(why):'')+'</small></span><span class="rh-q-go" aria-hidden="true">'+rhIcon('right')+'</span></button>';
-}
-function rhProjectRow(p,i){
- const state=researchProjectState(p),source=DB.projects.find(x=>x.id===p.id),goal=source?goalText(source):p.description;
- const nextAttr=state.task||state.draft?'data-wb-task-open="'+esc((state.task||state.draft).key)+'"':'data-wb-project="'+esc(p.id)+'"';
- return '<article class="rh-prow tone-'+state.tone+'" data-wb-project-id="'+esc(p.id)+'">'
-  +'<span class="rh-project-symbol color-'+i%3+'">'+rhIcon(i%3===1?'model':i%3===2?'settings':'protein')+'</span>'
-  +'<div class="rh-prow-main"><h3 title="'+esc(p.name)+'">'+esc(p.name)+'</h3><p title="'+esc(goal)+'">'+esc(goal||'尚未设置研究目标')+'</p></div>'
-  +'<div class="rh-prow-round">'+(p.currentRound?'<strong class="num">R'+p.currentRound+'</strong><small>当前轮次</small>':'<small>尚未开始</small>')+'</div>'
-  +'<div class="rh-prow-state"><span class="rh-badge '+state.tone+'">'+esc(state.badge)+'</span><button class="rh-next-action" type="button" '+nextAttr+'>下一步：<strong>'+esc(state.next)+'</strong></button></div>'
-  +'<button class="rh-enter" type="button" data-wb-project="'+esc(p.id)+'" aria-label="进入课题：'+esc(p.name)+'">进入课题 '+rhIcon('arrow')+'</button>'
-  +'</article>';
-}
-V.workbench=()=>{
- const data=wbPrepare(),all=data.projects||[],q=RESEARCH_HOME.query.toLowerCase(),ps=all.filter(p=>(p.name+' '+p.description+' '+p.target).toLowerCase().includes(q));
- const activities=researchActivities(),rows=researchDiscoveries(all),resources=researchResources(all);
- const pending=rhPending(),showAll=!!RESEARCH_HOME.allPending,LIMIT=5;
- const date=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short',timeZone:'Asia/Shanghai'});
- const status=date+' · '+all.length+' 个课题'+(pending.length?' · <strong>'+pending.length+' 项待你处理</strong>':' · 没有待你处理的事');
- return '<div class="page wb wb-workstation wb-v3">'
-  +'<header class="rh-header"><div><h1>工作台</h1><p>'+status+'</p></div><div class="rh-header-actions">'+researchSchedulesButton()+'<button class="rh-new" data-wb-start type="button">进入对话</button></div></header>'
-  +'<div class="rh-top">'
-   +'<section class="rh-queue" aria-labelledby="rh-queue-title"><div class="rh-project-toolbar"><h2 id="rh-queue-title">待你处理 <span>('+pending.length+')</span></h2>'
-    +(pending.length>LIMIT?'<button class="rh-link" type="button" data-rh-pending-all>'+(showAll?'收起':'查看全部 '+pending.length+' 项')+'</button>':'')+'</div>'
-    +(pending.length?'<div class="rh-q-list">'+(showAll?pending:pending.slice(0,LIMIT)).map(rhPendingRow).join('')+'</div>'
-      :'<div class="rh-q-empty"><strong>今天没有要你处理的事</strong><span>实验异常、待查看的结论会出现在这里。</span></div>')
-   +'</section>'
-   +'<section class="rh-activities-wrap" aria-labelledby="rh-activity-title"><div class="rh-project-toolbar"><h2 id="rh-activity-title">最近动态</h2><button class="rh-link" data-rh-activities type="button">查看全部 '+rhIcon('right')+'</button></div>'
-    +'<div class="rh-activities"><div class="rh-activity-grid">'+activities.slice(0,5).map(researchActivityHTML).join('')+(!activities.length?'<p class="rh-empty">暂无研究动态，进入课题开始记录研究。</p>':'')+'</div></div>'
-   +'</section>'
-  +'</div>'
-  +'<section class="rh-projects" aria-labelledby="rh-projects-title"><div class="rh-project-toolbar"><h2 id="rh-projects-title">我的课题 <span>('+all.length+')</span></h2>'
-   +(all.length>6||RESEARCH_HOME.query?'<label class="rh-search">'+rhIcon('search')+'<input type="search" aria-label="搜索课题名称或关键词" placeholder="搜索课题名称或关键词" value="'+esc(RESEARCH_HOME.query)+'" data-rh-search></label>':'')
-   +'<button class="rh-link" data-rh-projects type="button">查看全部 '+rhIcon('right')+'</button></div>'
-   +'<div class="rh-plist">'+ps.slice(0,6).map(rhProjectRow).join('')
-   +(!ps.length?'<div class="rh-empty"><p>'+(all.length?'没有匹配课题，请调整搜索词。':'还没有课题，创建第一个研究课题。')+'</p><button class="rh-new" data-wb-create-project type="button">新建课题</button></div>':'')+'</div>'
-  +'</section>'
-  +'<section class="rh-discoveries-wrap" aria-labelledby="rh-discover-title"><div class="rh-project-toolbar"><h2 id="rh-discover-title">'+rhIcon('book')+'课题相关发现</h2></div><div class="rh-discoveries"><div class="rh-discover-heading"><div class="rh-tabs" role="tablist" aria-label="相关发现类型">'+[['papers','文献'],['news','学术资讯'],['resources','平台资源更新']].map(([k,n])=>'<button id="rh-tab-'+k+'" role="tab" aria-selected="'+(RESEARCH_HOME.tab===k)+'" aria-controls="rh-feed" tabindex="'+(RESEARCH_HOME.tab===k?'0':'-1')+'" data-rh-tab="'+k+'" type="button">'+n+(k==='resources'?'<span>'+resources.length+'</span>':'')+'</button>').join('')+'</div></div><div id="rh-feed" role="tabpanel" aria-labelledby="rh-tab-'+RESEARCH_HOME.tab+'">'+(RESEARCH_HOME.tab==='news'&&rows.length?'<p class="rh-news-note">示例资讯：还没接入资讯源，以下条目为虚构，仅用于展示版式与交互。</p>':'')+rows.slice(0,6).join('')+(!rows.length?'<p class="rh-empty">'+(RESEARCH_HOME.tab==='news'?'暂无学术资讯，相关研究论文可在“文献”中查看。':RESEARCH_HOME.tab==='resources'?'暂无与课题匹配的已发布平台资源更新。':'暂无匹配文献。')+'</p>':'')+'</div></div>'+'</section>'
-  +'</div>';
-};
-
 const researchOriginalBind=wbBind;
 wbBind=function(root){
  researchOriginalBind(root);if(S.route!=='workbench')return;wbLayoutObserver?.disconnect();
@@ -168,7 +111,6 @@ wbBind=function(root){
  root.querySelector('[data-rh-projects]')?.addEventListener('click',()=>go('projects'));
  root.querySelectorAll('[data-rh-sched]').forEach(b=>b.onclick=()=>{ST.pick=b.dataset.rhSched;LS.set('scheduled_pick',ST.pick);go('scheduledetail');});
  root.querySelectorAll('[data-rh-sched-new]').forEach(b=>b.onclick=()=>{if(typeof gsNewSchedule==='function')gsNewSchedule();});
- root.querySelectorAll('[data-rh-pending-all]').forEach(b=>b.onclick=()=>{RESEARCH_HOME.allPending=!RESEARCH_HOME.allPending;render();});
  root.querySelectorAll('[data-rh-sched-pop]').forEach(b=>b.onclick=e=>{e.stopPropagation();RESEARCH_HOME.schedOpen=!RESEARCH_HOME.schedOpen;render();
   if(RESEARCH_HOME.schedOpen)setTimeout(()=>view.querySelector('.rh-sched-pop .rh-sched, .rh-sched-pop [data-rh-sched-new]')?.focus(),20);});
  /* 研究动态点进去看的是任务本身，不是课题的对话流 */

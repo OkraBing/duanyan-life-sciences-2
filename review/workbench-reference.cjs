@@ -17,62 +17,77 @@ function contrast(a,b){const lum=c=>c.slice(0,3).map(v=>(v/=255)<=.04045?v/12.92
 (async()=>{
  browser=await chromium.launch();
 
- await check('01 页头一行现状 → 待你处理（主）+ 最近动态（侧）→ 我的课题 → 相关发现',async p=>{
-  for(const name of ['最近动态','课题相关发现'])assert(await p.getByRole('heading',{name,exact:true}).isVisible(),name);
-  assert(await p.getByRole('heading',{name:/^待你处理/}).isVisible());
+ await check('01 三个区块自上而下排列，各自标题可见',async p=>{
+  for(const name of ['近期研究动态','课题相关发现'])assert(await p.getByRole('heading',{name,exact:true}).isVisible());
   assert(await p.getByRole('heading',{name:/^我的课题/}).isVisible());
-  const r=await p.evaluate(()=>{const box=s=>{const b=document.querySelector(s).getBoundingClientRect();return{y:b.y,bottom:b.bottom,x:b.x,right:b.right}};
-   return{q:box('.rh-queue'),act:box('.rh-activities-wrap'),proj:box('.rh-projects'),disc:box('.rh-discoveries')}});
-  assert(Math.abs(r.q.y-r.act.y)<=1,'待你处理与最近动态不在同一行：'+JSON.stringify(r));
-  assert(r.q.right<=r.act.x,'待你处理应在左、最近动态在右');
-  assert(Math.max(r.q.bottom,r.act.bottom)<=r.proj.y+1,JSON.stringify(r));
+  const r=await p.evaluate(()=>{const box=s=>{const b=document.querySelector(s).getBoundingClientRect();return{y:b.y,bottom:b.bottom,x:b.x}};
+   return{act:box('.rh-activities'),proj:box('.rh-projects'),disc:box('.rh-discoveries')}});
+  assert(r.act.bottom<=r.proj.y+1,JSON.stringify(r));
   assert(r.proj.bottom<=r.disc.y+1,JSON.stringify(r));
-  assert.equal(Math.round(r.q.x),Math.round(r.proj.x));assert.equal(Math.round(r.q.x),Math.round(r.disc.x));
+  assert.equal(Math.round(r.act.x),Math.round(r.disc.x));
   await p.screenshot({path:path.join(out,'desktop.png')});
  });
 
- await check('02 课题一行一个，行里没有被撑开的空档',async p=>{
-  const rows=await p.evaluate(()=>[...document.querySelectorAll('.rh-prow')].map(r=>Math.round(r.getBoundingClientRect().height)));
-  assert(rows.length>0,'没有课题行');
-  assert(rows.every(h=>h<=110),'课题行太高：'+rows.join(','));
+ await check('02 课题卡片不把富余高度摊进正文块',async p=>{
+  // 这一条守着一个真实回归：卡片曾经被页面网格拉满，两段正文各吸收上百像素空白。
+  const m=await p.evaluate(()=>{const c=document.querySelector('.rh-project'),cr=c.getBoundingClientRect();
+   const leaves=[...c.querySelectorAll('*')].filter(e=>!e.children.length&&(e.textContent||'').trim())
+     .map(e=>{const r=e.getBoundingClientRect();return[r.top,r.bottom,r.height]}).filter(x=>x[2]>0)   // 隐藏元素矩形为 0，不算墨迹
+     .map(x=>[x[0],x[1]]).sort((a,b)=>a[0]-b[0]);
+   const merged=[];leaves.forEach(iv=>{const last=merged[merged.length-1];
+    if(last&&iv[0]<=last[1]+1)last[1]=Math.max(last[1],iv[1]);else merged.push([...iv])});
+   const ink=merged.reduce((s,iv)=>s+(iv[1]-iv[0]),0);
+   const gaps=merged.slice(1).map((iv,i)=>iv[0]-merged[i][1]);
+   return{h:cr.height,inkPct:ink/cr.height,maxGap:Math.max(...gaps)}});
+  assert(m.inkPct>=.4,'卡片墨迹占比只有 '+Math.round(m.inkPct*100)+'%：'+JSON.stringify(m));
+  assert(m.maxGap<=60,'卡片内出现 '+Math.round(m.maxGap)+'px 的空档：'+JSON.stringify(m));
  });
 
- await check('03 每行的轮次、状态、进入三列竖向对齐',async p=>{
-  const cols=await p.evaluate(()=>[...document.querySelectorAll('.rh-prow')].map(r=>['.rh-prow-round','.rh-prow-state','.rh-enter'].map(s=>Math.round(r.querySelector(s).getBoundingClientRect().left))));
-  assert(cols.length>1);
-  for(let i=0;i<3;i++)assert.equal(new Set(cols.map(c=>c[i])).size,1,'第 '+(i+1)+' 列没对齐：'+JSON.stringify(cols));
- });
-
- await check('04 课题不超过 6 个时全部直接列出，不再翻页',async p=>{
-  const expected=await p.evaluate(()=>workbenchData().projects.map(x=>x.id));
-  const ids=await p.locator('[data-wb-project-id]').evaluateAll(es=>es.map(e=>e.dataset.wbProjectId));
-  if(expected.length<=6)assert.deepEqual(new Set(ids),new Set(expected),'有课题没列出来');
-  else assert.equal(ids.length,6,'超过 6 个时只列 6 个');
-  assert.equal(await p.locator('[data-rh-project-page]').count(),0,'新版不该有翻页控件');
- });
-
- await check('05 每行都能进到自己的课题；待你处理每一条都能直达那件事',async p=>{
-  const row=p.locator('.rh-prow').last(),pid=await row.getAttribute('data-wb-project-id');
-  await row.locator('.rh-enter').click();await settle(p);
-  assert.equal(await p.evaluate(()=>S.pid),pid);assert.equal(await p.evaluate(()=>S.route),'project');
-  await p.evaluate(()=>go('workbench'));await settle(p);
-  const keys=await p.locator('.rh-q').evaluateAll(es=>es.map(e=>e.dataset.wbTaskOpen));
-  assert(keys.length&&keys.every(Boolean),'待你处理有行没挂任务');
-  await p.locator('.rh-q').first().click();await settle(p);
-  assert(['labdet','lab','mdl','task','project'].includes(await p.evaluate(()=>S.route)),'点待你处理没进到任务：'+await p.evaluate(()=>S.route));
- });
-
- await check('06 页上的数都是本机算出来的那个数，三处口径一致',async p=>{
-  for(const row of await p.locator('.rh-prow').all()){
-   const pid=await row.getAttribute('data-wb-project-id');
-   const s=await p.evaluate(pid=>{const proj=workbenchData().projects.find(x=>x.id===pid);const st=researchProjectState(proj);return{badge:st.badge,next:st.next}},pid);
-   assert.equal(await row.locator('.rh-badge').innerText(),s.badge,pid+' 的角标和本机算的不一致');
-   assert.match(await row.locator('.rh-next-action').innerText(),new RegExp(s.next.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),pid+' 的下一步和本机算的不一致');
+ await check('03 三张卡的同名区块横向对齐',async p=>{
+  const rows=await p.evaluate(()=>[...document.querySelectorAll('.rh-project')]
+   .map(c=>[...c.querySelectorAll('.rh-card-section h4')].map(h=>Math.round(h.getBoundingClientRect().top))));
+  assert(rows.length>1);
+  for(let i=0;i<rows[0].length;i++){
+   const tops=new Set(rows.map(r=>r[i]));
+   assert.equal(tops.size,1,'第 '+(i+1)+' 个区块标题没对齐：'+JSON.stringify(rows));
   }
-  const n=await p.evaluate(()=>{const each=workbenchData().projects.map(x=>wbAttentionTasks(workbenchData({pid:x.id}).tasks||[]).filter(t=>t.status==='failed'||t.needsAction).length).reduce((a,b)=>a+b,0);
-   return {each,queue:rhPending().length,title:document.getElementById('rh-queue-title').textContent,header:document.querySelector('.rh-header p').textContent}});
-  assert.equal(n.queue,n.each,'待你处理的总数和各课题加起来不一致：'+JSON.stringify(n));
-  assert(n.title.includes('('+n.queue+')')&&n.header.includes(n.queue+' 项待你处理'),'标题或页头的数不对：'+JSON.stringify(n));
+ });
+
+ await check('04 上一页 / 下一页能走遍全部课题，到头即禁用',async p=>{
+  const expected=await p.evaluate(()=>workbenchData().projects.map(x=>x.id)),seen=new Set();
+  const ids=()=>p.locator('[data-wb-project-id]').evaluateAll(es=>es.map(e=>e.dataset.wbProjectId));
+  (await ids()).forEach(id=>seen.add(id));
+  const prev=p.locator('[data-rh-project-page="prev"]'),next=p.locator('[data-rh-project-page="next"]');
+  if(expected.length>3){
+   assert.equal(await next.count(),1,'课题多于一页却没有翻页控件');
+   assert.equal(await prev.isDisabled(),true,'第一页的「上一页」应该是禁用的');
+   for(let i=0;i<10&&!(await next.isDisabled());i++){await next.click();await settle(p);
+    for(const id of await ids())seen.add(id);}
+   assert.deepEqual(seen,new Set(expected),'一路翻到底没能走遍全部课题');
+   assert.equal(await next.isDisabled(),true,'最后一页的「下一页」应该是禁用的');
+   // 往回翻一页，「下一页」要重新可用；页码跟着走
+   await prev.click();await settle(p);
+   assert.equal(await next.isDisabled(),false,'退回上一页后「下一页」仍然禁用');
+   assert.match(await p.locator('.rh-pager-n').innerText(),/^\d+ \/ \d+$/);
+  }else assert.equal(await next.count(),0,'课题不足一页时不该出现翻页控件');
+ });
+
+ await check('05 每张卡都能进到自己的课题',async p=>{
+  const card=p.locator('.rh-project').last(),pid=await card.getAttribute('data-wb-project-id');
+  await card.locator('.rh-enter').click();await settle(p);
+  assert.equal(await p.evaluate(()=>S.pid),pid);
+  assert.equal(await p.evaluate(()=>S.route),'project');
+ });
+
+ await check('06 卡片上的数就是本机算出来的那个数',async p=>{
+  // 不在这里重算一遍口径（重算等于把实现抄一份），直接对本机算出的结果。
+  for(const card of await p.locator('.rh-project').all()){
+   const pid=await card.getAttribute('data-wb-project-id');
+   const s=await p.evaluate(pid=>{const proj=workbenchData().projects.find(x=>x.id===pid);
+    const st=researchProjectState(proj);return{badge:st.badge,next:st.next}},pid);
+   assert.equal(await card.locator('header .rh-badge').innerText(),s.badge,pid+' 的角标和本机算的不一致');
+   assert.match(await card.locator('.rh-next-action').innerText(),new RegExp(s.next.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),pid+' 的下一步和本机算的不一致');
+  }
  });
 
  await check('07 文献外链只走 https，且带 noopener',async p=>{
@@ -103,10 +118,10 @@ function contrast(a,b){const lum=c=>c.slice(0,3).map(v=>(v/=255)<=.04045?v/12.92
   // 课题不超过 6 个时不出搜索框（4 个课题一眼看完，搜索是多余控件）；超过才出
   if(!await p.locator('[data-rh-search]').count()){const n=await p.evaluate(()=>workbenchData().projects.length);assert(n<=6,'课题 '+n+' 个却没有搜索框');return;}
   await p.locator('[data-rh-search]').fill('不可能匹配的课题名');await settle(p);
-  assert.equal(await p.locator('.rh-prow').count(),0);
+  assert.equal(await p.locator('.rh-project').count(),0);
   assert.match(await p.locator('.rh-projects .rh-empty').innerText(),/搜索词|没有匹配/);
   await p.locator('[data-rh-search]').fill('');await settle(p);
-  assert(await p.locator('.rh-prow').count()>0);
+  assert(await p.locator('.rh-project').count()>0);
  });
 
  await check('10 页面不随定时器自己变',async p=>{
@@ -127,7 +142,7 @@ function contrast(a,b){const lum=c=>c.slice(0,3).map(v=>(v/=255)<=.04045?v/12.92
  await check('12 浅深两套都达到 4.5 对比度',async p=>{
   for(const theme of['light','dark']){
    await p.evaluate(t=>{document.documentElement.dataset.theme=t;render()},theme);await settle(p);
-   for(const selector of['.rh-prow-main h3','.rh-prow-main p','.rh-q-copy strong','.rh-q-copy small','.rh-next-action','.rh-discovery-copy strong','.rh-activity-copy strong']){
+   for(const selector of['.rh-project header h3','.rh-card-section h4','.rh-card-section p','.rh-next','.rh-discovery-copy strong','.rh-activity-copy strong']){
     if(!await p.locator(selector).count())continue;
     const c=await p.locator(selector).first().evaluate(e=>{const rgb=s=>(s.match(/[\d.]+/g)||[]).map(Number);
      let n=e,bg;while(n){bg=rgb(getComputedStyle(n).backgroundColor);if(bg.length===3||bg[3]===1)break;n=n.parentElement;}
@@ -140,7 +155,7 @@ function contrast(a,b){const lum=c=>c.slice(0,3).map(v=>(v/=255)<=.04045?v/12.92
 
  await check('13 没有课题时给创建入口，而不是一片空白',async p=>{
   await p.evaluate(()=>{DB.projects=[];render()});await settle(p);
-  assert.equal(await p.locator('.rh-prow').count(),0);
+  assert.equal(await p.locator('.rh-project').count(),0);
   assert(await p.locator('.rh-projects .rh-empty [data-wb-create-project]').count());
   await p.locator('.rh-projects .rh-empty [data-wb-create-project]').click();await settle(p);
   assert.equal(await p.evaluate(()=>S.route),'projects');

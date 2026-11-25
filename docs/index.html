@@ -3127,77 +3127,6 @@ body[data-route=workbench] #view{padding-block:0 var(--s8);padding-inline:max(va
 /* 面板要压在下面各区块之上：页头单独抬一层 */
 #view .rh-header{position:relative;z-index:30}
 
-/* ===== 工作台 v3 =====
-   版面：页头一行现状 → 上方「待你处理」(主) + 「最近动态」(侧) → 课题一行一个 → 相关发现。
-   颜色只用墨砚 token；分量靠字号、留白和一张主卡片拉开。 */
-.wb-v3 .rh-header p strong{color:var(--ink);font-weight:600}
-.wb-v3 .rh-top{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:20px;align-items:start;margin-bottom:36px}
-.wb-v3 .rh-top>section{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px 10px;min-width:0;box-shadow:0 1px 2px rgba(19,24,38,.05)}
-.wb-v3 .rh-top .rh-project-toolbar{margin:0 0 6px!important;min-height:28px}
-.wb-v3 .rh-top h2,.wb-v3 .rh-projects h2{font-size:15px!important;font-weight:600!important;gap:6px}
-.wb-v3 h2 span{color:var(--ink-3);font-weight:400}
-/* 待你处理：一行一件事 */
-.wb-v3 .rh-q-list{display:flex;flex-direction:column}
-.wb-v3 .rh-q{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;padding:12px 6px;border:0;border-top:1px solid var(--line-2);background:none;text-align:left;font:inherit;color:inherit;cursor:pointer;border-radius:0}
-.wb-v3 .rh-q:first-child{border-top:0}
-.wb-v3 .rh-q:hover{background:var(--surface-2)}
-.wb-v3 .rh-q:focus-visible{outline:2px solid var(--dry);outline-offset:-2px;border-radius:8px}
-.wb-v3 .rh-q-tag{font-size:12px;line-height:22px;padding:0 8px;border-radius:6px;white-space:nowrap;min-width:52px;text-align:center}
-.wb-v3 .rh-q-tag.is-err{background:color-mix(in srgb,var(--err) 9%,var(--surface));color:color-mix(in srgb,var(--err) 85%,var(--ink))}
-.wb-v3 .rh-q-tag.is-ready{background:color-mix(in srgb,var(--ok,#336950) 10%,var(--surface));color:color-mix(in srgb,var(--ok,#336950) 75%,var(--ink))}
-.wb-v3 .rh-q-tag.is-wait{background:var(--surface-2);color:var(--ink-2)}
-.wb-v3 .rh-q-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
-.wb-v3 .rh-q-copy strong{font-size:14px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wb-v3 .rh-q-copy small{font-size:12px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wb-v3 .rh-q-go{color:var(--ink-4);display:grid;place-items:center}
-.wb-v3 .rh-q:hover .rh-q-go{color:var(--ink)}
-.wb-v3 .rh-q-empty{display:flex;flex-direction:column;gap:4px;padding:18px 6px 14px;font-size:13px;color:var(--ink-3)}
-.wb-v3 .rh-q-empty strong{color:var(--ink);font-size:14px}
-/* 最近动态：竖排 */
-.wb-v3 .rh-activities{border:0!important;background:none!important;padding:0!important;box-shadow:none!important}
-.wb-v3 .rh-activity-grid{display:flex!important;flex-direction:column;gap:0!important;grid-template-columns:none!important}
-.wb-v3 .rh-activity{width:100%!important;padding:11px 4px!important;border:0!important;border-top:1px solid var(--line-2)!important;border-radius:0!important;background:none!important;box-shadow:none!important;min-height:0!important}
-.wb-v3 .rh-activity:first-child{border-top:0!important}
-.wb-v3 .rh-activity:hover{background:var(--surface-2)!important}
-.wb-v3 .rh-activity strong{font-size:13px!important}
-/* 课题：一行一个 */
-.wb-v3 .rh-projects{margin-bottom:36px}
-.wb-v3 .rh-plist{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(19,24,38,.05);overflow:hidden}
-.wb-v3 .rh-prow{display:grid;grid-template-columns:36px minmax(0,1fr) 84px minmax(0,auto) auto;align-items:center;gap:16px;padding:16px 20px;border-top:1px solid var(--line-2)}
-.wb-v3 .rh-prow:first-child{border-top:0}
-.wb-v3 .rh-prow:hover{background:color-mix(in srgb,var(--surface-2) 60%,var(--surface))}
-.wb-v3 .rh-prow .rh-project-symbol{width:36px;height:36px;margin:0}
-.wb-v3 .rh-prow-main{min-width:0}
-.wb-v3 .rh-prow-main h3{margin:0;font-size:15px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wb-v3 .rh-prow-main p{margin:3px 0 0;font-size:12.5px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wb-v3 .rh-prow-round{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
-.wb-v3 .rh-prow-round strong{font-size:18px;font-weight:600;color:var(--ink);line-height:1.1}
-.wb-v3 .rh-prow-round small{font-size:11px;color:var(--ink-4)}
-.wb-v3 .rh-prow-state{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
-.wb-v3 .rh-prow-state .rh-next-action{padding:0;border:0;background:none;font:inherit;font-size:12.5px;color:var(--ink-2);cursor:pointer;text-align:left;white-space:nowrap}
-.wb-v3 .rh-prow-state .rh-next-action:hover strong{text-decoration:underline;text-underline-offset:3px}
-.wb-v3 .rh-prow .rh-enter{margin:0!important;white-space:nowrap}
-@media(max-width:1100px){.wb-v3 .rh-top{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:760px){.wb-v3 .rh-prow{grid-template-columns:36px minmax(0,1fr) auto;row-gap:10px}.wb-v3 .rh-prow-round{display:none}.wb-v3 .rh-prow-state{grid-column:2/4}.wb-v3 .rh-prow .rh-enter{grid-column:1/-1;justify-self:start}}
-/* 外层不用旧版的网格行（行高是给三块平铺写死的），改成纵向排列，间距由各块自己定 */
-.page.wb.wb-v3{display:flex!important;flex-direction:column!important;gap:0!important;grid-template-rows:none!important}
-.wb-v3 .rh-header{margin:0 0 24px!important}
-.wb-v3 .rh-top{margin:0 0 36px!important}
-.wb-v3 .rh-projects{margin:0 0 36px!important}
-.wb-v3 .rh-projects .rh-project-toolbar{margin:0 0 12px!important}
-/* 区块之间统一节奏：标题行与内容 12px，区块之间 36px；标题一律不带图标 */
-.wb-v3 .rh-plist,.wb-v3 .rh-discoveries{margin-top:0!important}
-.wb-v3 .rh-discoveries-wrap{margin:0!important}
-.wb-v3 .rh-discoveries-wrap .rh-project-toolbar{margin:0 0 12px!important}
-.wb-v3 .rh-discoveries-wrap h2{font-size:15px!important;font-weight:600!important}
-.wb-v3 .rh-discoveries-wrap h2 .rh-icon{display:none}
-/* 状态标签同宽，两种行的标题左边对齐 */
-.wb-v3 .rh-q-tag{min-width:72px}
-.wb-v3 .rh-q-tag{min-width:80px;box-sizing:border-box}
-.wb-v3 .rh-projects .rh-project-toolbar{margin:0 0 12px!important;padding:0!important;min-height:28px}
-/* 区块标题行旧版写死 48px 高，标题和内容之间空太多 */
-#view .wb-v3 .rh-projects>.rh-project-toolbar,#view .wb-v3 .rh-discoveries-wrap>.rh-project-toolbar{min-height:0!important;height:auto!important;margin:0 0 12px!important;padding:0!important}
-
 body[data-route="materials"] #view,body[data-route="files"] #view,body[data-route="shared"] #view{padding:0;background:var(--surface)}
 .ms-shell{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:calc(100vh - 48px);color:var(--ink)}
 .ms-shell button,.ms-shell input,.ms-shell select{font:inherit}.ms-shell button{cursor:pointer}.ms-shell button:disabled{cursor:not-allowed;opacity:.5}.ms-shell svg{width:20px;height:20px;flex-shrink:0}
@@ -4695,6 +4624,62 @@ body[data-route="mdl"] #view .pg-hd,body[data-route="dsets"] #view .pg-hd{paddin
 /* 对话输入栏：领域 Agent 标签放在左边，紧跟附件按钮；尺寸与原来右侧那一组一致 */
 .ask-bar>.research-agent{align-self:center;flex-shrink:0;margin-left:8px;font-size:.6875rem;gap:.3rem;padding:.25rem .5rem}
 .ask-bar>.research-agent svg{width:.8rem;height:.8rem}
+
+/* ===== 工作台视觉（结构不变：动态 → 我的课题 → 课题相关发现） ===== */
+#view .page.wb.wb-workstation{display:flex!important;flex-direction:column;gap:0!important;padding:28px 0 40px!important}
+#view .rh-header{margin-bottom:32px!important;align-items:center!important}
+#view .wb-workstation .rh-activities-wrap,#view .wb-workstation .rh-projects,#view .wb-workstation .rh-discoveries-wrap{margin:0!important}
+#view .wb-workstation .rh-projects,#view .wb-workstation .rh-discoveries-wrap{margin-top:36px!important}
+/* 区块标题：16/600，图标降为辅色，「查看全部」轻量 */
+#view .wb-workstation .rh-project-toolbar{height:auto!important;min-height:32px;padding:0 0 12px!important;gap:12px!important}
+#view .wb-workstation .rh-project-toolbar h2{font-size:16px!important;line-height:24px!important;font-weight:600!important;gap:8px!important}
+#view .wb-workstation .rh-project-toolbar h2>.rh-icon{width:18px!important;height:18px!important;color:var(--ink-3)!important}
+#view .wb-workstation .rh-project-toolbar h2 span{font-weight:400;color:var(--ink-3)}
+#view .wb-workstation .rh-link{font-size:13px!important;font-weight:500!important;color:var(--ink-2)!important;gap:2px!important}
+#view .wb-workstation .rh-link:hover{color:var(--dry-ink)!important}
+#view .wb-workstation .rh-link .wb-icon{width:14px!important;height:14px!important}
+/* 动态：做成完整的白卡，三列用竖线分开 */
+#view .wb-workstation .rh-activities{background:var(--surface)!important;border:1px solid var(--line)!important;border-radius:12px!important;padding:0!important;overflow:hidden}
+#view .wb-workstation .rh-activity{padding:14px 18px!important;align-items:center!important}
+#view .wb-workstation .rh-activity+.rh-activity{padding-left:18px!important;border-left:1px solid var(--line-2)!important}
+#view .wb-workstation .rh-activity .rh-avatar{width:28px!important;height:28px!important;margin-top:0;border:0!important;font-size:12px!important}
+#view .wb-workstation .rh-activity-copy strong{font-size:13px!important;line-height:20px}
+/* 课题卡：标题、标签、正文三级字号；状态色只留在圆点 */
+#view .wb-workstation .rh-project-grid{gap:16px!important}
+#view .wb-workstation .rh-project{padding:18px 18px 14px!important;gap:12px!important;grid-template-rows:auto auto auto auto auto!important;border-radius:12px!important;transition:border-color .12s ease-out}
+#view .wb-workstation .rh-project header{align-items:center!important;gap:10px!important;min-height:0!important}
+#view .wb-workstation .rh-project-symbol{width:32px!important;height:32px!important;border-radius:8px!important}
+#view .wb-workstation .rh-project-symbol .rh-icon{width:18px!important;height:18px!important}
+#view .wb-workstation .rh-project header h3{font-size:15px!important;line-height:22px!important;font-weight:600!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#view .wb-workstation .rh-project header .rh-badge{margin:0!important;border:0!important;background:var(--surface-2)!important;color:var(--ink-2)!important;font-size:12px!important;line-height:18px!important;font-weight:500!important;padding:2px 8px!important;border-radius:999px!important}
+#view .wb-workstation .rh-card-section{gap:0!important}
+#view .wb-workstation .rh-card-section>.rh-icon{display:none}
+#view .wb-workstation .rh-card-section h4{font-size:12px!important;line-height:18px!important;font-weight:400!important;color:var(--ink-3)!important;margin:0 0 2px!important}
+#view .wb-workstation .rh-card-section p{font-size:13px!important;line-height:20px!important;min-height:40px!important;color:var(--ink)!important}
+#view .wb-workstation .rh-project .rh-next{border-top:0!important;background:var(--surface-2)!important;border-radius:8px!important;padding:8px 10px!important;font-size:13px!important;gap:8px!important}
+#view .wb-workstation .rh-project .rh-next>.rh-icon{width:15px!important;height:15px!important;color:var(--ink-3)!important}
+#view .wb-workstation .rh-project .rh-enter{justify-content:flex-start!important;height:28px!important;min-height:28px!important;padding:0!important;font-size:13px!important;font-weight:500!important;color:var(--ink-2)!important;border:0!important;background:none!important}
+#view .wb-workstation .rh-project:hover .rh-enter,#view .wb-workstation .rh-project .rh-enter:hover{color:var(--dry-ink)!important}
+#view .wb-workstation .rh-project .rh-enter .rh-icon{width:14px!important;height:14px!important}
+/* 发现：页签放进卡头，行更紧凑 */
+#view .wb-workstation .rh-discoveries{border-radius:12px!important;padding:0 8px 6px!important}
+#view .wb-workstation .rh-discover-heading{min-height:46px!important;height:46px!important;padding:0 10px!important;border-bottom:1px solid var(--line-2)!important}
+#view .wb-workstation .rh-tabs{gap:22px!important}
+#view .wb-workstation .rh-tabs button{font-size:13px!important;font-weight:500!important;padding:0 2px!important;border-bottom-width:2px!important}
+#view .wb-workstation .rh-tabs button[aria-selected=true]{color:var(--ink)!important;border-bottom-color:var(--ink)!important}
+#view .wb-workstation .rh-discovery-row{padding:12px 10px!important;gap:12px!important;border-radius:8px}
+#view .wb-workstation .rh-discovery-icon{width:32px!important;height:32px!important;border-radius:8px!important}
+#view .wb-workstation .rh-discovery-icon .rh-icon,#view .wb-workstation .rh-discovery-icon .wb-icon{width:17px!important;height:17px!important}
+#view .wb-workstation .rh-discovery-copy strong{font-size:14px!important;font-weight:500!important;line-height:21px!important}
+#view .wb-workstation .rh-discovery-copy small{font-size:12px!important;color:var(--ink-3)!important}
+#view .wb-workstation .rh-discovery-row>.wb-icon{width:15px!important;height:15px!important;color:var(--ink-4)}
+@media(max-width:1100px){#view .wb-workstation .rh-activity+.rh-activity{padding-left:18px!important;border-left:0!important;border-top:1px solid var(--line-2)!important}}
+#view .wb-workstation .rh-project .rh-enter{box-shadow:none!important}
+#view .wb-workstation .rh-project .rh-next-action{padding:0!important;line-height:20px!important}
+#view .wb-workstation .rh-project .rh-next-action:hover{text-decoration:none!important;color:var(--dry-ink)}
+#view .wb-workstation .rh-project .rh-next{min-height:0!important;height:auto!important;margin:0!important}
+#view .wb-workstation .rh-project{display:flex!important;flex-direction:column}#view .wb-workstation .rh-project .rh-next{margin-top:auto!important}
+#view .wb-workstation .rh-project .rh-next{padding:4px 10px!important}
 
 
 /* 项目卡标题被挤成两行、断在「结合界 / 面」：标题被写死 max-width:calc(100% - 55px)，
@@ -23776,63 +23761,6 @@ V.workbench=()=>{
  const date=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short',timeZone:'Asia/Shanghai'}),resources=researchResources(all);
  return '<div class="page wb wb-workstation"><header class="rh-header"><div><h1>工作台</h1><p>聚焦课题进展，推进下一步研究</p></div><div class="rh-header-actions">'+researchSchedulesButton()+'<button class="rh-new" data-wb-start type="button">进入对话</button></div></header><section class="rh-activities-wrap" aria-labelledby="rh-activity-title"><div class="rh-project-toolbar"><h2 id="rh-activity-title">'+rhIcon('calendar')+'近期研究动态</h2><button class="rh-link" data-rh-activities type="button">查看全部 '+rhIcon('right')+'</button></div><div class="rh-activities"><div class="rh-activity-grid">'+activities.slice(0,3).map(researchActivityHTML).join('')+(!activities.length?'<p class="rh-empty">暂无研究动态，进入课题开始记录研究。</p>':'')+'</div></div></section><section class="rh-projects" aria-labelledby="rh-projects-title"><div class="rh-project-toolbar"><h2 id="rh-projects-title">'+rhIcon('layers')+'我的课题 <span>('+all.length+')</span></h2>'+(ps.length>3?'<div class="rh-pager"><button class="rh-pager-btn" type="button" data-rh-project-page="prev" aria-label="上一页课题"'+(start<=0?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><span class="rh-pager-n num" aria-live="polite">'+(Math.floor(start/3)+1)+' / '+Math.max(1,Math.ceil(ps.length/3))+'</span><button class="rh-pager-btn" type="button" data-rh-project-page="next" aria-label="下一页课题"'+(start+3>=ps.length?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div>':'')+''+(all.length>6||RESEARCH_HOME.query?'<label class="rh-search">'+rhIcon('search')+'<input type="search" aria-label="搜索课题名称或关键词" placeholder="搜索课题名称或关键词" value="'+esc(RESEARCH_HOME.query)+'" data-rh-search></label>':'')+'<button class="rh-link" data-rh-projects type="button">查看全部 '+rhIcon('right')+'</button></div><div class="rh-project-grid">'+items.map(researchCard).join('')+(!items.length?'<div class="rh-empty"><p>'+(all.length?'没有匹配课题，请调整搜索词。':'还没有课题，创建第一个研究课题。')+'</p><button class="rh-new" data-wb-create-project type="button">新建课题</button></div>':'')+'</div>'+'</section><section class="rh-discoveries-wrap" aria-labelledby="rh-discover-title"><div class="rh-project-toolbar"><h2 id="rh-discover-title">'+rhIcon('book')+'课题相关发现</h2></div><div class="rh-discoveries"><div class="rh-discover-heading"><div class="rh-tabs" role="tablist" aria-label="相关发现类型">'+[['papers','文献'],['news','学术资讯'],['resources','平台资源更新']].map(([k,n])=>'<button id="rh-tab-'+k+'" role="tab" aria-selected="'+(RESEARCH_HOME.tab===k)+'" aria-controls="rh-feed" tabindex="'+(RESEARCH_HOME.tab===k?'0':'-1')+'" data-rh-tab="'+k+'" type="button">'+n+(k==='resources'?'<span>'+resources.length+'</span>':'')+'</button>').join('')+'</div></div><div id="rh-feed" role="tabpanel" aria-labelledby="rh-tab-'+RESEARCH_HOME.tab+'">'+(RESEARCH_HOME.tab==='news'&&rows.length?'<p class="rh-news-note">示例资讯：还没接入资讯源，以下条目为虚构，仅用于展示版式与交互。</p>':'')+rows.slice(0,6).join('')+(!rows.length?'<p class="rh-empty">'+(RESEARCH_HOME.tab==='news'?'暂无学术资讯，相关研究论文可在“文献”中查看。':RESEARCH_HOME.tab==='resources'?'暂无与课题匹配的已发布平台资源更新。':'暂无匹配文献。')+'</p>':'')+'</div></div>'+'</section></div>';
 };
-/* ---------- 工作台 v3 ----------
-   旧版把「动态 / 课题 / 发现」三块平铺，每块一样重，打开以后得自己找今天该干什么。
-   新版先回答「今天哪些事要你动手」，再回答「每个课题走到哪了」：
-   - 页头下一行用本机数出来的数说清现状：几个课题、几项待你处理。
-   - 「待你处理」是页面的主角：异常、待查看的结论，按轻重排，一行一件事，点了直接进那件事。
-     口径与课题上的「N 项待处理」同一个来源（wbAttentionTasks），两处的数对得上。
-   - 右侧「最近动态」竖排，时间在前，扫一眼就知道谁刚做了什么。
-   - 课题从三张高卡片改成一行一个：目标、当前轮次、待处理、下一步、进入，一屏看全。 */
-function rhPending(){
- const L=wbAttentionTasks(workbenchData().tasks||[]).filter(t=>t.status==='failed'||t.needsAction);
- const rank=t=>t.status==='failed'?0:t.status==='done'?1:2;
- return L.slice().sort((a,b)=>rank(a)-rank(b));
-}
-function rhPendingLabel(t){return t.status==='failed'?['异常','err']:t.status==='done'?['待查看结论','ready']:['待处理','wait'];}
-function rhPendingRow(t){
- const [lab,tone]=rhPendingLabel(t),why=String(t.detail||'').replace(/\s*·\s*演示流程$/,'');
- return '<button class="rh-q" type="button" data-wb-task-open="'+esc(t.key)+'"><span class="rh-q-tag is-'+tone+'">'+lab+'</span><span class="rh-q-copy"><strong>'+esc(t.name)+'</strong><small>'+esc(t.projectName||'')+(why?' · '+esc(why):'')+'</small></span><span class="rh-q-go" aria-hidden="true">'+rhIcon('right')+'</span></button>';
-}
-function rhProjectRow(p,i){
- const state=researchProjectState(p),source=DB.projects.find(x=>x.id===p.id),goal=source?goalText(source):p.description;
- const nextAttr=state.task||state.draft?'data-wb-task-open="'+esc((state.task||state.draft).key)+'"':'data-wb-project="'+esc(p.id)+'"';
- return '<article class="rh-prow tone-'+state.tone+'" data-wb-project-id="'+esc(p.id)+'">'
-  +'<span class="rh-project-symbol color-'+i%3+'">'+rhIcon(i%3===1?'model':i%3===2?'settings':'protein')+'</span>'
-  +'<div class="rh-prow-main"><h3 title="'+esc(p.name)+'">'+esc(p.name)+'</h3><p title="'+esc(goal)+'">'+esc(goal||'尚未设置研究目标')+'</p></div>'
-  +'<div class="rh-prow-round">'+(p.currentRound?'<strong class="num">R'+p.currentRound+'</strong><small>当前轮次</small>':'<small>尚未开始</small>')+'</div>'
-  +'<div class="rh-prow-state"><span class="rh-badge '+state.tone+'">'+esc(state.badge)+'</span><button class="rh-next-action" type="button" '+nextAttr+'>下一步：<strong>'+esc(state.next)+'</strong></button></div>'
-  +'<button class="rh-enter" type="button" data-wb-project="'+esc(p.id)+'" aria-label="进入课题：'+esc(p.name)+'">进入课题 '+rhIcon('arrow')+'</button>'
-  +'</article>';
-}
-V.workbench=()=>{
- const data=wbPrepare(),all=data.projects||[],q=RESEARCH_HOME.query.toLowerCase(),ps=all.filter(p=>(p.name+' '+p.description+' '+p.target).toLowerCase().includes(q));
- const activities=researchActivities(),rows=researchDiscoveries(all),resources=researchResources(all);
- const pending=rhPending(),showAll=!!RESEARCH_HOME.allPending,LIMIT=5;
- const date=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short',timeZone:'Asia/Shanghai'});
- const status=date+' · '+all.length+' 个课题'+(pending.length?' · <strong>'+pending.length+' 项待你处理</strong>':' · 没有待你处理的事');
- return '<div class="page wb wb-workstation wb-v3">'
-  +'<header class="rh-header"><div><h1>工作台</h1><p>'+status+'</p></div><div class="rh-header-actions">'+researchSchedulesButton()+'<button class="rh-new" data-wb-start type="button">进入对话</button></div></header>'
-  +'<div class="rh-top">'
-   +'<section class="rh-queue" aria-labelledby="rh-queue-title"><div class="rh-project-toolbar"><h2 id="rh-queue-title">待你处理 <span>('+pending.length+')</span></h2>'
-    +(pending.length>LIMIT?'<button class="rh-link" type="button" data-rh-pending-all>'+(showAll?'收起':'查看全部 '+pending.length+' 项')+'</button>':'')+'</div>'
-    +(pending.length?'<div class="rh-q-list">'+(showAll?pending:pending.slice(0,LIMIT)).map(rhPendingRow).join('')+'</div>'
-      :'<div class="rh-q-empty"><strong>今天没有要你处理的事</strong><span>实验异常、待查看的结论会出现在这里。</span></div>')
-   +'</section>'
-   +'<section class="rh-activities-wrap" aria-labelledby="rh-activity-title"><div class="rh-project-toolbar"><h2 id="rh-activity-title">最近动态</h2><button class="rh-link" data-rh-activities type="button">查看全部 '+rhIcon('right')+'</button></div>'
-    +'<div class="rh-activities"><div class="rh-activity-grid">'+activities.slice(0,5).map(researchActivityHTML).join('')+(!activities.length?'<p class="rh-empty">暂无研究动态，进入课题开始记录研究。</p>':'')+'</div></div>'
-   +'</section>'
-  +'</div>'
-  +'<section class="rh-projects" aria-labelledby="rh-projects-title"><div class="rh-project-toolbar"><h2 id="rh-projects-title">我的课题 <span>('+all.length+')</span></h2>'
-   +(all.length>6||RESEARCH_HOME.query?'<label class="rh-search">'+rhIcon('search')+'<input type="search" aria-label="搜索课题名称或关键词" placeholder="搜索课题名称或关键词" value="'+esc(RESEARCH_HOME.query)+'" data-rh-search></label>':'')
-   +'<button class="rh-link" data-rh-projects type="button">查看全部 '+rhIcon('right')+'</button></div>'
-   +'<div class="rh-plist">'+ps.slice(0,6).map(rhProjectRow).join('')
-   +(!ps.length?'<div class="rh-empty"><p>'+(all.length?'没有匹配课题，请调整搜索词。':'还没有课题，创建第一个研究课题。')+'</p><button class="rh-new" data-wb-create-project type="button">新建课题</button></div>':'')+'</div>'
-  +'</section>'
-  +'<section class="rh-discoveries-wrap" aria-labelledby="rh-discover-title"><div class="rh-project-toolbar"><h2 id="rh-discover-title">'+rhIcon('book')+'课题相关发现</h2></div><div class="rh-discoveries"><div class="rh-discover-heading"><div class="rh-tabs" role="tablist" aria-label="相关发现类型">'+[['papers','文献'],['news','学术资讯'],['resources','平台资源更新']].map(([k,n])=>'<button id="rh-tab-'+k+'" role="tab" aria-selected="'+(RESEARCH_HOME.tab===k)+'" aria-controls="rh-feed" tabindex="'+(RESEARCH_HOME.tab===k?'0':'-1')+'" data-rh-tab="'+k+'" type="button">'+n+(k==='resources'?'<span>'+resources.length+'</span>':'')+'</button>').join('')+'</div></div><div id="rh-feed" role="tabpanel" aria-labelledby="rh-tab-'+RESEARCH_HOME.tab+'">'+(RESEARCH_HOME.tab==='news'&&rows.length?'<p class="rh-news-note">示例资讯：还没接入资讯源，以下条目为虚构，仅用于展示版式与交互。</p>':'')+rows.slice(0,6).join('')+(!rows.length?'<p class="rh-empty">'+(RESEARCH_HOME.tab==='news'?'暂无学术资讯，相关研究论文可在“文献”中查看。':RESEARCH_HOME.tab==='resources'?'暂无与课题匹配的已发布平台资源更新。':'暂无匹配文献。')+'</p>':'')+'</div></div>'+'</section>'
-  +'</div>';
-};
-
 const researchOriginalBind=wbBind;
 wbBind=function(root){
  researchOriginalBind(root);if(S.route!=='workbench')return;wbLayoutObserver?.disconnect();
@@ -23841,7 +23769,6 @@ wbBind=function(root){
  root.querySelector('[data-rh-projects]')?.addEventListener('click',()=>go('projects'));
  root.querySelectorAll('[data-rh-sched]').forEach(b=>b.onclick=()=>{ST.pick=b.dataset.rhSched;LS.set('scheduled_pick',ST.pick);go('scheduledetail');});
  root.querySelectorAll('[data-rh-sched-new]').forEach(b=>b.onclick=()=>{if(typeof gsNewSchedule==='function')gsNewSchedule();});
- root.querySelectorAll('[data-rh-pending-all]').forEach(b=>b.onclick=()=>{RESEARCH_HOME.allPending=!RESEARCH_HOME.allPending;render();});
  root.querySelectorAll('[data-rh-sched-pop]').forEach(b=>b.onclick=e=>{e.stopPropagation();RESEARCH_HOME.schedOpen=!RESEARCH_HOME.schedOpen;render();
   if(RESEARCH_HOME.schedOpen)setTimeout(()=>view.querySelector('.rh-sched-pop .rh-sched, .rh-sched-pop [data-rh-sched-new]')?.focus(),20);});
  /* 研究动态点进去看的是任务本身，不是课题的对话流 */
