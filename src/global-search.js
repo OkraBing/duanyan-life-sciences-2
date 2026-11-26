@@ -9,7 +9,7 @@ const GS_FEATURES=[
  {id:'chat',grp:'研究',name:'科研对话',where:'研究',alias:['对话','提问','助手','新对话','聊天'],go:()=>go('chat')},
  {id:'projects',grp:'研究',name:'课题项目',where:'研究',alias:['课题','项目','我的课题'],go:()=>go('projects')},
  {id:'lab',grp:'实验',name:'实验管理',where:'实验',alias:['实验','批次','湿实验','实验记录'],go:()=>go('lab')},
- {id:'mdl',grp:'资源',name:'模型制备',where:'资源',alias:['模型','模型库','模型训练','模型评测','模型推理','训练','评测','推理'],go:()=>{S.mtab='cur';go('mdl')}},
+ {id:'mdl',grp:'资源',name:'模型制备',where:'科研工具 · 模型',alias:['模型','模型库','模型训练','模型评测','模型推理','训练','评测','推理'],go:()=>{S.mtab='cur';go('mdl')}},
  {id:'shelf',grp:'资源',name:'科研工具',where:'资源',alias:['工具','工具市场'],go:()=>{RS.marketTab='catalog';go('shelf')}},
  {id:'data',grp:'资源',name:'数据库',where:'资源',alias:['公共数据库','数据源'],go:()=>{RS.marketTab='catalog';go('data')}},
  {id:'schedules',grp:'研究',name:'定时任务',where:'工作台 · 课题详情「定时」',alias:['定时','周报','每天','每周','每月','计划','提醒','自动','定期','追踪'],go:()=>go('schedules')},
@@ -200,10 +200,13 @@ document.addEventListener('keydown',e=>{
  }
 },true);
 
-/* 侧栏折叠按钮挪到侧栏最底部（账户下面）：展开时写「收起侧栏」，折叠时只剩图标。
-   两种状态下都在左下角同一个位置，常驻可见，也不再压住顶上的 logo。 */
+/* 侧栏折叠按钮挪到搜索框正下方、导航分组正上方：
+   展开时写「收起侧栏」，折叠时只剩图标，和导航图标站在同一列。
+   它在两种状态下都占同一行同样的高度，所以折叠前后 logo、搜索、导航都不会跳位，
+   也不会压住 logo——放在页脚找不到，放在 logo 那一行又会挤它。 */
 (function sideToggleMount(){
- const t=document.querySelector('#side .side-toggle'),foot=document.getElementById('navAcct');
- if(!t||!foot||foot.contains(t))return;
- const row=document.createElement('div');row.className='side-toggle-row';row.appendChild(t);foot.appendChild(row);
+ const t=document.querySelector('#side .side-toggle'),trigger=document.querySelector('#side .gs-trigger');
+ if(!t||!trigger)return;
+ const row=document.createElement('div');row.className='side-toggle-row';row.appendChild(t);
+ trigger.insertAdjacentElement('afterend',row);
 })();

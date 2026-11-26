@@ -100,3 +100,84 @@
 #view .wb-workstation .rh-project .rh-next{min-height:0!important;height:auto!important;margin:0!important}
 #view .wb-workstation .rh-project{display:flex!important;flex-direction:column}#view .wb-workstation .rh-project .rh-next{margin-top:auto!important}
 #view .wb-workstation .rh-project .rh-next{padding:4px 10px!important}
+
+/* ===== 工作台顶栏：定时任务（弱）· 待办（次）· 进入对话（主） ===== */
+#view .rh-header-actions{gap:8px!important}
+#view .rh-sched-btn{border-color:transparent!important;background:none!important;color:var(--ink-2)!important;font-weight:400!important;padding-inline:8px!important}
+#view .rh-sched-btn:hover{background:var(--surface-2)!important;color:var(--ink)!important}
+#view .rh-sched-btn svg{color:var(--ink-4)!important}
+#view .rh-sched-n{background:none!important;color:var(--ink-3)!important;min-width:0!important;padding:0!important}
+/* 待办 */
+.rh-todo-anchor{position:relative;display:inline-flex}
+.rh-todo-btn{display:inline-flex;align-items:center;gap:6px}
+.rh-todo-btn svg{color:var(--ink-3)}
+.rh-todo-btn.has-n svg{color:var(--err)}
+.rh-todo-n{font-size:11px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--err-soft,#fdecec);color:var(--err);font-weight:600;display:inline-grid;place-items:center}
+.rh-todo-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:40;width:min(400px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh-3);padding:14px;display:flex;flex-direction:column;gap:12px;text-align:left}
+.rh-todo-pop-h{display:flex;align-items:center;justify-content:space-between}
+.rh-todo-pop-h h2{font-size:14px;font-weight:600;margin:0}
+.rh-todo-pop-h h2 span{color:var(--ink-3);font-weight:400}
+.rh-todo-sec{display:flex;flex-direction:column;gap:2px}
+.rh-todo-sec+.rh-todo-sec{border-top:1px solid var(--line-2);padding-top:10px}
+.rh-todo-sec-h{display:flex;align-items:baseline;gap:8px;padding:0 2px 4px}
+.rh-todo-sec-h h3{font-size:13px;font-weight:600;margin:0}
+.rh-todo-sec-h h3 span{color:var(--ink-3);font-weight:400;margin-left:2px}
+.rh-todo-sec-h small{font-size:11px;color:var(--ink-4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rh-todo-row{display:flex;align-items:flex-start;gap:9px;width:100%;padding:8px;border:0;border-radius:8px;background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+.rh-todo-row:hover{background:var(--surface-2)}
+.rh-todo-dot{width:6px;height:6px;border-radius:50%;margin-top:7px;flex:none;background:var(--ink-4)}
+.rh-todo-dot.is-alert{background:var(--err)}
+.rh-todo-dot.is-ready{background:var(--dry-ink)}
+.rh-todo-copy{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.rh-todo-copy strong{font-size:13px;font-weight:500;line-height:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rh-todo-copy small{display:flex;gap:0 10px;font-size:11px;line-height:16px;color:var(--ink-4);min-width:0}
+.rh-todo-copy small span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rh-todo-copy small span:first-child{flex:none;color:var(--ink-3)}
+.rh-todo-more,.rh-todo-run .rh-link{border:0;background:none;font:inherit;font-size:12px;color:var(--ink-2);cursor:pointer;padding:6px 8px;text-align:left}
+.rh-todo-more:hover,.rh-todo-run .rh-link:hover{color:var(--dry-ink)}
+.rh-todo-run{display:flex;align-items:center;gap:4px;margin:0;font-size:12px;color:var(--ink-3)}
+.rh-todo-sec.is-quiet{border-top:1px solid var(--line-2);padding-top:8px}
+.rh-todo-empty{margin:0;padding:6px 2px 10px;font-size:13px;color:var(--ink-3);line-height:20px}
+/* 学术助手 */
+.rh-aide-anchor{position:fixed;right:24px;bottom:24px;z-index:45;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.rh-aide-fab{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px 0 13px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 6px 20px #13182612}
+.rh-aide-fab svg{color:var(--ink-2)}
+.rh-aide-fab:hover{border-color:var(--ink-4);box-shadow:0 8px 24px #1318261f}
+.rh-aide-fab.is-on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.rh-aide-fab.is-on svg{color:var(--surface)}
+.rh-aide-fab:focus-visible,.rh-todo-row:focus-visible{outline:2px solid var(--dry);outline-offset:2px}
+.rh-aide{width:min(340px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px #13182622;padding:14px 16px 12px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.rh-aide-h{display:flex;align-items:center;justify-content:space-between}
+.rh-aide-h h2{font-size:14px;font-weight:600;margin:0}
+.rh-aide-x{border:0;background:none;color:var(--ink-3);cursor:pointer;padding:4px;border-radius:6px;display:grid;place-items:center}
+.rh-aide-x:hover{background:var(--surface-2);color:var(--ink)}
+.rh-aide-body{display:flex;flex-direction:column;gap:6px}
+.rh-aide-label{margin:0;font-size:11px;color:var(--ink-4)}
+.rh-aide-q{margin:0;font-size:14px;line-height:23px;color:var(--ink)}
+.rh-aide-src{margin:0;font-size:12px;color:var(--ink-3)}
+.rh-aide-f{display:flex;gap:8px}
+.rh-aide-f .btn{min-height:32px;font-size:13px}
+.rh-aide-go{flex:1}
+.rh-aide-note{margin:0;padding-top:8px;border-top:1px solid var(--line-2);font-size:11px;line-height:17px;color:var(--ink-4)}
+@media(max-width:860px){.rh-aide-anchor{right:16px;bottom:16px}.rh-aide-fab span{display:none}.rh-aide-fab{padding:0;width:40px;justify-content:center}}
+
+/* ===== 侧栏折叠按钮：搜索框下面、导航上面（两种状态同一行高，折叠前后不跳位） ===== */
+#side .side-toggle-row{display:flex;margin:0;padding:2px 10px 6px;border:0}
+#side .side-toggle,#side[data-collapsed="1"] .side-toggle{position:static!important;height:30px!important;min-height:30px!important;max-height:30px!important;margin:0!important;border:0!important;border-radius:8px!important;background:none!important;color:var(--ink-3)!important;display:inline-flex!important;align-items:center!important;gap:10px!important;font-size:12px!important}
+#side:not([data-collapsed="1"]) .side-toggle{width:100%!important;max-width:none!important;padding:0 9px!important;justify-content:flex-start!important}
+#side:not([data-collapsed="1"]) .side-toggle::after{content:"收起侧栏";font-size:12px;color:inherit}
+#side[data-collapsed="1"] .side-toggle{width:30px!important;min-width:30px!important;max-width:30px!important;padding:0!important;justify-content:center!important}
+#side[data-collapsed="1"] .side-toggle::after{content:none!important}
+#side[data-collapsed="1"] .side-toggle-row{padding:2px 0 6px;justify-content:center}
+#side .side-toggle:hover{background:var(--surface-3)!important;color:var(--ink)!important;border-color:transparent!important}
+@media(max-width:760px){#side .side-toggle-row{display:none}}
+/* 科研工具 · 模型：去模型制备 */
+#view .tl-bar .tl-mdl{margin-left:12px;padding-left:12px;border-left:1px solid var(--line);border-radius:var(--r2)}
+#view .page.wb.wb-workstation{padding-bottom:96px!important}
+/* 窄一点的屏上，课题名和「n 项待处理」挤在一行会把名字截掉：让角标掉到下一行，和名字左对齐 */
+@media(min-width:1101px) and (max-width:1340px){
+ #view .wb-workstation .rh-project header{flex-wrap:wrap!important;align-items:flex-start!important}
+ #view .wb-workstation .rh-project header h3{white-space:normal!important;flex:1 1 auto;order:2;min-width:0}
+ #view .wb-workstation .rh-project header .rh-badge{order:3;flex:0 0 auto;margin:2px 0 0 42px!important}
+ #view .wb-workstation .rh-project-symbol{order:1}
+}

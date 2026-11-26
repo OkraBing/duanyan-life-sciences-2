@@ -3978,14 +3978,17 @@ function domOf(p){const x=p||PRJ();return DOMAINS.find(d=>d.k===(x&&x.dom))||DOM
    每一项的 title 写的是「哪个研究动作需要它」（R16）——
    原先 title 就是按钮名本身，等于把眼前的字再念一遍。 */
 /* 子页面没有自己的导航项：亮它所属的那一项，不然进了项目或表单页，侧栏上一处都不亮 */
-const NAV_PARENT={toolnew:'shelf',databasenew:'data',resdetail:'shelf',sharednew:'shared',shareddetail:'shared',project:'projects',labdet:'lab',labnew:'lab',dsnew:'mdl',dsets:'mdl',trainnew:'mdl',bnew:'mdl',
+const NAV_PARENT={toolnew:'shelf',databasenew:'data',resdetail:'shelf',sharednew:'shared',shareddetail:'shared',project:'projects',labdet:'lab',labnew:'lab',
+  /* 模型制备从侧栏收进「科研工具 → 模型」，它和它的子页都高亮科研工具 */
+  mdl:'shelf',dsnew:'shelf',dsets:'shelf',trainnew:'shelf',bnew:'shelf',
   /* 第二版：这些页面没有自己的导航入口，高亮它们的新归属 */
   devices:'lab',tools:'shelf',materials:'projects',files:'projects',shared:'projects',
   schedules:'workbench',schedulenew:'workbench',scheduledetail:'workbench'};
 const NAV=[
   /* 第二版的导航只留三组七个入口。被拿掉的入口不是删功能，是换了归属：
      资料空间 → 课题项目页右上；设备管理 → 实验管理页；数据集 → 模型制备页的一个页签；
-     我的工具 → 科研工具的「我的」页签；定时任务 → 工作台右上；设置 → 账户。
+     我的工具 → 科研工具的「我的」页签；定时任务 → 工作台右上；设置 → 账户；
+     模型制备 → 科研工具「模型」页签右上角（它服务于模型这件事，不必常驻侧栏）。
      路由全部保留，老链接照样能打开。 */
   ['A','研究',[
     ['workbench','工作台',"M3.5 4.5h7v7h-7zM13.5 4.5h7v4h-7zM13.5 11.5h7v8h-7zM3.5 14.5h7v5h-7z",'了解课题进展、发现研究灵感与学术资讯'],
@@ -3995,7 +3998,6 @@ const NAV=[
   ['B','实验',[
     ['lab','实验管理',"M9.5 3.5v5.6L4.7 17.6A2.2 2.2 0 0 0 6.6 21h10.8a2.2 2.2 0 0 0 1.9-3.4L14.5 9.1V3.5M8 3.5h8M7.3 14.5h9.4",'查看实验环节进度、异常与结论，并管理设备']]],
   ['C','资源',[
-    ['mdl','模型制备',"M6.5 5a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM17.5 5a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM12 15a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM8.5 7h7M7.4 8.8l3.6 6.5M16.6 8.8 13 15.3",'数据集、训练、评测与推理'],
     ['shelf','科研工具',"M4.5 4.5h6v6h-6zM13.5 4.5h6v6h-6zM4.5 13.5h6v6h-6zM16.5 13.5v6M13.5 16.5h6",'市场里的工具，以及我自己的工具'],
     ['data','数据库',"M5 7c0-1.7 3.1-3 7-3s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3zM5 7v10c0 1.7 3.1 3 7 3s7-1.3 7-3V7M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3",'市场里的数据库，以及我自己的数据库']]],
 ];
@@ -11171,7 +11173,7 @@ return `<div class="page">
   <div class="row wrap" style="align-items:flex-end">
     <div class="col grow" style="gap:6px">
       <h1>科研工具</h1>
-
+      <p class="mut t-md pg-sub">${kind==='MODEL'?'平台接入的模型；要用自己的数据训练和评测，去模型制备。':'可以在任务里调用的 Skills、SCP 与模型'}</p>
     </div>
     <label class="fbar-q"><span class="sr">搜索工具</span>${SEARCH_IC}
       <input id="skq2" value="${esc(S.tq||'')}" placeholder="搜索工具名、用途或输入类型"></label>
@@ -11191,6 +11193,9 @@ return `<div class="page">
       ${[['全部','全部用途']].concat(CAPS.map(c=>[c.id,c.sn||c.n])).map(([k,n])=>`<option value="${esc(k)}"${S.shcap===k?' selected':''}>${esc(n)}</option>`).join('')}
     </select><span class="car" aria-hidden="true"></span></span></label>
     ${(qq||pick)?'<button class="btn btn-gh tl-clear" type="button" data-act="shclear">清空筛选</button>':''}
+    <!-- 模型制备是「拿自己的数据训练、评测、推理」，和这一页「平台接入了哪些模型」是两件事，
+         所以它不在侧栏，只在模型这一格给一个入口。 -->
+    ${kind==='MODEL'?`<button class="btn tl-mdl" type="button" data-go="mdl">模型制备 →</button>`:''}
   </div>
 
   ${L.length?`<div class="sgrid">${L.map(card).join('')}</div>`
@@ -14482,7 +14487,8 @@ function FILES(pid){
 }
 /* 导航栏列了哪些路由。和 NAVNAME 同源，别另维护一张表。 */
 const NAV_ROUTE=(function(){const m={};NAV.forEach(g=>g[2].forEach(([k])=>m[k]=1));return m})();
-/* 数据集虽然自己有路由，但它是模型制备页的一个页签，页签条就是出路，不要再补「返回」键 */
+/* 数据集是模型制备页的一个页签，页签条就是出路，不要再补「返回」键。
+   模型制备自己从侧栏收走了，它要补一条回「科研工具」的返回键，所以不列在这里。 */
 NAV_ROUTE.dsets=1;
 /* 路由的中文名只有一份，导航表就是那一份 */
 const NAVNAME=(function(){const m={};NAV.forEach(g=>g[2].forEach(([k,n])=>m[k]=n));
@@ -16806,7 +16812,7 @@ function backPush(from){
 const BACKNAME={home:'工作台',pw:'项目工作台',project:'项目',tasks:'全部任务',
   task:'任务详情',results:'结果',round:'本轮',hypo:'假设',loop:'下一轮',
   wetlab:'送检跟踪',wet:'实验验证',viewer:'结构',config:'任务配置',
-  intake:'新建任务',chats:'全部对话',files:'文件管理',shelf:'工具',
+  intake:'新建任务',chats:'全部对话',files:'文件管理',shelf:'科研工具',
   data:'数据库',projects:'项目管理',models:'结构预测',design:'蛋白质设计',
   library:'序列检索',inbox:'通知',account:'账户',admin:'成员与权限',chats:'全部对话',
   dsnew:'新建数据集',trainnew:'新建训练任务',labdet:'实验详情',
@@ -16814,6 +16820,8 @@ const BACKNAME={home:'工作台',pw:'项目工作台',project:'项目',tasks:'�
 /* 把链接直接贴给别人，对方点进来是没有「走过的路」的。
    这时按页面自己的上一层走——每一页都确实属于某个地方。 */
 const BACK_PARENT={project:'projects',pw:'projects',hypo:'project',round:'project',
+  /* 模型制备不在侧栏了：直接开 #mdl 也要能回到它的归属「科研工具」 */
+  mdl:'shelf',
   loop:'project',results:'project',wetlab:'project',
   task:'tasks',tasks:'chat',intake:'tasks',config:'tasks',
   viewer:'models',tool:'shelf',dataset:'data',
@@ -20799,6 +20807,7 @@ const rsBindShared=rsBind;rsBind=function(root){rsBindShared(root);root.querySel
 /* @include autonomous-lab.js */
 /* @include global-search.js */
 /* @include contextual-entries.js */
+/* @include workbench-todo.js */
 
 keepLoad();
 labInit();

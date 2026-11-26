@@ -4681,6 +4681,87 @@ body[data-route="mdl"] #view .pg-hd,body[data-route="dsets"] #view .pg-hd{paddin
 #view .wb-workstation .rh-project{display:flex!important;flex-direction:column}#view .wb-workstation .rh-project .rh-next{margin-top:auto!important}
 #view .wb-workstation .rh-project .rh-next{padding:4px 10px!important}
 
+/* ===== 工作台顶栏：定时任务（弱）· 待办（次）· 进入对话（主） ===== */
+#view .rh-header-actions{gap:8px!important}
+#view .rh-sched-btn{border-color:transparent!important;background:none!important;color:var(--ink-2)!important;font-weight:400!important;padding-inline:8px!important}
+#view .rh-sched-btn:hover{background:var(--surface-2)!important;color:var(--ink)!important}
+#view .rh-sched-btn svg{color:var(--ink-4)!important}
+#view .rh-sched-n{background:none!important;color:var(--ink-3)!important;min-width:0!important;padding:0!important}
+/* 待办 */
+.rh-todo-anchor{position:relative;display:inline-flex}
+.rh-todo-btn{display:inline-flex;align-items:center;gap:6px}
+.rh-todo-btn svg{color:var(--ink-3)}
+.rh-todo-btn.has-n svg{color:var(--err)}
+.rh-todo-n{font-size:11px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--err-soft,#fdecec);color:var(--err);font-weight:600;display:inline-grid;place-items:center}
+.rh-todo-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:40;width:min(400px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh-3);padding:14px;display:flex;flex-direction:column;gap:12px;text-align:left}
+.rh-todo-pop-h{display:flex;align-items:center;justify-content:space-between}
+.rh-todo-pop-h h2{font-size:14px;font-weight:600;margin:0}
+.rh-todo-pop-h h2 span{color:var(--ink-3);font-weight:400}
+.rh-todo-sec{display:flex;flex-direction:column;gap:2px}
+.rh-todo-sec+.rh-todo-sec{border-top:1px solid var(--line-2);padding-top:10px}
+.rh-todo-sec-h{display:flex;align-items:baseline;gap:8px;padding:0 2px 4px}
+.rh-todo-sec-h h3{font-size:13px;font-weight:600;margin:0}
+.rh-todo-sec-h h3 span{color:var(--ink-3);font-weight:400;margin-left:2px}
+.rh-todo-sec-h small{font-size:11px;color:var(--ink-4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rh-todo-row{display:flex;align-items:flex-start;gap:9px;width:100%;padding:8px;border:0;border-radius:8px;background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+.rh-todo-row:hover{background:var(--surface-2)}
+.rh-todo-dot{width:6px;height:6px;border-radius:50%;margin-top:7px;flex:none;background:var(--ink-4)}
+.rh-todo-dot.is-alert{background:var(--err)}
+.rh-todo-dot.is-ready{background:var(--dry-ink)}
+.rh-todo-copy{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.rh-todo-copy strong{font-size:13px;font-weight:500;line-height:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rh-todo-copy small{display:flex;gap:0 10px;font-size:11px;line-height:16px;color:var(--ink-4);min-width:0}
+.rh-todo-copy small span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rh-todo-copy small span:first-child{flex:none;color:var(--ink-3)}
+.rh-todo-more,.rh-todo-run .rh-link{border:0;background:none;font:inherit;font-size:12px;color:var(--ink-2);cursor:pointer;padding:6px 8px;text-align:left}
+.rh-todo-more:hover,.rh-todo-run .rh-link:hover{color:var(--dry-ink)}
+.rh-todo-run{display:flex;align-items:center;gap:4px;margin:0;font-size:12px;color:var(--ink-3)}
+.rh-todo-sec.is-quiet{border-top:1px solid var(--line-2);padding-top:8px}
+.rh-todo-empty{margin:0;padding:6px 2px 10px;font-size:13px;color:var(--ink-3);line-height:20px}
+/* 学术助手 */
+.rh-aide-anchor{position:fixed;right:24px;bottom:24px;z-index:45;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.rh-aide-fab{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px 0 13px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 6px 20px #13182612}
+.rh-aide-fab svg{color:var(--ink-2)}
+.rh-aide-fab:hover{border-color:var(--ink-4);box-shadow:0 8px 24px #1318261f}
+.rh-aide-fab.is-on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.rh-aide-fab.is-on svg{color:var(--surface)}
+.rh-aide-fab:focus-visible,.rh-todo-row:focus-visible{outline:2px solid var(--dry);outline-offset:2px}
+.rh-aide{width:min(340px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px #13182622;padding:14px 16px 12px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.rh-aide-h{display:flex;align-items:center;justify-content:space-between}
+.rh-aide-h h2{font-size:14px;font-weight:600;margin:0}
+.rh-aide-x{border:0;background:none;color:var(--ink-3);cursor:pointer;padding:4px;border-radius:6px;display:grid;place-items:center}
+.rh-aide-x:hover{background:var(--surface-2);color:var(--ink)}
+.rh-aide-body{display:flex;flex-direction:column;gap:6px}
+.rh-aide-label{margin:0;font-size:11px;color:var(--ink-4)}
+.rh-aide-q{margin:0;font-size:14px;line-height:23px;color:var(--ink)}
+.rh-aide-src{margin:0;font-size:12px;color:var(--ink-3)}
+.rh-aide-f{display:flex;gap:8px}
+.rh-aide-f .btn{min-height:32px;font-size:13px}
+.rh-aide-go{flex:1}
+.rh-aide-note{margin:0;padding-top:8px;border-top:1px solid var(--line-2);font-size:11px;line-height:17px;color:var(--ink-4)}
+@media(max-width:860px){.rh-aide-anchor{right:16px;bottom:16px}.rh-aide-fab span{display:none}.rh-aide-fab{padding:0;width:40px;justify-content:center}}
+
+/* ===== 侧栏折叠按钮：搜索框下面、导航上面（两种状态同一行高，折叠前后不跳位） ===== */
+#side .side-toggle-row{display:flex;margin:0;padding:2px 10px 6px;border:0}
+#side .side-toggle,#side[data-collapsed="1"] .side-toggle{position:static!important;height:30px!important;min-height:30px!important;max-height:30px!important;margin:0!important;border:0!important;border-radius:8px!important;background:none!important;color:var(--ink-3)!important;display:inline-flex!important;align-items:center!important;gap:10px!important;font-size:12px!important}
+#side:not([data-collapsed="1"]) .side-toggle{width:100%!important;max-width:none!important;padding:0 9px!important;justify-content:flex-start!important}
+#side:not([data-collapsed="1"]) .side-toggle::after{content:"收起侧栏";font-size:12px;color:inherit}
+#side[data-collapsed="1"] .side-toggle{width:30px!important;min-width:30px!important;max-width:30px!important;padding:0!important;justify-content:center!important}
+#side[data-collapsed="1"] .side-toggle::after{content:none!important}
+#side[data-collapsed="1"] .side-toggle-row{padding:2px 0 6px;justify-content:center}
+#side .side-toggle:hover{background:var(--surface-3)!important;color:var(--ink)!important;border-color:transparent!important}
+@media(max-width:760px){#side .side-toggle-row{display:none}}
+/* 科研工具 · 模型：去模型制备 */
+#view .tl-bar .tl-mdl{margin-left:12px;padding-left:12px;border-left:1px solid var(--line);border-radius:var(--r2)}
+#view .page.wb.wb-workstation{padding-bottom:96px!important}
+/* 窄一点的屏上，课题名和「n 项待处理」挤在一行会把名字截掉：让角标掉到下一行，和名字左对齐 */
+@media(min-width:1101px) and (max-width:1340px){
+ #view .wb-workstation .rh-project header{flex-wrap:wrap!important;align-items:flex-start!important}
+ #view .wb-workstation .rh-project header h3{white-space:normal!important;flex:1 1 auto;order:2;min-width:0}
+ #view .wb-workstation .rh-project header .rh-badge{order:3;flex:0 0 auto;margin:2px 0 0 42px!important}
+ #view .wb-workstation .rh-project-symbol{order:1}
+}
+
 
 /* 项目卡标题被挤成两行、断在「结合界 / 面」：标题被写死 max-width:calc(100% - 55px)，
    而右边那枚「共享」角标其实只有 40px 宽，行上还开了 flex-wrap。
@@ -5629,14 +5710,17 @@ function domOf(p){const x=p||PRJ();return DOMAINS.find(d=>d.k===(x&&x.dom))||DOM
    每一项的 title 写的是「哪个研究动作需要它」（R16）——
    原先 title 就是按钮名本身，等于把眼前的字再念一遍。 */
 /* 子页面没有自己的导航项：亮它所属的那一项，不然进了项目或表单页，侧栏上一处都不亮 */
-const NAV_PARENT={toolnew:'shelf',databasenew:'data',resdetail:'shelf',sharednew:'shared',shareddetail:'shared',project:'projects',labdet:'lab',labnew:'lab',dsnew:'mdl',dsets:'mdl',trainnew:'mdl',bnew:'mdl',
+const NAV_PARENT={toolnew:'shelf',databasenew:'data',resdetail:'shelf',sharednew:'shared',shareddetail:'shared',project:'projects',labdet:'lab',labnew:'lab',
+  /* 模型制备从侧栏收进「科研工具 → 模型」，它和它的子页都高亮科研工具 */
+  mdl:'shelf',dsnew:'shelf',dsets:'shelf',trainnew:'shelf',bnew:'shelf',
   /* 第二版：这些页面没有自己的导航入口，高亮它们的新归属 */
   devices:'lab',tools:'shelf',materials:'projects',files:'projects',shared:'projects',
   schedules:'workbench',schedulenew:'workbench',scheduledetail:'workbench'};
 const NAV=[
   /* 第二版的导航只留三组七个入口。被拿掉的入口不是删功能，是换了归属：
      资料空间 → 课题项目页右上；设备管理 → 实验管理页；数据集 → 模型制备页的一个页签；
-     我的工具 → 科研工具的「我的」页签；定时任务 → 工作台右上；设置 → 账户。
+     我的工具 → 科研工具的「我的」页签；定时任务 → 工作台右上；设置 → 账户；
+     模型制备 → 科研工具「模型」页签右上角（它服务于模型这件事，不必常驻侧栏）。
      路由全部保留，老链接照样能打开。 */
   ['A','研究',[
     ['workbench','工作台',"M3.5 4.5h7v7h-7zM13.5 4.5h7v4h-7zM13.5 11.5h7v8h-7zM3.5 14.5h7v5h-7z",'了解课题进展、发现研究灵感与学术资讯'],
@@ -5646,7 +5730,6 @@ const NAV=[
   ['B','实验',[
     ['lab','实验管理',"M9.5 3.5v5.6L4.7 17.6A2.2 2.2 0 0 0 6.6 21h10.8a2.2 2.2 0 0 0 1.9-3.4L14.5 9.1V3.5M8 3.5h8M7.3 14.5h9.4",'查看实验环节进度、异常与结论，并管理设备']]],
   ['C','资源',[
-    ['mdl','模型制备',"M6.5 5a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM17.5 5a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM12 15a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM8.5 7h7M7.4 8.8l3.6 6.5M16.6 8.8 13 15.3",'数据集、训练、评测与推理'],
     ['shelf','科研工具',"M4.5 4.5h6v6h-6zM13.5 4.5h6v6h-6zM4.5 13.5h6v6h-6zM16.5 13.5v6M13.5 16.5h6",'市场里的工具，以及我自己的工具'],
     ['data','数据库',"M5 7c0-1.7 3.1-3 7-3s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3zM5 7v10c0 1.7 3.1 3 7 3s7-1.3 7-3V7M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3",'市场里的数据库，以及我自己的数据库']]],
 ];
@@ -12822,7 +12905,7 @@ return `<div class="page">
   <div class="row wrap" style="align-items:flex-end">
     <div class="col grow" style="gap:6px">
       <h1>科研工具</h1>
-
+      <p class="mut t-md pg-sub">${kind==='MODEL'?'平台接入的模型；要用自己的数据训练和评测，去模型制备。':'可以在任务里调用的 Skills、SCP 与模型'}</p>
     </div>
     <label class="fbar-q"><span class="sr">搜索工具</span>${SEARCH_IC}
       <input id="skq2" value="${esc(S.tq||'')}" placeholder="搜索工具名、用途或输入类型"></label>
@@ -12842,6 +12925,9 @@ return `<div class="page">
       ${[['全部','全部用途']].concat(CAPS.map(c=>[c.id,c.sn||c.n])).map(([k,n])=>`<option value="${esc(k)}"${S.shcap===k?' selected':''}>${esc(n)}</option>`).join('')}
     </select><span class="car" aria-hidden="true"></span></span></label>
     ${(qq||pick)?'<button class="btn btn-gh tl-clear" type="button" data-act="shclear">清空筛选</button>':''}
+    <!-- 模型制备是「拿自己的数据训练、评测、推理」，和这一页「平台接入了哪些模型」是两件事，
+         所以它不在侧栏，只在模型这一格给一个入口。 -->
+    ${kind==='MODEL'?`<button class="btn tl-mdl" type="button" data-go="mdl">模型制备 →</button>`:''}
   </div>
 
   ${L.length?`<div class="sgrid">${L.map(card).join('')}</div>`
@@ -16133,7 +16219,8 @@ function FILES(pid){
 }
 /* 导航栏列了哪些路由。和 NAVNAME 同源，别另维护一张表。 */
 const NAV_ROUTE=(function(){const m={};NAV.forEach(g=>g[2].forEach(([k])=>m[k]=1));return m})();
-/* 数据集虽然自己有路由，但它是模型制备页的一个页签，页签条就是出路，不要再补「返回」键 */
+/* 数据集是模型制备页的一个页签，页签条就是出路，不要再补「返回」键。
+   模型制备自己从侧栏收走了，它要补一条回「科研工具」的返回键，所以不列在这里。 */
 NAV_ROUTE.dsets=1;
 /* 路由的中文名只有一份，导航表就是那一份 */
 const NAVNAME=(function(){const m={};NAV.forEach(g=>g[2].forEach(([k,n])=>m[k]=n));
@@ -18457,7 +18544,7 @@ function backPush(from){
 const BACKNAME={home:'工作台',pw:'项目工作台',project:'项目',tasks:'全部任务',
   task:'任务详情',results:'结果',round:'本轮',hypo:'假设',loop:'下一轮',
   wetlab:'送检跟踪',wet:'实验验证',viewer:'结构',config:'任务配置',
-  intake:'新建任务',chats:'全部对话',files:'文件管理',shelf:'工具',
+  intake:'新建任务',chats:'全部对话',files:'文件管理',shelf:'科研工具',
   data:'数据库',projects:'项目管理',models:'结构预测',design:'蛋白质设计',
   library:'序列检索',inbox:'通知',account:'账户',admin:'成员与权限',chats:'全部对话',
   dsnew:'新建数据集',trainnew:'新建训练任务',labdet:'实验详情',
@@ -18465,6 +18552,8 @@ const BACKNAME={home:'工作台',pw:'项目工作台',project:'项目',tasks:'�
 /* 把链接直接贴给别人，对方点进来是没有「走过的路」的。
    这时按页面自己的上一层走——每一页都确实属于某个地方。 */
 const BACK_PARENT={project:'projects',pw:'projects',hypo:'project',round:'project',
+  /* 模型制备不在侧栏了：直接开 #mdl 也要能回到它的归属「科研工具」 */
+  mdl:'shelf',
   loop:'project',results:'project',wetlab:'project',
   task:'tasks',tasks:'chat',intake:'tasks',config:'tasks',
   viewer:'models',tool:'shelf',dataset:'data',
@@ -23759,7 +23848,7 @@ V.workbench=()=>{
  const start=Math.min(RESEARCH_HOME.start,Math.max(0,Math.ceil(ps.length/3)-1)*3);RESEARCH_HOME.start=start;
  const items=ps.slice(start,start+3),activities=researchActivities(),rows=researchDiscoveries(all);
  const date=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short',timeZone:'Asia/Shanghai'}),resources=researchResources(all);
- return '<div class="page wb wb-workstation"><header class="rh-header"><div><h1>工作台</h1><p>聚焦课题进展，推进下一步研究</p></div><div class="rh-header-actions">'+researchSchedulesButton()+'<button class="rh-new" data-wb-start type="button">进入对话</button></div></header><section class="rh-activities-wrap" aria-labelledby="rh-activity-title"><div class="rh-project-toolbar"><h2 id="rh-activity-title">'+rhIcon('calendar')+'近期研究动态</h2><button class="rh-link" data-rh-activities type="button">查看全部 '+rhIcon('right')+'</button></div><div class="rh-activities"><div class="rh-activity-grid">'+activities.slice(0,3).map(researchActivityHTML).join('')+(!activities.length?'<p class="rh-empty">暂无研究动态，进入课题开始记录研究。</p>':'')+'</div></div></section><section class="rh-projects" aria-labelledby="rh-projects-title"><div class="rh-project-toolbar"><h2 id="rh-projects-title">'+rhIcon('layers')+'我的课题 <span>('+all.length+')</span></h2>'+(ps.length>3?'<div class="rh-pager"><button class="rh-pager-btn" type="button" data-rh-project-page="prev" aria-label="上一页课题"'+(start<=0?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><span class="rh-pager-n num" aria-live="polite">'+(Math.floor(start/3)+1)+' / '+Math.max(1,Math.ceil(ps.length/3))+'</span><button class="rh-pager-btn" type="button" data-rh-project-page="next" aria-label="下一页课题"'+(start+3>=ps.length?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div>':'')+''+(all.length>6||RESEARCH_HOME.query?'<label class="rh-search">'+rhIcon('search')+'<input type="search" aria-label="搜索课题名称或关键词" placeholder="搜索课题名称或关键词" value="'+esc(RESEARCH_HOME.query)+'" data-rh-search></label>':'')+'<button class="rh-link" data-rh-projects type="button">查看全部 '+rhIcon('right')+'</button></div><div class="rh-project-grid">'+items.map(researchCard).join('')+(!items.length?'<div class="rh-empty"><p>'+(all.length?'没有匹配课题，请调整搜索词。':'还没有课题，创建第一个研究课题。')+'</p><button class="rh-new" data-wb-create-project type="button">新建课题</button></div>':'')+'</div>'+'</section><section class="rh-discoveries-wrap" aria-labelledby="rh-discover-title"><div class="rh-project-toolbar"><h2 id="rh-discover-title">'+rhIcon('book')+'课题相关发现</h2></div><div class="rh-discoveries"><div class="rh-discover-heading"><div class="rh-tabs" role="tablist" aria-label="相关发现类型">'+[['papers','文献'],['news','学术资讯'],['resources','平台资源更新']].map(([k,n])=>'<button id="rh-tab-'+k+'" role="tab" aria-selected="'+(RESEARCH_HOME.tab===k)+'" aria-controls="rh-feed" tabindex="'+(RESEARCH_HOME.tab===k?'0':'-1')+'" data-rh-tab="'+k+'" type="button">'+n+(k==='resources'?'<span>'+resources.length+'</span>':'')+'</button>').join('')+'</div></div><div id="rh-feed" role="tabpanel" aria-labelledby="rh-tab-'+RESEARCH_HOME.tab+'">'+(RESEARCH_HOME.tab==='news'&&rows.length?'<p class="rh-news-note">示例资讯：还没接入资讯源，以下条目为虚构，仅用于展示版式与交互。</p>':'')+rows.slice(0,6).join('')+(!rows.length?'<p class="rh-empty">'+(RESEARCH_HOME.tab==='news'?'暂无学术资讯，相关研究论文可在“文献”中查看。':RESEARCH_HOME.tab==='resources'?'暂无与课题匹配的已发布平台资源更新。':'暂无匹配文献。')+'</p>':'')+'</div></div>'+'</section></div>';
+ return '<div class="page wb wb-workstation"><header class="rh-header"><div><h1>工作台</h1><p>聚焦课题进展，推进下一步研究</p></div><div class="rh-header-actions">'+researchSchedulesButton()+'<button class="rh-new" data-wb-start type="button">进入对话</button></div></header><section class="rh-activities-wrap" aria-labelledby="rh-activity-title"><div class="rh-project-toolbar"><h2 id="rh-activity-title">'+rhIcon('calendar')+'近期研究动态</h2><button class="rh-link" data-rh-activities type="button">全部动态 '+rhIcon('right')+'</button></div><div class="rh-activities"><div class="rh-activity-grid">'+activities.slice(0,3).map(researchActivityHTML).join('')+(!activities.length?'<p class="rh-empty">暂无研究动态，进入课题开始记录研究。</p>':'')+'</div></div></section><section class="rh-projects" aria-labelledby="rh-projects-title"><div class="rh-project-toolbar"><h2 id="rh-projects-title">'+rhIcon('layers')+'我的课题 <span>('+all.length+')</span></h2>'+(ps.length>3?'<div class="rh-pager"><button class="rh-pager-btn" type="button" data-rh-project-page="prev" aria-label="上一页课题"'+(start<=0?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><span class="rh-pager-n num" aria-live="polite">'+(Math.floor(start/3)+1)+' / '+Math.max(1,Math.ceil(ps.length/3))+'</span><button class="rh-pager-btn" type="button" data-rh-project-page="next" aria-label="下一页课题"'+(start+3>=ps.length?' disabled':'')+'><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div>':'')+''+(all.length>6||RESEARCH_HOME.query?'<label class="rh-search">'+rhIcon('search')+'<input type="search" aria-label="搜索课题名称或关键词" placeholder="搜索课题名称或关键词" value="'+esc(RESEARCH_HOME.query)+'" data-rh-search></label>':'')+'<button class="rh-link" data-rh-projects type="button">全部课题 '+rhIcon('right')+'</button></div><div class="rh-project-grid">'+items.map(researchCard).join('')+(!items.length?'<div class="rh-empty"><p>'+(all.length?'没有匹配课题，请调整搜索词。':'还没有课题，创建第一个研究课题。')+'</p><button class="rh-new" data-wb-create-project type="button">新建课题</button></div>':'')+'</div>'+'</section><section class="rh-discoveries-wrap" aria-labelledby="rh-discover-title"><div class="rh-project-toolbar"><h2 id="rh-discover-title">'+rhIcon('book')+'课题相关发现</h2></div><div class="rh-discoveries"><div class="rh-discover-heading"><div class="rh-tabs" role="tablist" aria-label="相关发现类型">'+[['papers','文献'],['news','学术资讯'],['resources','平台资源更新']].map(([k,n])=>'<button id="rh-tab-'+k+'" role="tab" aria-selected="'+(RESEARCH_HOME.tab===k)+'" aria-controls="rh-feed" tabindex="'+(RESEARCH_HOME.tab===k?'0':'-1')+'" data-rh-tab="'+k+'" type="button">'+n+(k==='resources'?'<span>'+resources.length+'</span>':'')+'</button>').join('')+'</div></div><div id="rh-feed" role="tabpanel" aria-labelledby="rh-tab-'+RESEARCH_HOME.tab+'">'+(RESEARCH_HOME.tab==='news'&&rows.length?'<p class="rh-news-note">示例资讯：还没接入资讯源，以下条目为虚构，仅用于展示版式与交互。</p>':'')+rows.slice(0,6).join('')+(!rows.length?'<p class="rh-empty">'+(RESEARCH_HOME.tab==='news'?'暂无学术资讯，相关研究论文可在“文献”中查看。':RESEARCH_HOME.tab==='resources'?'暂无与课题匹配的已发布平台资源更新。':'暂无匹配文献。')+'</p>':'')+'</div></div>'+'</section></div>';
 };
 const researchOriginalBind=wbBind;
 wbBind=function(root){
@@ -24148,7 +24237,7 @@ function stSampleOutput(task){
 }
 
 /* Global navigation groups and settings routes. */
-Object.assign(NAV_PARENT,{shared:'projects',sharednew:'projects',shareddetail:'projects',me:'settings',set:'mdl',files:'materials',chats:'chat',project:'projects',pw:'projects'});
+Object.assign(NAV_PARENT,{shared:'projects',sharednew:'projects',shareddetail:'projects',me:'settings',set:'shelf',files:'materials',chats:'chat',project:'projects',pw:'projects'});
 Object.assign(NAVNAME,{projects:'课题项目',shared:'共享课题',dsets:'数据集',mdl:'模型制备',tools:'我的工具',data:'数据库',materials:'资料空间',devices:'设备管理',schedules:'定时任务',shelf:'科研工具',data:'公共数据库',settings:'设置'});
 Object.assign(BACKNAME,{projects:'课题项目',settings:'设置'});
 NAV_ROUTE.shared=1;
@@ -25191,7 +25280,7 @@ const GS_FEATURES=[
  {id:'chat',grp:'研究',name:'科研对话',where:'研究',alias:['对话','提问','助手','新对话','聊天'],go:()=>go('chat')},
  {id:'projects',grp:'研究',name:'课题项目',where:'研究',alias:['课题','项目','我的课题'],go:()=>go('projects')},
  {id:'lab',grp:'实验',name:'实验管理',where:'实验',alias:['实验','批次','湿实验','实验记录'],go:()=>go('lab')},
- {id:'mdl',grp:'资源',name:'模型制备',where:'资源',alias:['模型','模型库','模型训练','模型评测','模型推理','训练','评测','推理'],go:()=>{S.mtab='cur';go('mdl')}},
+ {id:'mdl',grp:'资源',name:'模型制备',where:'科研工具 · 模型',alias:['模型','模型库','模型训练','模型评测','模型推理','训练','评测','推理'],go:()=>{S.mtab='cur';go('mdl')}},
  {id:'shelf',grp:'资源',name:'科研工具',where:'资源',alias:['工具','工具市场'],go:()=>{RS.marketTab='catalog';go('shelf')}},
  {id:'data',grp:'资源',name:'数据库',where:'资源',alias:['公共数据库','数据源'],go:()=>{RS.marketTab='catalog';go('data')}},
  {id:'schedules',grp:'研究',name:'定时任务',where:'工作台 · 课题详情「定时」',alias:['定时','周报','每天','每周','每月','计划','提醒','自动','定期','追踪'],go:()=>go('schedules')},
@@ -25382,12 +25471,15 @@ document.addEventListener('keydown',e=>{
  }
 },true);
 
-/* 侧栏折叠按钮挪到侧栏最底部（账户下面）：展开时写「收起侧栏」，折叠时只剩图标。
-   两种状态下都在左下角同一个位置，常驻可见，也不再压住顶上的 logo。 */
+/* 侧栏折叠按钮挪到搜索框正下方、导航分组正上方：
+   展开时写「收起侧栏」，折叠时只剩图标，和导航图标站在同一列。
+   它在两种状态下都占同一行同样的高度，所以折叠前后 logo、搜索、导航都不会跳位，
+   也不会压住 logo——放在页脚找不到，放在 logo 那一行又会挤它。 */
 (function sideToggleMount(){
- const t=document.querySelector('#side .side-toggle'),foot=document.getElementById('navAcct');
- if(!t||!foot||foot.contains(t))return;
- const row=document.createElement('div');row.className='side-toggle-row';row.appendChild(t);foot.appendChild(row);
+ const t=document.querySelector('#side .side-toggle'),trigger=document.querySelector('#side .gs-trigger');
+ if(!t||!trigger)return;
+ const row=document.createElement('div');row.className='side-toggle-row';row.appendChild(t);
+ trigger.insertAdjacentElement('afterend',row);
 })();
 
 /* 第二版：情境入口
@@ -25526,6 +25618,136 @@ if(typeof materialsShareDialog==='function'){
   return ceMsShareBase(x);
  };
 }
+
+/* 工作台「待办」：把分散在各课题里的待处理任务按优先级排一遍。
+   数据只来自 wbAttentionTasks（和课题卡片、课题项目页的待处理角标同一口径），
+   不混进共享审批——那条线在侧栏消息里，混进来会让两处的数对不上，也是重复入口。 */
+const WB_TODO_IC='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l2 2 4-4M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/></svg>';
+/* 三档优先级：要动手的、要看结论的、正在跑的。
+   「正在跑」不需要我做什么，所以只报条数，不展开，也不计进按钮上的数字。 */
+const WB_TODO_GROUPS=[
+ {id:'act',name:'需要处理',hint:'实验或任务出了异常，停在那里等人',tone:'alert'},
+ {id:'read',name:'结果待确认',hint:'已经有结论，还没人看过',tone:'ready'},
+ {id:'run',name:'进行中',hint:'正在跑，不用现在动手',tone:'quiet'},
+];
+function wbTodoItems(){
+ const data=(typeof workbenchData==='function')?workbenchData():null;
+ if(!data)return {act:[],read:[],run:[]};
+ const tasks=(typeof wbAttentionTasks==='function'?wbAttentionTasks(data.tasks||[]):(data.tasks||[]));
+ const name=pid=>(data.projects||[]).find(p=>p.id===pid)?.name||'';
+ const row=t=>({key:t.key,name:t.name||t.id,project:name(t.pid),pid:t.pid,at:t.at||'',
+  /* 卡片上写过的「演示流程」后缀在这里不重复 */
+  brief:String(t.detail||t.label||'').replace(/\s*·\s*演示流程\s*$/,'').trim()});
+ const out={act:[],read:[],run:[]};
+ tasks.forEach(t=>{
+  if(t.status==='failed'||(t.needsAction&&t.status!=='done'))out.act.push(row(t));
+  else if(t.status==='done'&&t.needsAction)out.read.push(row(t));
+  else if(t.status==='active')out.run.push(row(t));
+ });
+ const late=(a,b)=>String(b.at||'').localeCompare(String(a.at||''));
+ out.act.sort(late);out.read.sort(late);out.run.sort(late);
+ return out;
+}
+function wbTodoCount(){const g=wbTodoItems();return g.act.length+g.read.length;}
+function wbTodoButton(){
+ const n=wbTodoCount(),open=!!RESEARCH_HOME.todoOpen;
+ return '<div class="rh-todo-anchor"><button class="btn rh-todo-btn'+(n?' has-n':'')+'" type="button" data-rh-todo-pop aria-haspopup="dialog" aria-expanded="'+open+'">'+WB_TODO_IC+'待办'+(n?'<span class="rh-todo-n num">'+n+'</span>':'')+'</button>'+(open?wbTodoPop():'')+'</div>';
+}
+function wbTodoPop(){
+ const g=wbTodoItems(),n=g.act.length+g.read.length;
+ const row=(t,tone)=>'<button class="rh-todo-row" type="button" data-rh-todo-task="'+esc(t.key)+'"><span class="rh-todo-dot is-'+tone+'" aria-hidden="true"></span><span class="rh-todo-copy"><strong title="'+esc(t.name)+'">'+esc(t.name)+'</strong><small><span>'+esc(t.project)+'</span>'+(t.brief?'<span title="'+esc(t.brief)+'">'+esc(t.brief)+'</span>':'')+'</small></span></button>';
+ const sec=grp=>{const items=g[grp.id];if(!items.length)return '';
+  if(grp.id==='run')return '<div class="rh-todo-sec is-quiet"><p class="rh-todo-run">还有 <b class="num">'+items.length+'</b> 项任务正在跑，不用现在动手。<button class="rh-link" type="button" data-rh-todo-list>查看</button></p></div>';
+  return '<div class="rh-todo-sec"><div class="rh-todo-sec-h"><h3>'+grp.name+' <span class="num">'+items.length+'</span></h3><small>'+grp.hint+'</small></div>'
+   +items.slice(0,4).map(t=>row(t,grp.tone)).join('')
+   +(items.length>4?'<button class="rh-todo-more" type="button" data-rh-todo-list>还有 '+(items.length-4)+' 项，去任务列表看</button>':'')+'</div>';};
+ return '<div class="rh-todo-pop" role="dialog" aria-labelledby="rh-todo-title"><div class="rh-todo-pop-h"><h2 id="rh-todo-title">待办'+(n?' <span>('+n+')</span>':'')+'</h2><button class="rh-link" type="button" data-rh-todo-list>全部任务</button></div>'
+  +(n||g.run.length?WB_TODO_GROUPS.map(sec).join(''):'<p class="rh-todo-empty">没有待办。异常和待确认的结果会出现在这里。</p>')
+  +'</div>';
+}
+
+/* 学术助手：工作台右下角的悬浮入口。
+   「今日灵感」是从你自己的课题目标生成的一句追问——对着目标里的取舍发问，
+   不给结论、不编数据。换一句、拿去对话里接着问，都在这张卡上。 */
+const WB_AIDE_IC='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 1 3.6 10.8c-.6.5-.9 1-.9 1.7v.5H9.3v-.5c0-.7-.3-1.2-.9-1.7A6 6 0 0 1 12 3zM9.8 19h4.4M10.5 21.5h3"/></svg>';
+/* 追问的句式：每一句都只用课题自己的名字和目标里写着的指标，不引入外部数字。
+   对抗式＝站在「这个结论可能不成立」的一侧发问。 */
+const WB_AIDE_ASKS=[
+ p=>'如果「'+p.first+'」是靠放松「'+p.second+'」换来的，你打算把后者的下限定在哪里？',
+ p=>'把对照换成另一批样本，'+p.name+' 现在的结论还站得住吗？先看哪一项会先垮？',
+ p=>'目前的候选如果只满足「'+p.first+'」而卡在别的约束上，这一轮算成功还是算失败？',
+ p=>'有没有一个更省事的解释，能同样说明 '+p.name+' 这一轮的观察？怎么把它排除掉？',
+ p=>''+p.name+'：如果下一批数据和这一批方向相反，你会改模型，还是先怀疑测定？',
+ p=>'「'+p.first+'」这一项，是实验测得准，还是模型算得准？两者对不上时先信谁？',
+ p=>'要推翻 '+p.name+' 当前的主假设，最便宜的一个实验是什么？',
+];
+/* 目标文本写成「A，且 B、C」，拆出前两项当追问的抓手；拆不出就只用课题名。 */
+function wbAideGoalParts(project){
+ const source=(typeof DB!=='undefined')?DB.projects.find(x=>x.id===project.id):null;
+ const goal=(typeof goalText==='function'&&source)?goalText(source):(project.description||'');
+ const parts=String(goal||'').split(/[，,、；;]|且/).map(s=>s.trim()).filter(Boolean);
+ return {name:project.name,first:parts[0]||project.name,second:parts[1]||parts[0]||project.name};
+}
+function wbAideIdea(){
+ const projects=(typeof workbenchData==='function'?workbenchData().projects:[])||[];
+ if(!projects.length)return null;
+ const step=RESEARCH_HOME.aideIdx|0;
+ const project=projects[step%projects.length];
+ const parts=wbAideGoalParts(project);
+ return {project,text:WB_AIDE_ASKS[step%WB_AIDE_ASKS.length](parts)};
+}
+function wbAidePanel(){
+ const idea=wbAideIdea();
+ return '<div class="rh-aide" role="dialog" aria-labelledby="rh-aide-title"><div class="rh-aide-h"><h2 id="rh-aide-title">学术助手</h2><button class="rh-aide-x" type="button" data-rh-aide-close aria-label="收起学术助手"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>'
+  +(idea?'<div class="rh-aide-body"><p class="rh-aide-label">今日灵感 · 对着目标里的取舍发问</p><p class="rh-aide-q">'+esc(idea.text)+'</p><p class="rh-aide-src">来自课题：'+esc(idea.project.name)+'</p></div>'
+   +'<div class="rh-aide-f"><button class="btn btn-gh rh-aide-next" type="button" data-rh-aide-next>换一个</button><button class="btn btn-pri rh-aide-go" type="button" data-rh-aide-ask>拿去问端砚</button></div>'
+   :'<div class="rh-aide-body"><p class="rh-aide-q">还没有课题。创建第一个课题之后，这里会按你的研究目标出追问。</p></div>')
+  +'<p class="rh-aide-note">这是追问，不是结论；端砚不替你判断结果。</p></div>';
+}
+function wbAideMount(){
+ return '<div class="rh-aide-anchor">'+(RESEARCH_HOME.aideOpen?wbAidePanel():'')
+  +'<button class="rh-aide-fab'+(RESEARCH_HOME.aideOpen?' is-on':'')+'" type="button" data-rh-aide-pop aria-haspopup="dialog" aria-expanded="'+!!RESEARCH_HOME.aideOpen+'" aria-label="学术助手">'+WB_AIDE_IC+'<span>学术助手</span></button></div>';
+}
+
+/* 挂到工作台：按钮插在定时任务右边，助手挂在页面右下角。 */
+const wbTodoHomeView=V.workbench;
+V.workbench=function(){
+ let html=wbTodoHomeView();
+ const anchor='<div class="rh-sched-anchor">';
+ const close='</div><button class="rh-new"';
+ /* 定时任务那块结束、进入对话开始的位置，就是待办要站的地方 */
+ const at=html.indexOf(close);
+ if(html.indexOf(anchor)>=0&&at>=0)html=html.slice(0,at+6)+wbTodoButton()+html.slice(at+6);
+ const end=html.lastIndexOf('</div>');
+ if(end>=0)html=html.slice(0,end)+wbAideMount()+html.slice(end);
+ return html;
+};
+const wbTodoBind=wbBind;
+wbBind=function(root){
+ wbTodoBind(root);if(S.route!=='workbench')return;
+ root.querySelectorAll('[data-rh-todo-pop]').forEach(b=>b.onclick=e=>{e.stopPropagation();
+  RESEARCH_HOME.todoOpen=!RESEARCH_HOME.todoOpen;if(RESEARCH_HOME.todoOpen)RESEARCH_HOME.schedOpen=false;render();
+  if(RESEARCH_HOME.todoOpen)setTimeout(()=>view.querySelector('.rh-todo-pop .rh-todo-row, .rh-todo-pop [data-rh-todo-list]')?.focus(),20);});
+ root.querySelectorAll('[data-rh-todo-task]').forEach(b=>b.onclick=()=>{RESEARCH_HOME.todoOpen=false;workbenchOpenTask(b.dataset.rhTodoTask);});
+ root.querySelectorAll('[data-rh-todo-list]').forEach(b=>b.onclick=()=>{RESEARCH_HOME.todoOpen=false;workbenchOpenList('experiment','all',null);});
+ root.querySelectorAll('[data-rh-aide-pop]').forEach(b=>b.onclick=e=>{e.stopPropagation();RESEARCH_HOME.aideOpen=!RESEARCH_HOME.aideOpen;render();
+  if(RESEARCH_HOME.aideOpen)setTimeout(()=>view.querySelector('[data-rh-aide-next]')?.focus(),20);});
+ root.querySelectorAll('[data-rh-aide-close]').forEach(b=>b.onclick=()=>{RESEARCH_HOME.aideOpen=false;render();setTimeout(()=>view.querySelector('[data-rh-aide-pop]')?.focus(),20);});
+ root.querySelectorAll('[data-rh-aide-next]').forEach(b=>b.onclick=()=>{RESEARCH_HOME.aideIdx=(RESEARCH_HOME.aideIdx|0)+1;render();setTimeout(()=>view.querySelector('[data-rh-aide-next]')?.focus(),20);});
+ /* 拿去问端砚：把这句追问填进对话输入框，人自己决定发不发 */
+ root.querySelectorAll('[data-rh-aide-ask]').forEach(b=>b.onclick=()=>{
+  const idea=wbAideIdea();RESEARCH_HOME.aideOpen=false;
+  if(idea&&idea.project)S.pid=idea.project.id;
+  go('chat');
+  setTimeout(()=>{const box=document.getElementById('ask');if(!box||!idea)return;box.value=idea.text;box.dispatchEvent(new Event('input',{bubbles:true}));box.focus();},80);
+ });
+};
+/* 点外面、按 Esc 都收起待办 */
+document.addEventListener('click',e=>{if(!RESEARCH_HOME.todoOpen||S.route!=='workbench')return;if(e.target.closest('.rh-todo-anchor'))return;RESEARCH_HOME.todoOpen=false;render();},true);
+document.addEventListener('keydown',e=>{if(e.key!=='Escape'||S.route!=='workbench'||document.querySelector('dialog[open]'))return;
+ if(RESEARCH_HOME.todoOpen){e.preventDefault();RESEARCH_HOME.todoOpen=false;render();setTimeout(()=>view.querySelector('[data-rh-todo-pop]')?.focus(),20);return}
+ if(RESEARCH_HOME.aideOpen){e.preventDefault();RESEARCH_HOME.aideOpen=false;render();setTimeout(()=>view.querySelector('[data-rh-aide-pop]')?.focus(),20);}
+},true);
 
 
 keepLoad();

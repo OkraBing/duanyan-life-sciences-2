@@ -18,12 +18,13 @@ function must(c,d){if(!c)throw new Error(d||'断言失败')}
 
 /* ===== 第 1 轮：导航与入口 ===== */
 R(1,'导航与入口',[
- ['侧栏七个入口各自打开并高亮自己',async p=>{for(const id of ['workbench','chat','projects','lab','mdl','shelf','data']){await p.click('#side .nav[data-navid="'+id+'"]');await p.waitForTimeout(200);
+ ['侧栏六个入口各自打开并高亮自己',async p=>{for(const id of ['workbench','chat','projects','lab','shelf','data']){await p.click('#side .nav[data-navid="'+id+'"]');await p.waitForTimeout(200);
    const cur=await p.evaluate(()=>document.querySelector('#side .nav[aria-current="page"]')?.dataset.navid);must(cur===id,id+' 高亮成了 '+cur);}}],
- ['子页面高亮所属父入口',async p=>{const want={materials:'projects',devices:'lab',dsets:'mdl',schedules:'workbench',scheduledetail:'workbench',shareddetail:'projects',tools:'shelf'};
+ /* 模型制备从侧栏收走后，它和数据集一起归到「科研工具」 */
+ ['子页面高亮所属父入口',async p=>{const want={materials:'projects',devices:'lab',mdl:'shelf',dsets:'shelf',schedules:'workbench',scheduledetail:'workbench',shareddetail:'projects',tools:'shelf'};
    for(const [r,par] of Object.entries(want)){await p.evaluate(r=>go(r),r);await p.waitForTimeout(200);const cur=await p.evaluate(()=>document.querySelector('#side .nav[aria-current="page"]')?.dataset.navid);must(cur===par,r+' 高亮 '+cur+'，应为 '+par);}}],
- ['从模型制备进「模型接入」后，侧栏仍停在模型制备',async p=>{await p.evaluate(()=>go('mdl'));await p.waitForTimeout(200);await p.click('#view [data-go="set"]');await p.waitForTimeout(300);
-   const cur=await p.evaluate(()=>document.querySelector('#side .nav[aria-current="page"]')?.dataset.navid||'');must(cur==='mdl','模型接入页侧栏高亮：'+(cur||'无'));}],
+ ['从模型制备进「模型接入」后，侧栏停在科研工具（模型制备的新归属）',async p=>{await p.evaluate(()=>go('mdl'));await p.waitForTimeout(200);await p.click('#view [data-go="set"]');await p.waitForTimeout(300);
+   const cur=await p.evaluate(()=>document.querySelector('#side .nav[aria-current="page"]')?.dataset.navid||'');must(cur==='shelf','模型接入页侧栏高亮：'+(cur||'无'));}],
  ['模型接入页有回到模型制备的路',async p=>{await p.evaluate(()=>go('mdl'));await p.waitForTimeout(200);await p.click('#view [data-go="set"]');await p.waitForTimeout(300);
    const back=await p.evaluate(()=>[...document.querySelectorAll('#view button,#view a')].map(e=>e.textContent.trim()).find(t=>/^←?\s*模型制备/.test(t))||'');must(back,'找不到回模型制备的按钮');}],
  ['折叠按钮的读屏名随状态变化',async p=>{const a=await p.getAttribute('.side-toggle','aria-label');await p.click('.side-toggle');await p.waitForTimeout(200);const b=await p.getAttribute('.side-toggle','aria-label');await p.click('.side-toggle');

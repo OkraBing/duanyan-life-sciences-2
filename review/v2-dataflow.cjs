@@ -17,9 +17,9 @@ const $route=p=>p.evaluate(()=>S.route);
 function expect(cond,detail){if(!cond)throw new Error(detail||'断言失败')}
 
 /* ================= A 组：需求核对 ================= */
-T('A01','侧栏三组七个入口，名字与顺序',async p=>{
+T('A01','侧栏三组六个入口，名字与顺序',async p=>{
  const g=await p.evaluate(()=>['navA','navB','navC'].map(id=>({lbl:document.querySelector('#'+id+' .lbl')?.textContent.trim(),items:[...document.querySelectorAll('#'+id+' .nav-tx')].map(e=>e.textContent.trim())})));
- expect(JSON.stringify(g)===JSON.stringify([{lbl:'研究',items:['工作台','科研对话','课题项目']},{lbl:'实验',items:['实验管理']},{lbl:'资源',items:['模型制备','科研工具','数据库']}]),JSON.stringify(g));
+ expect(JSON.stringify(g)===JSON.stringify([{lbl:'研究',items:['工作台','科研对话','课题项目']},{lbl:'实验',items:['实验管理']},{lbl:'资源',items:['科研工具','数据库']}]),JSON.stringify(g));
 });
 T('A02','资料空间：课题项目右上可进，资料空间侧栏顶可回',async p=>{
  await p.evaluate(()=>go('projects'));await p.waitForTimeout(300);
@@ -30,10 +30,14 @@ T('A03','实验管理有「设备管理」，没有「查看设备列表」',asy
  await p.evaluate(()=>go('lab'));await p.waitForTimeout(300);
  const t=await p.locator('#view').innerText();expect(/设备管理/.test(t)&&!/查看设备列表/.test(t),'文案不对');
 });
-T('A04','设置不在侧栏，账户可达；工作台右上角有定时任务',async p=>{
+T('A04','设置不在侧栏，账户可达；工作台右上角有定时任务与待办',async p=>{
  expect(await p.locator('#side .nav[data-navid="settings"]').count()===0,'侧栏还有设置');
  await p.click('#side .acct-b');await p.waitForTimeout(300);expect(['me','settings'].includes(await $route(p)),'账户没去个人中心');
  await p.evaluate(()=>go('workbench'));await p.waitForTimeout(300);expect(await p.locator('#view .rh-header [data-rh-sched-pop]').count()===1,'工作台右上角没有定时任务按钮');
+ expect(await p.locator('#view .rh-header [data-rh-todo-pop]').count()===1,'工作台右上角没有待办按钮');
+ /* 待办在定时任务右边、进入对话左边 */
+ const order=await p.$$eval('#view .rh-header-actions > *',es=>es.map(e=>e.className));
+ expect(/rh-sched-anchor/.test(order[0]||'')&&/rh-todo-anchor/.test(order[1]||'')&&/rh-new/.test(order[2]||''),'顶栏按钮顺序：'+order.join('|'));
 });
 T('A05','科研工具「市场 / 我的」，数据库「公共数据集 / 我的数据集」；#tools 落到科研工具·我的',async p=>{
  for(const [r,want] of [['shelf',['市场','我的']],['data',['公共数据集','我的数据集']]]){await p.evaluate(r=>go(r),r);await p.waitForTimeout(300);
@@ -47,7 +51,7 @@ T('A06','模型制备：标题、页签顺序与名字；数据集页签无返�
  expect((await p.locator('#view h1').first().innerText())==='模型制备','标题');
  await p.click('#view [data-mtab="dset"]');await p.waitForTimeout(300);
  expect(await p.locator('#view .pg-back').count()===0,'数据集页签出现了返回键');
- expect((await p.locator('#side .nav[aria-current="page"]').getAttribute('data-navid'))==='mdl','侧栏高亮不是模型制备');
+ expect((await p.locator('#side .nav[aria-current="page"]').getAttribute('data-navid'))==='shelf','侧栏高亮不是科研工具');
 });
 T('A07','工作台「进入对话」直达对话、无中间弹窗、输入框聚焦',async p=>{
  await p.evaluate(()=>go('workbench'));await p.waitForTimeout(300);
@@ -311,6 +315,67 @@ T('UC22','共享：标签只挂在真正共享出去的那一条；草稿数据�
  expect(r.n>0&&!r.wrong.length&&r.draftOk,JSON.stringify(r));
  const leak=await p.evaluate(()=>{const s=RS.data.shared.find(s=>!rsCan(s,'approve'));return s?s.assets.filter(a=>ceSharedOf(a.kind,a.sourceId,s.projectId).length).length:0});
  expect(leak===0,'别人的共享课题也被算成我共享的：'+leak);
+});
+
+/* ===== 本轮新增：模型制备改挂科研工具、侧栏折叠键、待办、学术助手 ===== */
+T('A20','模型制备不在侧栏：科研工具「模型」页签右上进，页面能回科研工具',async p=>{
+ expect(await p.locator('#side [data-navid="mdl"]').count()===0,'侧栏还有模型制备');
+ await p.evaluate(()=>go('shelf'));await p.waitForTimeout(300);
+ expect(await p.locator('#view .tl-mdl').count()===0,'Skills 页签不该出现模型制备入口');
+ await p.click('#view [data-use="MODEL"]');await p.waitForTimeout(300);
+ expect(await p.locator('#view .tl-mdl').count()===1,'模型页签没有模型制备入口');
+ await p.click('#view .tl-mdl');await p.waitForTimeout(400);
+ expect(await $route(p)==='mdl','没进模型制备');
+ expect((await p.locator('#view .pg-back').innerText()).includes('科研工具'),'返回键不是回科研工具');
+ await p.click('#view .pg-back');await p.waitForTimeout(300);
+ expect(await $route(p)==='shelf','返回键没回到科研工具');
+});
+T('A21','侧栏折叠键在顶部，不压 logo，折叠后仍可见、可按回来',async p=>{
+ const box=async sel=>p.evaluate(s=>{const e=document.querySelector(s);if(!e)return null;const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,b:r.bottom,r:r.right}},sel);
+ const logo=await box('#side .brand-home'),t1=await box('#side .side-toggle');
+ expect(t1&&t1.y<200,'折叠键不在侧栏顶部');
+ expect(t1.x>=logo.r||t1.y>=logo.b,'折叠键和 logo 重叠');
+ await p.click('#side .side-toggle');await p.waitForTimeout(400);
+ const logo2=await box('#side .brand-home'),t2=await box('#side .side-toggle');
+ expect(t2&&t2.w>0&&t2.h>0,'折叠后折叠键没了');
+ expect(t2.y>=logo2.b||t2.x>=logo2.r,'折叠态下折叠键压住 logo');
+ await p.click('#side .side-toggle');await p.waitForTimeout(400);
+ expect(await p.evaluate(()=>!S.collapsed),'按回来没有展开');
+});
+T('A22','待办：按优先级分组，数来自 wbAttentionTasks，点一条进任务',async p=>{
+ await p.evaluate(()=>go('workbench'));await p.waitForTimeout(400);
+ const want=await p.evaluate(()=>{const g=wbTodoItems();return {n:g.act.length+g.read.length,act:g.act.length,read:g.read.length,run:g.run.length}});
+ expect((await p.locator('#view .rh-todo-n').innerText()).trim()===String(want.n),'按钮上的数和本机算的不一致');
+ await p.click('#view [data-rh-todo-pop]');await p.waitForTimeout(300);
+ const secs=await p.$$eval('#view .rh-todo-sec:not(.is-quiet) .rh-todo-sec-h h3',es=>es.map(e=>e.textContent.replace(/\s+/g,' ').trim()));
+ expect(secs[0]&&secs[0].startsWith('需要处理 '+want.act),'第一组不是需要处理：'+secs.join('|'));
+ expect(secs[1]&&secs[1].startsWith('结果待确认 '+want.read),'第二组不是结果待确认：'+secs.join('|'));
+ /* 共享申请不混进来：它在侧栏消息里，混进来两处的数会对不上 */
+ const txt=await p.locator('#view .rh-todo-pop').innerText();
+ expect(!/申请/.test(txt),'待办里混进了共享申请');
+ await p.click('#view .rh-todo-row');await p.waitForTimeout(500);
+ expect(['labdet','mdl','lab'].includes(await $route(p)),'待办点进去没到任务：'+await $route(p));
+});
+T('A23','学术助手：灵感取自课题目标，换一个会变，拿去问端砚填进输入框',async p=>{
+ await p.evaluate(()=>go('workbench'));await p.waitForTimeout(400);
+ await p.click('#view [data-rh-aide-pop]');await p.waitForTimeout(300);
+ const q1=await p.locator('#view .rh-aide-q').innerText();
+ const src=await p.locator('#view .rh-aide-src').innerText();
+ const names=await p.evaluate(()=>workbenchData().projects.map(x=>x.name));
+ expect(names.some(n=>src.includes(n)),'灵感没标出是哪个课题：'+src);
+ await p.click('#view [data-rh-aide-next]');await p.waitForTimeout(300);
+ expect((await p.locator('#view .rh-aide-q').innerText())!==q1,'换一个没换');
+ const q2=await p.locator('#view .rh-aide-q').innerText();
+ await p.click('#view [data-rh-aide-ask]');await p.waitForTimeout(600);
+ expect(await $route(p)==='chat','拿去问端砚没进对话');
+ expect((await p.evaluate(()=>document.getElementById('ask')?.value||''))===q2,'追问没填进输入框');
+ expect(await p.evaluate(()=>!(CONV[pjSid(S.pid)]||[]).some(m=>m.role==='user'&&m.t===document.getElementById('ask').value)),'不该自己发出去');
+});
+T('A24','学术助手只在工作台出现',async p=>{
+ await p.evaluate(()=>go('workbench'));await p.waitForTimeout(300);
+ expect(await p.locator('#view .rh-aide-fab').count()===1,'工作台没有学术助手');
+ for(const r of ['projects','lab','shelf']){await p.evaluate(x=>go(x),r);await p.waitForTimeout(300);
+  expect(await p.locator('#view .rh-aide-fab').count()===0,r+' 页出现了学术助手');}
 });
 
 (async()=>{
