@@ -16,7 +16,9 @@
 .al-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 22px}
 .al-field{display:flex;flex-direction:column;gap:8px;min-width:0;font-size:13px}
 .al-field>span{font-weight:500}
-.al-field .input{width:100%;min-width:0;font-size:13px;box-sizing:border-box}
+/* 输入框跟全站表单一个尺度（14px / 32px / 圆角 8），别在「设计实验」这一页另起一套：
+   同一个控件在发起训练页是 14px，在这里是 13px，是最容易被看出来的那种不一致。 */
+.al-field .input{width:100%;min-width:0;font-size:14px;box-sizing:border-box}
 .al-field textarea{resize:vertical;min-height:70px}
 .al-basic .al-field:has([data-al-field=desc]),.al-origin-field{grid-column:1/-1}
 .al-origin-field>span{display:block;margin-bottom:8px;font-size:13px;font-weight:500}
@@ -125,7 +127,11 @@
 
 .page.al-page{display:block;gap:0}
 .page.al-page>section{display:block;gap:0}
-.al-field>.ctl-dd{width:100%;max-width:100%;height:34px;min-height:34px}
+.al-field>.ctl-dd{width:100%;max-width:100%;height:32px;min-height:32px;border-radius:8px;font-size:14px}
+/* 窄屏和触屏下跟 .lv-field / .rs-field 一样放大到 40px，手指点得到 */
+@media(max-width:860px),(pointer:coarse){
+ .al-field input.input:not([type=checkbox]):not([type=radio]),.al-field>.ctl-dd{height:40px;min-height:40px}
+}
 .al-page .btn-pri,.al-modal .btn-pri{background:var(--dry-ink);border-color:var(--dry-ink);color:var(--surface)}
 .al-page .btn-pri:hover,.al-modal .btn-pri:hover{background:color-mix(in srgb,var(--dry-ink) 86%,#000)}
 .al-page .btn-pri:disabled,.al-modal .btn-pri:disabled{opacity:.45}

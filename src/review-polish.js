@@ -18,7 +18,19 @@
  }
  const reopenMenu=remenu;remenu=function(){const element=_menuRe&&document.querySelector(_menuRe.sel);if(element?.matches('.ctl-dd[data-review-select]')){element.click();return;}reopenMenu();};
  const bind=rsBind;
- rsBind=function(root){bind(root);errorLinks();if(!can('edit'))root.querySelectorAll('[data-lv-save],[data-lv-record],[data-lv-retry],[data-lv-publish],[data-rs-create-shared],[data-rs-save-resource]').forEach(e=>{e.disabled=true;e.title='当前身份没有编辑权限';});root.querySelectorAll('[data-composer-node]').forEach(e=>e.addEventListener('keydown',ev=>{if(!['ArrowDown','ArrowUp','Home','End'].includes(ev.key))return;const nodes=[...root.querySelectorAll('[data-composer-node]')],i=nodes.indexOf(e),n=ev.key==='Home'?0:ev.key==='End'?nodes.length-1:(i+(ev.key==='ArrowDown'?1:-1)+nodes.length)%nodes.length;ev.preventDefault();nodes[n].focus();}));};
+ /* 改对了就别再红着。资源表单原来只在再次提交时才重算错误：用户把名称补上，
+    红框、字段下那行提示、顶部那条汇总都还挂着，看着像是没改成。
+    和实验编排器一个做法——边改边清，还不对的话下次提交会再报出来。 */
+ function clearResourceError(el){
+  const key=el.dataset.rsResourceField,errors=RS.form&&RS.form.errors;
+  if(!errors||!errors[key])return;
+  delete errors[key];
+  el.removeAttribute('aria-invalid');el.removeAttribute('aria-describedby');
+  const message=view.querySelector('#rs-error-'+CSS.escape(key));if(message)message.textContent='';
+  const item=view.querySelector('[data-resource-error="'+CSS.escape(key)+'"]');if(item)(item.closest('li')||item).remove();
+  if(!Object.keys(errors).length)view.querySelector('.rs-error-summary')?.remove();
+ }
+ rsBind=function(root){bind(root);errorLinks();root.querySelectorAll('[data-rs-resource-field]').forEach(e=>{e.addEventListener('input',()=>clearResourceError(e));e.addEventListener('change',()=>clearResourceError(e));});if(!can('edit'))root.querySelectorAll('[data-lv-save],[data-lv-record],[data-lv-retry],[data-lv-publish],[data-rs-create-shared],[data-rs-save-resource]').forEach(e=>{e.disabled=true;e.title='当前身份没有编辑权限';});root.querySelectorAll('[data-composer-node]').forEach(e=>e.addEventListener('keydown',ev=>{if(!['ArrowDown','ArrowUp','Home','End'].includes(ev.key))return;const nodes=[...root.querySelectorAll('[data-composer-node]')],i=nodes.indexOf(e),n=ev.key==='Home'?0:ev.key==='End'?nodes.length-1:(i+(ev.key==='ArrowDown'?1:-1)+nodes.length)%nodes.length;ev.preventDefault();nodes[n].focus();}));};
  const save=labSave;
  labSave=function(draft){const ok=save(draft);if(!ok&&S.route==='labnew')requestAnimationFrame(()=>view.querySelector('.composer-global-error')?.focus());return ok;};
  const saveResource=rsSaveResource;

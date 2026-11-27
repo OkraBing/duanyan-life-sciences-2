@@ -3134,7 +3134,12 @@ body[data-route=workbench] #view{padding-block:0 var(--s8);padding-inline:max(va
 
 body[data-route="materials"] #view,body[data-route="files"] #view,body[data-route="shared"] #view{padding:0;background:var(--surface)}
 .ms-shell{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:calc(100vh - 48px);color:var(--ink)}
-.ms-shell button,.ms-shell input,.ms-shell select{font:inherit}.ms-shell button{cursor:pointer}.ms-shell button:disabled{cursor:not-allowed;opacity:.5}.ms-shell svg{width:20px;height:20px;flex-shrink:0}
+.ms-shell button,.ms-shell input,.ms-shell select{font:inherit}
+/* 上一行让壳子里的按钮继承 14px，连 .btn 一起继承了，于是「与你共享」「资料空间」
+   「文件」三页的主按钮比全站其他页面大一号。这里把 .btn 拉回 13px。
+   （不要改上一行的选择器：加 :not(.btn) 会抬高它的权重，反过来把
+   .ctl-dd.as-input 的 13px 也盖掉。） */
+.ms-shell .btn{font-size:.8125rem}.ms-shell button{cursor:pointer}.ms-shell button:disabled{cursor:not-allowed;opacity:.5}.ms-shell svg{width:20px;height:20px;flex-shrink:0}
 .ms-sidebar{background:var(--paper);border-right:1px solid var(--line);padding:30px 16px;display:flex;flex-direction:column;gap:5px;min-width:0}.ms-sidebar h2{font-size:20px;margin:0 10px 26px}.ms-sidebar h3{font-size:12px;color:var(--ink-3);font-weight:500;margin:28px 10px 12px}.ms-nav{border:0;background:transparent;color:var(--ink-2);display:flex;align-items:center;gap:12px;text-align:left;min-height:40px;width:100%;padding:9px 12px;border-radius:8px}.ms-nav span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.ms-nav small{color:var(--ink-3)}.ms-nav:hover,.ms-nav.selected{background:var(--surface-3);color:var(--ink)}.ms-nav.selected{font-weight:600}.ms-project-nav{max-height:260px;overflow:auto}.ms-trash{margin-top:auto;padding-top:36px}
 .ms-main{padding:30px 36px;min-width:0}.ms-header{display:flex;gap:24px;justify-content:space-between;align-items:center}.ms-breadcrumb{font-size:12px!important;margin:0 0 24px!important}.ms-header h1{font-size:28px;margin:0 0 8px;overflow-wrap:anywhere}.ms-header p{font-size:13px;color:var(--ink-3);margin:0}.ms-head-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}.ms-head-actions>.btn{white-space:nowrap;min-height:38px}.ms-search{border:1px solid var(--line);border-radius:8px;display:flex;gap:8px;align-items:center;padding:8px 12px;min-width:180px;color:var(--ink-3)}.ms-search input{border:0;outline:0;min-width:0;width:200px;background:transparent;color:var(--ink)}.ms-search:focus-within{outline:2px solid var(--dry);outline-offset:2px}.ms-toolbar{display:flex;justify-content:space-between;gap:20px;margin:32px 0}.ms-types{display:flex;flex-wrap:wrap;gap:8px}.ms-types .pill{min-height:32px;padding:4px 16px}.ms-types .pill.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}.ms-views{display:flex;align-items:flex-start;gap:6px}.ms-views button{padding:8px;border:0;border-radius:8px;background:transparent;color:var(--ink-3);display:flex}.ms-views button[aria-pressed="true"]{background:var(--surface-2);color:var(--ink)}
 .ms-spaces{margin:0 0 34px}.ms-spaces h2,.ms-list-heading h2{font-size:15px;margin:0 0 16px}.ms-spaces>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.ms-spaces button{border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);text-align:left;padding:18px;min-width:0}.ms-spaces button:hover{background:var(--surface-2)}.ms-spaces svg{display:block;margin-bottom:12px;color:var(--ink-3)}.ms-spaces strong{display:block;overflow-wrap:anywhere;font-size:14px}.ms-spaces p{font-size:11px;color:var(--ink-3);margin:7px 0 12px}.ms-spaces small{font-size:11px;color:var(--ink-3)}
@@ -3850,7 +3855,9 @@ body[data-route="chat"] .research-top .outbar-hist,body[data-route="chat"] .outb
 .al-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 22px}
 .al-field{display:flex;flex-direction:column;gap:8px;min-width:0;font-size:13px}
 .al-field>span{font-weight:500}
-.al-field .input{width:100%;min-width:0;font-size:13px;box-sizing:border-box}
+/* 输入框跟全站表单一个尺度（14px / 32px / 圆角 8），别在「设计实验」这一页另起一套：
+   同一个控件在发起训练页是 14px，在这里是 13px，是最容易被看出来的那种不一致。 */
+.al-field .input{width:100%;min-width:0;font-size:14px;box-sizing:border-box}
 .al-field textarea{resize:vertical;min-height:70px}
 .al-basic .al-field:has([data-al-field=desc]),.al-origin-field{grid-column:1/-1}
 .al-origin-field>span{display:block;margin-bottom:8px;font-size:13px;font-weight:500}
@@ -3959,7 +3966,11 @@ body[data-route="chat"] .research-top .outbar-hist,body[data-route="chat"] .outb
 
 .page.al-page{display:block;gap:0}
 .page.al-page>section{display:block;gap:0}
-.al-field>.ctl-dd{width:100%;max-width:100%;height:34px;min-height:34px}
+.al-field>.ctl-dd{width:100%;max-width:100%;height:32px;min-height:32px;border-radius:8px;font-size:14px}
+/* 窄屏和触屏下跟 .lv-field / .rs-field 一样放大到 40px，手指点得到 */
+@media(max-width:860px),(pointer:coarse){
+ .al-field input.input:not([type=checkbox]):not([type=radio]),.al-field>.ctl-dd{height:40px;min-height:40px}
+}
 .al-page .btn-pri,.al-modal .btn-pri{background:var(--dry-ink);border-color:var(--dry-ink);color:var(--surface)}
 .al-page .btn-pri:hover,.al-modal .btn-pri:hover{background:color-mix(in srgb,var(--dry-ink) 86%,#000)}
 .al-page .btn-pri:disabled,.al-modal .btn-pri:disabled{opacity:.45}
@@ -23275,7 +23286,19 @@ labV2Act=function(action){if(action==='labnew')LABUI.selected='setup';return ite
  }
  const reopenMenu=remenu;remenu=function(){const element=_menuRe&&document.querySelector(_menuRe.sel);if(element?.matches('.ctl-dd[data-review-select]')){element.click();return;}reopenMenu();};
  const bind=rsBind;
- rsBind=function(root){bind(root);errorLinks();if(!can('edit'))root.querySelectorAll('[data-lv-save],[data-lv-record],[data-lv-retry],[data-lv-publish],[data-rs-create-shared],[data-rs-save-resource]').forEach(e=>{e.disabled=true;e.title='当前身份没有编辑权限';});root.querySelectorAll('[data-composer-node]').forEach(e=>e.addEventListener('keydown',ev=>{if(!['ArrowDown','ArrowUp','Home','End'].includes(ev.key))return;const nodes=[...root.querySelectorAll('[data-composer-node]')],i=nodes.indexOf(e),n=ev.key==='Home'?0:ev.key==='End'?nodes.length-1:(i+(ev.key==='ArrowDown'?1:-1)+nodes.length)%nodes.length;ev.preventDefault();nodes[n].focus();}));};
+ /* 改对了就别再红着。资源表单原来只在再次提交时才重算错误：用户把名称补上，
+    红框、字段下那行提示、顶部那条汇总都还挂着，看着像是没改成。
+    和实验编排器一个做法——边改边清，还不对的话下次提交会再报出来。 */
+ function clearResourceError(el){
+  const key=el.dataset.rsResourceField,errors=RS.form&&RS.form.errors;
+  if(!errors||!errors[key])return;
+  delete errors[key];
+  el.removeAttribute('aria-invalid');el.removeAttribute('aria-describedby');
+  const message=view.querySelector('#rs-error-'+CSS.escape(key));if(message)message.textContent='';
+  const item=view.querySelector('[data-resource-error="'+CSS.escape(key)+'"]');if(item)(item.closest('li')||item).remove();
+  if(!Object.keys(errors).length)view.querySelector('.rs-error-summary')?.remove();
+ }
+ rsBind=function(root){bind(root);errorLinks();root.querySelectorAll('[data-rs-resource-field]').forEach(e=>{e.addEventListener('input',()=>clearResourceError(e));e.addEventListener('change',()=>clearResourceError(e));});if(!can('edit'))root.querySelectorAll('[data-lv-save],[data-lv-record],[data-lv-retry],[data-lv-publish],[data-rs-create-shared],[data-rs-save-resource]').forEach(e=>{e.disabled=true;e.title='当前身份没有编辑权限';});root.querySelectorAll('[data-composer-node]').forEach(e=>e.addEventListener('keydown',ev=>{if(!['ArrowDown','ArrowUp','Home','End'].includes(ev.key))return;const nodes=[...root.querySelectorAll('[data-composer-node]')],i=nodes.indexOf(e),n=ev.key==='Home'?0:ev.key==='End'?nodes.length-1:(i+(ev.key==='ArrowDown'?1:-1)+nodes.length)%nodes.length;ev.preventDefault();nodes[n].focus();}));};
  const save=labSave;
  labSave=function(draft){const ok=save(draft);if(!ok&&S.route==='labnew')requestAnimationFrame(()=>view.querySelector('.composer-global-error')?.focus());return ok;};
  const saveResource=rsSaveResource;
