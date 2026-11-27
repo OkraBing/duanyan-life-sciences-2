@@ -7649,6 +7649,11 @@ function dsBody(){
           {n:'发布',attr:`data-dspub="${esc(d.id)}"`,
            off:d.st==='pub'?('已于 '+(d.pubAt||d.at)+' 发布锁定'):'',
            tip:'发布后内容锁定，可用于训练'},
+          /* 「发布后可用于训练」这句话原来只是句提示：发布完了，这一行里并没有去训练的入口，
+             得自己绕到模型训练页再从下拉框里把这份数据找回来。这里补上直达。 */
+          {n:'训练',attr:`data-dataset-train="${esc(d.id)}"`,
+           off:d.st!=='pub'?'数据集发布后才能用来训练':((d.rows||[]).length?'':'这份数据集还没有数据行'),
+           tip:'用这份数据新建一个训练任务'},
           {n:'共享',attr:`data-ce-share="dataset|${esc(d.id)}|${esc(d.pid||S.pid||'')}|${esc(d.name)}"`,
            off:d.st==='pub'?'':'数据集发布后才能共享',tip:'共享到课题组：组员申请后可添加到自己的课题'},
           {n:'删除',attr:`data-dsdel="${esc(d.id)}"`,
@@ -19274,6 +19279,14 @@ function render(){
     go('labnew');toast('已沿用 '+x.id+' 的配方与参数')});
   view.querySelectorAll('[data-dspick]').forEach(b=>b.onclick=()=>{
     S.dsPick=S.dsPick===b.dataset.dspick?null:b.dataset.dspick;render()});
+  /* 从数据集直接开训。训练表单的数据集下拉是按当前课题筛的（trDsets），
+     所以先把课题切到这份数据所属的课题，再填表单；只是打开表单，不建模型。 */
+  view.querySelectorAll('[data-dataset-train]').forEach(b=>b.onclick=()=>{
+    const h=dsFind(b.dataset.datasetTrain);if(!h)return;
+    S.pid=h.pid;trReset();
+    Object.assign(NEWTR,{ds:h.d.id,target:h.d.target||'',
+      name:'打分器 · '+(tgtName(h.d.target)||h.d.name||h.d.id)});
+    go('trainnew');toast('训练数据已选为「'+(h.d.name||h.d.id)+'」')});
   view.querySelectorAll('[data-dsdel]').forEach(b=>b.onclick=()=>{
     const h=dsFind(b.dataset.dsdel);if(!h)return;
     const L=DSETS(h.pid),i=L.findIndex(x=>x.id===h.d.id);

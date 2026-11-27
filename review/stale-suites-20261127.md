@@ -143,6 +143,98 @@ R47 R47-navigation R48 R46 R50 R51 R54。
 | `autonomous-lab.cjs:155` | 创建任务后期望标题含「查看实验」，实得「结合与稳定性测试」 | 标题改成显示实验名了，是文案改动 |
 | `t100.js` #50 | 「数据集能接到训练」→「已发布数据集缺少训练入口」 | **这条可能是真的产品缺口**，值得单独看 |
 
+---
+
+# 第二轮：清掉上面查出来的那三处（同日）
+
+## 1. t100 #50 是真的产品缺口，补了入口
+
+数据集列表那一行的操作是「详情 / 发布 / 共享 / 删除」，**没有「训练」**。
+而「发布」的悬停提示写着「发布后内容锁定，可用于训练」——话说了，路没给：
+发布完还得自己绕到模型训练页，再从下拉框里把这份数据找回来。
+`data-dataset-train` 这个钩子在源码里一处都没有。
+
+补了一个「训练」操作，点了直达新建训练任务，数据集已经选好：
+
+```js
+const h=dsFind(b.dataset.datasetTrain);if(!h)return;
+S.pid=h.pid;trReset();                     /* 训练表单的数据集下拉按当前课题筛，先切课题 */
+Object.assign(NEWTR,{ds:h.d.id,target:h.d.target||'',
+  name:'打分器 · '+(tgtName(h.d.target)||h.d.name||h.d.id)});
+go('trainnew');
+```
+
+没发布的、没有数据行的，按钮禁用并写明原因（和「共享」同一套写法）。
+只是打开表单，不建模型——t100 #50 的后半条就是查这个。
+
+## 2. autonomous-lab.cjs：一条文案断言过期
+
+建完任务后落在这个实验自己的页面上，`.al-page-head h1` 写的是**实验名**，
+断言还在等通用词「查看实验」。标题用对象自己的名字是对的，改断言：
+标题等于刚填的实验名，副标题是「<批次号> · 方案快照」。改完 12 条全过。
+
+## 3. workbench.cjs：整套都在测改版前的工作台，重写成 5 条
+
+原来的十二条全是三面板工作台的东西（`.wb-panel`、今日灵感轮播、文献订阅、
+订阅编辑覆盖在途结果……），v2 换掉之后一条都落不下来，而且第一条就抛错、
+后面十一条根本没跑到。
+
+工作台现在已经有人管：`workbench-reference.cjs` 13 组（区块排布、翻页、卡片上的数、
+文献外链、空状态、不随定时器自己变、各宽度不横滚、明暗对比度），
+`product-iteration.cjs` 的 R02–R16（落地、模块、卡片分档、灵感、文献、注意力任务）。
+
+所以这套只留那两套都没管、又确实还成立的几条，文件头上写清楚其余的去哪了：
+
+1. 默认落地在工作台，侧栏跟着高亮，进来不调模型
+2. 旧的 hash 深链还能用（`#chat` / `#dsets` / `#infer` / `#home`），且落地页不是空的
+3. 工作台卡片上的任务点进去就落在那一条上（route / labPick / pid 三个都对）
+4. 模型库五个页签都在，切过去都能生效
+5. 全程没有运行时报错，也没有真的调模型
+
+> 写的时候自己踩了一个：`catch` 里忘了 `browser.close()`，断言一失败 node 就退不出去，
+> 看着像卡死。另外页签那条一开始按 `S.mtab` 判，数据集那一格点下去会换路由，
+> 内部字段不跟着叫同一个名字——改成按「这一格是不是选中的」判。
+
+## 4. 顺带修掉一处偶发红：interaction-components 的悬停对比
+
+主按钮的悬停有 `.14s` 过渡，断言是「等 180ms 再量」。机器一忙就量到过渡中间的一帧，
+于是同一个按钮在两页上差出几个色阶，时绿时红（深色那一轮尤其明显，
+`--ink` 在深色下是浅色，中间帧看着像换了个控件）。
+改成**等它不再变了再量**（连续两次读数一致就收），连跑三遍 11/11。
+
+## 把所有套件跑了一遍：40 套里有多少红
+
+顺手把 `review/` 下所有套件跑了一轮，发现**还有一批红的**，和这两轮改的东西无关。
+另外有两类「假红」要先排掉：
+
+- `a_render.js` `b_empty.js` `d_state.js` `e_loop.js` `f_click.js` `g_extreme.js` `h_flows.js`
+  `c_resp.js` 的第二个参数是**绝对路径**，传相对路径会 `file://index.html` 直接崩。
+  按绝对路径跑，这七套里六套是绿的。
+- `v2-tricky.cjs` 的第二个参数是**轮次过滤**，传文件名会一轮都不跑还打印「全部通过」。
+
+排掉之后，真正还红着的（这次没动）：
+
+| 套件 | 备注 |
+|---|---|
+| `a_render.js` | 「32 个状态有问题」，量大，值得单独一轮 |
+| `i_set.js` | |
+| `experiment-exceptions.cjs` | |
+| `new-pages-walkthrough.cjs` | 跑到 N12 之后红 |
+| `project-progress.cjs` | |
+| `requirements-audit.cjs` | |
+| `research-workspace.cjs` | |
+| `tricky10.cjs` `tricky10-edge-states.cjs` `tricky15.cjs` | 更早几轮的审查套件 |
+| `tricky20.cjs` | `UNCOVERED shareddetail/dialog|ok:邀请成员` |
+| `workbench-attention.cjs` `workbench-tricky.cjs` `workbench-upgrade.cjs` | 多半和 workbench.cjs 同一个病：测的是改版前的工作台 |
+
+## 第二轮回归
+
+`v2-tricky` 53/53、数据流 40/40、找得到 47/47、导航 PASS、课题成员 PASS、
+实验流程 10 组、`autonomous-lab` 12 条、`workbench` 5 组、`workbench-reference` 13 组、
+`visual-style` 8/8、`interaction-components` 11/11（连跑三遍）、
+`product-iteration` 39/0、`c_resp` 98 组、**`t100` 100/100**、
+`j_ask` / `k_comp` / `b_empty` / `d_state` / `e_loop` / `f_click` / `g_extreme` / `h_flows` 全过。
+
 ## 还留着的事
 
 - `product-iteration.js` 里被 `autonomous-lab.js` / `resource-space.js` / `workbench-*.js`

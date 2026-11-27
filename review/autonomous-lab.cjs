@@ -152,7 +152,8 @@ let browser;const errors=[],checks=[];
  await page.keyboard.press('Escape');
  assert.equal(await page.evaluate(()=>alForm().methods.affinity.range),'1–100 nM');
  checks.push('右栏无分步或填写控件，设备与交接打开单列表单，切换环节保留值');
- await page.locator('[data-al-panel=preflight]').first().click();assert(!(await page.locator('#dlg button[value=ok]').isDisabled()));await page.locator('#dlg button[value=ok]').click();assert.match(await page.locator('.al-page-head h1').innerText(),/查看实验/);assert.match(await page.locator('.al-page-head').innerText(),/待就绪/);assert.equal(await page.locator('[data-al-transfer]').count(),0);
+ await page.locator('[data-al-panel=preflight]').first().click();assert(!(await page.locator('#dlg button[value=ok]').isDisabled()));await page.locator('#dlg button[value=ok]').click();/* 建完之后落在这个实验自己的页面上：标题写的是实验名，不是「查看实验」这种通用词。 */
+ assert.equal((await page.locator('.al-page-head h1').innerText()).trim(),'结合与稳定性测试');assert.match(await page.locator('.al-page-head p').innerText(),/方案快照/);assert.match(await page.locator('.al-page-head').innerText(),/待就绪/);assert.equal(await page.locator('[data-al-transfer]').count(),0);
  await page.locator('[data-al-view=execution]').click();
  await page.locator('[data-al-node=qc]').click();const frozenModel=await page.evaluate(()=>{const d=labDevice('nanodrop'),name=d.model;d.model='CHANGED';render();return name;});assert.match(await page.locator('.al-inspector').innerText(),new RegExp(frozenModel));await page.evaluate(name=>labDevice('nanodrop').model=name,frozenModel);
  const taskId=await page.evaluate(()=>S.labPick),snapshot=await page.evaluate(()=>JSON.stringify(BATCHES.find(b=>b.id===S.labPick).workflow.snapshot));assert(await page.evaluate(()=>BATCHES.find(b=>b.id===S.labPick).workflow.steps.every(s=>s.state==='pending')));
