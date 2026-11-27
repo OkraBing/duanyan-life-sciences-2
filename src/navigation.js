@@ -1,7 +1,8 @@
 /* Global navigation groups and settings routes. */
 Object.assign(NAV_PARENT,{shared:'projects',sharednew:'projects',shareddetail:'projects',me:'settings',set:'shelf',files:'materials',chats:'chat',project:'projects',pw:'projects'});
 Object.assign(NAVNAME,{projects:'课题项目',shared:'共享课题',dsets:'数据集',mdl:'模型制备',tools:'我的工具',data:'数据库',materials:'资料空间',devices:'设备管理',schedules:'定时任务',shelf:'科研工具',data:'公共数据库',settings:'设置'});
-Object.assign(BACKNAME,{projects:'课题项目',settings:'设置'});
+/* 返回键上的名字要用这一版的词：全站说「课题」「资料空间」，别留下旧版的「项目」「文件管理」 */
+Object.assign(BACKNAME,{projects:'课题项目',settings:'设置',project:'课题',files:'资料空间',materials:'资料空间',lab:'实验管理',devices:'设备管理',schedules:'定时任务'});
 NAV_ROUTE.shared=1;
 NAV_ROUTE.settings=NAV_ROUTE.me=NAV_ROUTE.set=1;
 const navigationProjectViews={projects:V.projects,shared:V.shared};
@@ -18,13 +19,15 @@ function navigationProjectProgress(p,shared){
   const tasks=(workbenchData({pid:p.id}).tasks||[]).filter(t=>t.pid===p.id&&t.isTask!==false&&!['canceled'].includes(t.status));
   const member=shared?.members.find(m=>m.id==='me'&&m.status==='active');
   const editable=shared?['owner','admin','editor'].includes(member?.role):can('edit')&&(p.ownerId||'me')==='me';
-  /* 与工作台卡片同一口径：先过 wbAttentionTasks（已读回执等），再取失败/待动作 */
+  /* 与工作台角标、「待办」面板同一口径：先过 wbAttentionTasks（已读回执等），
+     再用 wbTodoBuckets 分档，取「需要处理」＋「结果待确认」两档。三处的数必须一样。 */
   const attention=typeof wbAttentionTasks==='function'?wbAttentionTasks(tasks):tasks;
-  const pending=editable?attention.filter(t=>t.needsAction||t.status==='failed'):[];
+  const buckets=typeof wbTodoBuckets==='function'?wbTodoBuckets(attention):{act:attention,read:[],run:[]};
+  const pending=editable?buckets.act.concat(buckets.read):[];
   const active=tasks.filter(t=>['active','queued'].includes(t.status));
   const completed=tasks.filter(t=>t.status==='done').sort((a,b)=>String(b.at||'').localeCompare(String(a.at||'')));
   if(pending.length){
-   task=pending[0];kind='confirm';label='待我处理';title=pending.length+' 项任务待处理';pendingCount=pending.length;
+   task=pending[0];kind='confirm';label='待我处理';title=pending.length+' 项待办';pendingCount=pending.length;
    detail=(task.name||task.id)+' · '+(task.detail||task.label||'请查看并处理');action='查看并处理';
   }else if(active.length){
    task=active[0];kind='running';label='正在执行';title=task.name||task.id;
@@ -42,7 +45,7 @@ function navigationProjectProgress(p,shared){
   }else return '';
   if(task)at=task.at||'';
  }
- if(kind==='confirm')return '<div class="navigation-progress project-update is-confirm is-mini"><span class="project-update-mini-label"><b class="project-update-count">'+pendingCount+'</b> 项待处理</span><button class="project-update-action" type="button" data-project-progress-pending="'+esc(p.id)+'" aria-label="处理 '+pendingCount+' 项待处理" title="处理 '+pendingCount+' 项待处理">处理</button></div>';
+ if(kind==='confirm')return '<div class="navigation-progress project-update is-confirm is-mini"><span class="project-update-mini-label"><b class="project-update-count">'+pendingCount+'</b> 项待办</span><button class="project-update-action" type="button" data-project-progress-pending="'+esc(p.id)+'" aria-label="处理 '+pendingCount+' 项待办" title="处理 '+pendingCount+' 项待办">处理</button></div>';
  const attrs=kind==='confirm'?'data-project-progress-pending="'+esc(p.id)+'"':task?'data-project-progress-task="'+esc(task.key)+'"':p?'data-project-progress-pid="'+esc(p.id)+'"':'data-project-progress-shared="'+esc(shared.id)+'"';
  return '<div class="navigation-progress project-update is-'+kind+'"><div class="project-update-head"><span>'+label+'</span>'+(at?'<time>'+esc(at)+'</time>':'')+'</div><strong>'+esc(title)+'</strong><p>'+esc(detail)+'</p>'+(percent!==null?'<div class="project-task-progress"><span>当前任务进度 '+percent+'%</span><progress value="'+percent+'" max="100" aria-label="当前任务进度 '+percent+'%"></progress></div>':'')+'<button class="project-update-action" type="button" '+attrs+'>'+action+' →</button></div>';
 }
@@ -201,7 +204,7 @@ wbBind=function(root){
  navigationTeamBind(root);
  /* 待处理角标放进标签行右侧：原来的迷你块只留作数据与处理入口，不再占位 */
  root.querySelectorAll('.project-card-wrap').forEach(w=>{const mini=w.querySelector(':scope > .project-update.is-mini'),labels=w.querySelector('.pcard-labels');if(!mini||!labels||labels.querySelector('[data-pending-pill]'))return;
-  const n=mini.querySelector('.project-update-count')?.textContent||'';const pill=document.createElement('span');pill.className='project-update-mini-label';pill.setAttribute('data-pending-pill','');pill.setAttribute('role','button');pill.tabIndex=0;pill.title='处理 '+n+' 项待处理';pill.innerHTML='<b class="project-update-count">'+esc(n)+'</b> 项待处理';labels.appendChild(pill);
+  const n=mini.querySelector('.project-update-count')?.textContent||'';const pill=document.createElement('span');pill.className='project-update-mini-label';pill.setAttribute('data-pending-pill','');pill.setAttribute('role','button');pill.tabIndex=0;pill.title='处理 '+n+' 项待办';pill.innerHTML='<b class="project-update-count">'+esc(n)+'</b> 项待办';labels.appendChild(pill);
   const fire=e=>{e.stopPropagation();e.preventDefault();mini.querySelector('.project-update-action')?.click();};pill.addEventListener('click',fire);pill.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')fire(e);});});
  /* 课题卡整张可点：点到底栏或迷你卡的空白处也进课题，点到里面的按钮/链接则各归各 */
  root.querySelectorAll('.project-card-wrap:not(.is-shared-project)').forEach(w=>{if(w.dataset.wrapBound)return;w.dataset.wrapBound='1';w.addEventListener('click',e=>{if(e.target.closest('button,a,[data-act],select,input,label'))return;w.querySelector('.pcard')?.click();});});
@@ -210,11 +213,13 @@ wbBind=function(root){
  const pid=button.dataset.projectProgressPending;
  /* 与角标同一口径：先过 wbAttentionTasks，再取失败/待动作，弹窗里的条数才和角标上的数一致 */
  const base=(workbenchData({pid}).tasks||[]).filter(t=>t.pid===pid&&t.isTask!==false&&t.status!=='canceled');
- const tasks=(typeof wbAttentionTasks==='function'?wbAttentionTasks(base):base).filter(t=>t.needsAction||t.status==='failed');
+ const att=(typeof wbAttentionTasks==='function'?wbAttentionTasks(base):base);
+ const bk=typeof wbTodoBuckets==='function'?wbTodoBuckets(att):{act:att,read:[],run:[]};
+ const tasks=bk.act.concat(bk.read);
  if(tasks.length===1){workbenchOpenTask(tasks[0].key);return;}/* 只有一项就直接进去，不用多点一层 */
  /* 待处理弹窗：一行一项，整行可点；不再每项配一个「查看并处理」按钮，页脚只留一个关闭 */
  const brief=t=>String(t.detail||t.label||'').replace(/\s*·\s*演示流程\s*$/,'').trim();
- modal(tasks.length+' 项待处理','<ul class="pending-list">'+tasks.map(t=>'<li><button class="pending-row" type="button" data-project-pending-task="'+esc(t.key)+'"><span class="pending-main"><strong>'+esc(t.name||t.id)+'</strong>'+(brief(t)?'<small title="'+esc(brief(t))+'">'+esc(brief(t))+'</small>':'')+'</span><span class="chip '+(t.status==='failed'?'c-err':'c-mut')+'">'+(t.status==='failed'?'异常':'待确认')+'</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></li>').join('')+'</ul>','关闭',()=>{});
+ modal(tasks.length+' 项待办','<ul class="pending-list">'+tasks.map(t=>'<li><button class="pending-row" type="button" data-project-pending-task="'+esc(t.key)+'"><span class="pending-main"><strong>'+esc(t.name||t.id)+'</strong>'+(brief(t)?'<small title="'+esc(brief(t))+'">'+esc(brief(t))+'</small>':'')+'</span><span class="chip '+(t.status==='failed'?'c-err':'c-mut')+'">'+(t.status==='failed'?'异常':'待确认')+'</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></li>').join('')+'</ul>','关闭',()=>{});
  (()=>{const d=document.getElementById('dlg'),c=d.querySelector('button[value="cancel"]'),ok=d.querySelector('button[value="ok"]');if(c)c.hidden=true;if(ok)ok.classList.remove('btn-pri');})();
  document.querySelectorAll('#dlg [data-project-pending-task]').forEach(item=>item.onclick=()=>{document.getElementById('dlg').close();workbenchOpenTask(item.dataset.projectPendingTask);});
  });

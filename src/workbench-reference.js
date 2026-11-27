@@ -7,12 +7,16 @@ function rhIcon(kind){ /* 本模块自己的图标集；不要叫 researchIcon�
 }
 function researchTime(value){return String(value||'未记录时间').replace(/^\d{4}-/,'');}
 function researchProjectState(p){
- const scope=workbenchData({pid:p.id}),pending=wbAttentionTasks(scope.tasks||[]),failed=pending.filter(t=>t.status==='failed'||t.needsAction),done=pending.filter(t=>t.status==='done'),active=pending.filter(t=>t.status==='active');
+ /* 角标和「待办」面板用同一套分档（wbTodoBuckets），两处的数必须对得上：
+    角标写的是这个课题要我处理和要我看的总数，不是其中某一档。 */
+ const scope=workbenchData({pid:p.id}),pending=wbAttentionTasks(scope.tasks||[]);
+ const b=typeof wbTodoBuckets==='function'?wbTodoBuckets(pending):{act:pending,read:[],run:[]};
+ const failed=b.act,done=b.read,active=b.run,waiting=failed.length+done.length;
  const task=failed[0]||done[0]||active[0];
  const draft=(scope.experiments||[]).find(t=>t.status==='draft');
  const latest=task||(scope.tasks||[]).filter(t=>t.isTask!==false)[0];
  const tone=failed.length?'alert':done.length?'ready':draft?'confirm':'quiet';
- const badge=failed.length?failed.length+' 项待处理':done.length?done.length+' 份结果待查看':active.length?active.length+' 项进行中':draft?'实验方案待完善':'暂无待处理事项';
+ const badge=waiting?waiting+' 项待办':active.length?active.length+' 项进行中':draft?'实验方案待完善':'暂无待处理事项';
  const next=failed.length?'处理'+(task.kind==='experiment'?'实验异常':'任务异常'):done.length?'查看'+(task.kind==='experiment'?'实验结论':'候选评测结果'):active.length?'查看任务进度':draft?'完善实验方案':'查看课题记录';
  const description=latest?dashboardDescription(latest).description||latest.name:'尚无研究记录，进入课题开始研究。';
  return {tone,badge,next,description,task,draft,latest};

@@ -88,6 +88,8 @@ R(5,'共享',[
  ['「已共享」悬停文字里的引号被转义',async p=>{const t=await p.evaluate(()=>{const s=rsProjectShared('p1');const old=s.name;s.name='A"B<c>';const h=ceSharedTag('experiment',s.assets.find(a=>a.kind==='experiment').sourceId,'p1');s.name=old;return h});
    must(!/title="[^"]*"B/.test(t)&&!/<c>/.test(t),t);}],
  ['共享后在共享课题详情里能看到这一条',async p=>{const id=await p.evaluate(()=>rsProjectShared('p1').assets.find(a=>a.kind==='experiment').name);await p.evaluate(()=>{RS.sharedPick=rsProjectShared('p1').id;go('shareddetail')});await p.waitForTimeout(400);
+   /* 共享资产按类型分页签，实验在「实验」那一页；默认停在知识库，先切过去再找 */
+   await p.click('[data-shared-asset-tab="exp"]');await p.waitForTimeout(300);
    must((await p.locator('#view').innerText()).includes(id),'共享课题里找不到 '+id);}],
 ]);
 /* ===== 第 6 轮：对话 ===== */

@@ -263,7 +263,9 @@ labV2Bind=function(root){
 /* Collaboration examples are additive, versioned and idempotent. Existing assets stay immutable. */
 async function iterationSeedWorkspace(){
  if(RS.data.iterationSeed||LS.get('examples_disabled',false))return;
- const next=rsClone(RS.data),li='example-li',at=nowStamp();
+ /* 共享课题和成员的加入时间也要落在过去：里面的资产是 11-24 共享的，
+    外面的课题却写着「刚刚创建」，两头对不上。 */
+ const next=rsClone(RS.data),li='example-li',at=(typeof seedStamp==='function'?seedStamp(4440):nowStamp());
  const target=(id,name,owner)=>{let p=next.projects.find(p=>p.id===id);if(!p){p=rsBlankProject(name,'独立复核已获授权的课题资产',owner);p.id=id;next.projects.push(p);}return p;};
  const mine=target('example-personal-review','蛋白候选复核','me'),theirs=target('example-li-review','稳定性复核',li);
  let own=next.shared.find(s=>s.projectId==='p1'&&s.owner==='me'),fresh=!own;
@@ -532,7 +534,7 @@ labCardV2=function(b){
  const methods=workflow?.source==='autonomous'?alTaskMethods(workflow):b.ctx?.assay?.join('、');
  const context=summary.status==='exception'?summary.detail:summary.status==='conclusion'?workflow?.conclusion?.verdict:summary.current;
  return `<article class="lv-exp is-${summary.status}" role="button" tabindex="0" data-labgo="${esc(b.id)}" aria-label="${action}：${esc(title)}">
-  <div class="row" style="justify-content:space-between;gap:10px">${labBadge(summary.status,summary.label)}<span class="lv-tags">${typeof ceSharedTag==='function'?ceSharedTag('experiment',b.id,b.pid):''}${b.id.includes('DEMO')?'':`<span class="lv-id-tag num">${esc(b.id)}</span>`}</span></div>
+  <div class="row" style="justify-content:space-between;gap:10px">${labBadge(summary.status,summary.label)}<span class="lv-tags">${typeof ceSharedTag==='function'?ceSharedTag('experiment',b.id,b.pid):''}${b.id.includes('DEMO')?'<span class="lv-tag">示例</span>':`<span class="lv-id-tag num">${esc(b.id)}</span>`}</span></div>
   <h2 class="lv-exp-title">${esc(title)}</h2>
   <p class="lv-small">${esc(pnOf(b.pid))} · ${b.n} 个${workflow?.source==='autonomous'?'候选':''}样本</p>
   ${methods?`<p class="lv-small lv-card-summary">${esc(methods)}</p>`:''}

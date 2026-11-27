@@ -688,8 +688,13 @@ button.scard.is-click:focus-visible{outline:2px solid var(--focus);outline-offse
 .tbl-wrap.is-list table{width:auto;min-width:100%}
 .tbl-wrap.is-list th{white-space:nowrap}
 .tbl-wrap.is-list .c-id{width:1%;white-space:nowrap;color:var(--ink-3)}
-.tbl-wrap.is-list .c-nm{min-width:12rem;max-width:22rem}
+.tbl-wrap.is-list .c-nm{min-width:11rem;max-width:20rem}
 .tbl-wrap.is-list .c-at{white-space:nowrap}
+/* 长引用串（训练数据、关联课题）要收住：它们一宽，右边钉住的操作列就会盖掉
+   「排序相关性」和「更新时间」——而那两列正是看这张表的理由。悬停看全。 */
+.tbl-wrap.is-list .c-src{max-width:10rem;overflow:hidden;text-overflow:ellipsis}
+.tbl-wrap.is-list .c-proj{max-width:9rem}
+.tbl-wrap.is-list .c-proj .lnk{display:block!important;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}/* .lnk 默认是 inline-flex，flex 容器里 text-overflow 不生效，截断就没有省略号，看着像被切坏了 */
 .tbl-wrap.is-list td{white-space:nowrap}
 .tbl-wrap.is-list .c-nm,.tbl-wrap.is-list .c-nm *{white-space:normal}
 .tbl-wrap.is-list td .chip{white-space:nowrap}
@@ -4762,6 +4767,33 @@ body[data-route="mdl"] #view .pg-hd,body[data-route="dsets"] #view .pg-hd{paddin
  #view .wb-workstation .rh-project-symbol{order:1}
 }
 
+/* ── 待办角标：课题项目页和工作台必须长一个样 ────────────────────────
+   原来课题项目页是「红边框＋红字」，工作台是「浅灰底＋墨色字＋一颗红点」。
+   同一个数两种画法，而且一页五张卡全是红框，优先级反而看不出来。
+   统一成工作台那一版：状态色只落在那颗 6px 的点上。 */
+.pcard-labels .project-update-mini-label,
+#view .project-update-mini-label{
+ border:0!important;background:var(--surface-2)!important;color:var(--ink-2)!important;
+ border-radius:999px;padding:3px 10px 3px 9px;line-height:18px}
+.pcard-labels [data-pending-pill]:hover{background:var(--line)!important}
+
+/* ── 定时任务：双栏页铺满，不要只在右边留一条空带 ────────────────────
+   它和资料空间是同一类「列表＋详情」页，却套着通用的 1180px 上限并且靠左，
+   1440 下右边空出 188px，看着像没加载完。里面的模板网格（908）和详情（800）
+   本来就各有自己的宽度上限，撑开不会把正文行拉长。 */
+#view .st-layout{max-width:none!important;width:100%}
+
+/* ── 待办浮层：窗口矮的时候要能滚 ──────────────────────────────────
+   22 条待办时浮层高 674px；窗口高 700 时底部有 55px 够不着，
+   「还有 N 项」那一行就按不到。 */
+#view .rh-todo-pop{max-height:calc(100vh - 112px);overflow-y:auto;overscroll-behavior:contain}
+
+/* ── 设置页的行内动作：和全站的 .lnk 对齐 ──────────────────────────
+   别处的 .lnk 是墨色无下划线，只有设置页这三个（更换 / 更换 / 修改）
+   是蓝色带下划线，像网页超链接，不像产品里的动作。 */
+#view .lnk.me-l{color:var(--ink-2)!important;text-decoration:none!important}
+#view .lnk.me-l:hover{color:var(--ink)!important;text-decoration:underline!important}
+
 
 /* 项目卡标题被挤成两行、断在「结合界 / 面」：标题被写死 max-width:calc(100% - 55px)，
    而右边那枚「共享」角标其实只有 40px 宽，行上还开了 flex-wrap。
@@ -4839,6 +4871,15 @@ body[data-route="mdl"] #view .pg-hd,body[data-route="dsets"] #view .pg-hd{paddin
 const LS={get(k,d){try{const v=localStorage.getItem('dy_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
           set(k,v){try{localStorage.setItem('dy_'+k,JSON.stringify(v))}catch(e){}}};
 
+/* 动态和课题的「最近更新」按「离现在多久」给时刻。写死 14:21 这种时间，
+   早上打开页面就是未来时间，也和数据集/模型那边的时间对不上。 */
+function agoStamp(minutesAgo){
+  const d=new Date(Date.now()-Math.max(1,minutesAgo)*60000),z=n=>String(n).padStart(2,'0'),now=new Date();
+  const day=Math.round((new Date(now.getFullYear(),now.getMonth(),now.getDate())-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/86400000);
+  const hm=z(d.getHours())+':'+z(d.getMinutes());
+  return day===0?'今天 '+hm:day===1?'昨天 '+hm:(z(d.getMonth()+1)+'-'+z(d.getDate())+' '+hm);
+}
+function agoClock(minutesAgo){const t=agoStamp(minutesAgo);return /^(今天|昨天)/.test(t)?t.replace(/^(今天|昨天)\s*/,m=>m.trim()==='昨天'?'昨天 ':''):t;}
 const DB={
   dls:[],                       // 本会话下载过的文件，由 dl() 统一记
   projects:[
@@ -4859,24 +4900,26 @@ const DB={
      kb:['PNAS 2020, 117(31):18456.pdf','J. Mol. Biol. 2019, 431(4):812.pdf',
          'Protein Eng. Des. Sel. 2021, 34:gzab009.pdf','1BRS 界面残基清单.csv'],
      tools:['ProteinMPNN','Protenix','ThermoMPNN','自主实验网络'],
-     state:'active',model:'v3',variants:312,returned:287,ink:1240,owner:'我',updated:'14:21',
+     state:'active',model:'v3',variants:312,returned:287,ink:1240,owner:'我',updated:agoClock(12),
      arch:[],   /* 归档件：冻住内容的那一份，由「存入项目」写入 */
      rounds:[
       {i:1,state:'done',v:48,r:46,mb:'—',ma:'v1',note:'零样本伪似然初筛。R59 区域容忍度最高',
-       ctrl:4,failed:2,plan:{host:'HEK293',assay:['BLI','DSF'],reps:'n = 2',buffer:'PBS pH 7.4',temp:'25℃'}},
+       ctrl:4,failed:2,plan:{host:'大肠杆菌 E. coli',assay:['BLI','DSF'],reps:'n = 2',buffer:'PBS pH 7.4',temp:'25℃'}},
       {i:2,state:'done',v:96,r:92,mb:'v1',ma:'v2',note:'R59 饱和突变。Tm 最好 +3.1℃，KD 掉一个量级',
-       ctrl:8,failed:4,plan:{host:'CHO',assay:['SPR','DSF'],reps:'n = 3',buffer:'HBS-EP+',temp:'25℃'}},
+       ctrl:8,failed:4,plan:{host:'大肠杆菌 E. coli',assay:['SPR','DSF'],reps:'n = 3',buffer:'HBS-EP+',temp:'25℃'}},
       {i:3,state:'done',v:72,r:56,mb:'v2',ma:'v2',note:'加入亲和力约束重排。16 条表达失败',
-       ctrl:8,failed:16,plan:{host:'CHO',assay:['SPR','DSF'],reps:'n = 3',buffer:'HBS-EP+',temp:'25℃'}},
+       ctrl:8,failed:16,plan:{host:'大肠杆菌 E. coli',assay:['SPR','DSF'],reps:'n = 3',buffer:'HBS-EP+',temp:'25℃'}},
       {i:4,state:'reflux',v:96,r:93,mb:'v2',ma:'v3',note:'双突变组合。已用 93 条新数据重训',
-       ctrl:8,failed:3,plan:{host:'CHO',assay:['SPR','DSF'],reps:'n = 3',buffer:'PBS pH 7.4',temp:'25℃'}},
+       ctrl:8,failed:3,plan:{host:'大肠杆菌 E. coli',assay:['SPR','DSF'],reps:'n = 3',buffer:'PBS pH 7.4',temp:'25℃'}},
       /* Round 5 的候选已经生成（见活动流），所以它必须在这里存在。
          之前候选挂在一个列表里没有的轮次上，逐轮统计就会漏掉一整轮。
          它还没有批次，所以上下文只有计划、状态由 deriveRound 推成 active。 */
       {i:5,state:'active',v:0,r:0,mb:'v3',ma:'v3',note:'多路径生成，等待取舍与送检',
-       ctrl:8,failed:0,plan:{host:'CHO',assay:['SPR','DSF'],reps:'n = 3',buffer:'PBS pH 7.4',temp:'25℃'}}]},
+       ctrl:8,failed:0,plan:{host:'大肠杆菌 E. coli',assay:['SPR','DSF'],reps:'n = 3',buffer:'PBS pH 7.4',temp:'25℃'}}]},
     {id:'p2',dom:'protein',name:'Barstar 亲和力改造',target:'Barnase',fields:['kd'],
-     tcp:{primary:{k:'kd',cmp:'<=',v:10},
+     /* 这个体系的野生型 KD 在 0.01 pM 量级，立项指标写成 10 pM 的话实测候选几乎全部达标，
+        指标就不筛任何东西了。按实测分布（0.1–330 pM）定到 0.5 pM。 */
+     tcp:{primary:{k:'kd',cmp:'<=',v:0.5},
           constraints:[{k:'dev',cmp:'>=',v:0.60,n:'可开发性达标'},
                        {k:'cys',cmp:'==',v:0,n:'不引入游离半胱氨酸'}]},
      desc:'只动 barstar 这一侧，看在不改 barnase 的前提下能把结合做到多紧。'
@@ -4887,9 +4930,9 @@ const DB={
      state:'assay',model:'v1',variants:48,returned:0,ink:380,owner:'李',updated:'昨天',
      rounds:[
       {i:1,state:'done',v:24,r:24,mb:'—',ma:'v1',note:'第一批从头设计，4 条有结合信号',
-       ctrl:4,failed:2,plan:{host:'HEK293',assay:['BLI'],reps:'n = 2',buffer:'PBS pH 7.4',temp:'25℃'}},
+       ctrl:4,failed:2,plan:{host:'大肠杆菌 E. coli',assay:['BLI'],reps:'n = 2',buffer:'PBS pH 7.4',temp:'25℃'}},
       {i:2,state:'assay',v:48,r:0,mb:'v1',ma:'v1',note:'等待测定结果',
-       ctrl:4,failed:0,plan:{host:'HEK293',assay:['SPR'],reps:'n = 3',buffer:'HBS-EP+',temp:'25℃'}}]},
+       ctrl:4,failed:0,plan:{host:'大肠杆菌 E. coli',assay:['SPR'],reps:'n = 3',buffer:'HBS-EP+',temp:'25℃'}}]},
     {id:'p3',dom:'protein',name:'葡萄球菌核酸酶',target:'SNase',fields:['kcat','km'],
      /* 酶活项目：主目标是催化效率，不是 Tm。字段登记表落地之后，
         这里终于能写真实的字段，而不是拿 ΔTm 占位。 */
@@ -4907,10 +4950,10 @@ const DB={
   ],
   cands:[],
   acts:[
-    {k:'wet',t:'回流 93 条测定数据',r:4,p:'Barnase–Barstar 结合界面',at:'今天 14:02',by:'我'},
-    {k:'dry',t:'模型重训完成 v2 → v3，验证集 Spearman 0.61 → 0.68',r:4,p:'Barnase–Barstar 结合界面',at:'今天 14:19',by:'李研究员'},
-    {k:'dry',t:'生成 Round 5 候选 88 条',r:5,p:'Barnase–Barstar 结合界面',at:'今天 14:21',by:'王研究员'},
-    {k:'err',t:'3 条标记为表达失败',r:4,p:'Barnase–Barstar 结合界面',at:'今天 11:40',by:'李'}
+    {k:'wet',t:'回流 93 条测定数据',r:4,p:'Barnase–Barstar 结合界面',at:agoStamp(31),by:'我'},
+    {k:'dry',t:'模型重训完成 v2 → v3，验证集 Spearman 0.61 → 0.68',r:4,p:'Barnase–Barstar 结合界面',at:agoStamp(14),by:'李研究员'},
+    {k:'dry',t:'生成 Round 5 候选 88 条',r:5,p:'Barnase–Barstar 结合界面',at:agoStamp(12),by:'王研究员'},
+    {k:'err',t:'3 条标记为表达失败',r:4,p:'Barnase–Barstar 结合界面',at:agoStamp(173),by:'李'}
   ],
   tools:[
     {k:'SCP',n:'VenusFactory',cap:'func',d:'生命科学',u:'模型服务',s:'蛋白质科研全流程工具，突变与功能预测',
@@ -7138,7 +7181,7 @@ function dsUseCount(id){
 /* 关联课题这一格：点一下回到那个项目。筛选交给上面的下拉——
    同一个控件既筛选又跳转，点下去会出现两种结果，读不出是哪一种。 */
 function projCell(x){
-  return `<td class="t-sm"><button class="lnk" type="button" data-projdw="${esc(x._pid)}"
+  return `<td class="t-sm c-proj"><button class="lnk" type="button" data-projdw="${esc(x._pid)}"
     title="看项目「${esc(x._pn||'')}」的概况">${esc(x._pn||'—')}</button></td>`;
 }
 /* 列表里点关联课题：先在右边看个概况，要进去再进去——不把人从这张表里带走。 */
@@ -7570,10 +7613,15 @@ function dsBody(){
       <thead><tr><th scope="col" class="c-nm">数据集名称/ID</th>
         <th scope="col">关联课题</th><th scope="col">状态</th>
         <th scope="col">样本量</th><th scope="col">列数</th><th scope="col">目标列</th>
-        <th scope="col">特征</th><th scope="col">切分（训/验/留出）</th>
+        <th scope="col">特征</th><th scope="col" title="训练 / 验证 / 留出">切分</th>
         <th scope="col">训练任务</th><th scope="col">指纹</th>
         <th scope="col">更新时间</th><th scope="col">操作</th></tr></thead>
-      <tbody>${L.map(d=>{const st=dsSt(d);const used=dsUseCount(d.id);return `<tr>
+      <tbody>${L.map(d=>{const st=dsSt(d);const used=dsUseCount(d.id);
+        /* 指纹只对表格正文算，所以同一份表换个目标列或换个切法，指纹是一样的。
+           列表里两行写着同一串，看着像重复条目——把「同表」标出来，并说清差在哪。 */
+        const twins=L.filter(x=>x!==d&&x.fp===d.fp);
+        const twinTip=twins.length?('和 '+twins.map(x=>x.id).join('、')+' 是同一份表格内容（指纹只算正文）；差别在目标列和切分上。'):'';
+        return `<tr>
         ${nmCell(d.name,d.id,d.src||'上传',typeof ceSharedTag==='function'?ceSharedTag('dataset',d.id,d.pid):'')}
         ${projCell(d)}
         <td><span class="chip ${st[1]}">${st[0]}</span></td>
@@ -7583,7 +7631,7 @@ function dsBody(){
         <td class="t-sm num">${d.feats.length}</td>
         <td class="t-sm num">${d.split.train.length} / ${d.split.val.length} / ${d.split.test.length}</td>
         <td class="t-sm num">${used}</td>
-        <td class="t-sm num">${esc(d.fp)}</td>
+        <td class="t-sm num"${twinTip?' title="'+esc(twinTip)+'"':''}><div class="col" style="gap:0">${esc(d.fp)}${twins.length?'<span class="t-xs mut2">同表</span>':''}</div></td>
         ${atCell(d.st==='pub'?(d.pubAt||d.at):d.at)}
         ${acts([
           {n:'详情',attr:`data-dspick="${esc(d.id)}"`},
@@ -7647,7 +7695,7 @@ function srcDetail(ab){
   modal(d.n,`<div class="col" style="gap:var(--s3)">
     <p class="t-md mut" style="margin:0">${esc(d.s)}</p>
     <div class="col" style="gap:0">
-      ${row('编号',d.ab)}${row('维护方',d.org)}${row('收录',d.mode||'—')}
+      ${row('编号',d.ab)}${row('收录平台',d.org)}${row('收录',d.mode||'—')}
       ${row('大小',d.size,/未核实/.test(d.size))}
       ${row('引用',d.cite,/未核实/.test(d.cite))}
       ${row('许可',d.lic,/未核实|Other/.test(d.lic))}
@@ -7918,24 +7966,23 @@ function mdlCur(){
     ${L.length?`<div class="tbl-wrap is-list"><table>
       <caption class="vh">训出来的模型</caption>
       <thead><tr><th scope="col" class="c-nm">模型名称/ID</th>
-        <th scope="col">关联课题</th><th scope="col">在线部署</th>
+        <th scope="col">关联课题</th>
         <th scope="col">预测目标</th>
         <!-- 基础模型从这张表上撑掉：每行都是 Descriptor Baseline，
              一列里每行都一样就不传达任何信息（R176），
              而它占的宽度正好是右边钉住的操作列盖住「更新时间」的那一截。
              信息没丢：详情抽屉里还在，搜索也还搜得到 m.base。 -->
         <th scope="col">训练方法</th>
-        <th scope="col">训练数据</th><th scope="col">排序准确度</th>
+        <th scope="col">训练数据</th><th scope="col">排序相关性 ρ</th>
         <th scope="col">更新时间</th>
         <th scope="col">操作</th></tr></thead>
       <tbody>${L.map(m=>{const status=statusById(m.id);return `<tr>
-        ${nmCell(m.name||('打分器 · '+tgtName(m.target)),m.id,'',typeof ceSharedTag==='function'?ceSharedTag('model',m.id,m._pid):'')}
+        ${nmCell(m.name||('打分器 · '+tgtName(m.target)),m.id,'',(typeof ceSharedTag==='function'?ceSharedTag('model',m.id,m._pid):'')+(status.label&&status.label!=='—'?'<span class="chip '+(status.active?'c-ok':'c-mut')+'" title="在线部署状态">'+esc(status.label)+'</span>':''))}
         ${projCell(m)}
-        <td><span class="t-xs ${status.active?'c-ok':'mut2'}"${status.title?' title="'+esc(status.title)+'"':''}>${status.label}</span></td>
         <td class="t-sm num">${esc(tgtName(m.target))}</td>
         <td class="t-sm">${esc(m.method||'SFT')}</td>
-        <td class="t-sm num">${dsLabel(m)}</td>
-        <td class="t-sm num">${Number.isFinite(m.rho)?m.rho.toFixed(3):'—'}</td>
+        <td class="t-sm num c-src">${dsLabel(m)}</td>
+        <td class="t-sm num"${Number.isFinite(m.rho)&&Number.isFinite(m.nTest)&&m.nTest<8?' title="留出集只有 '+m.nTest+' 条，这个数波动很大，只能当参考"':''}>${Number.isFinite(m.rho)?m.rho.toFixed(3)+(Number.isFinite(m.nTest)?'<span class="t-xs mut2">　n='+m.nTest+'</span>':''):'—'}</td>
         ${atCell(m.at)}
         ${acts([
           status.serviceId?{n:'查看服务',attr:`data-deploy-service="${esc(status.serviceId)}"`}
@@ -7946,7 +7993,7 @@ function mdlCur(){
           {n:'下载权重',attr:`data-mdl="${esc(m.id)}"`}
         ])}
       </tr>`}).join('')}</tbody></table></div>
-      <span class="t-xs mut2">「排序准确度」为 Spearman ρ，衡量候选排序是否正确。与基线的对比见「模型评测」。</span>`
+      <span class="t-xs mut2">${(typeof DEPLOY_API==='undefined'||!DEPLOY_API)?'这一版没有接在线部署后端，模型的部署状态不显示。':''}「排序相关性 ρ」是留出集上的 Spearman ρ，−1 到 1，越接近 1 表示候选排得越对，负数表示排反了；n 是留出集条数，n 小于 8 时这个数波动很大，只能当参考。与基线的对比见「模型评测」。</span>`
     :(q?`<div class="empty" style="padding:var(--s6)"><div class="col" style="gap:4px">
        <strong class="t-md" style="color:var(--ink)">没有匹配的模型</strong>
        <span class="t-sm">换个关键词试试</span></div></div>`
@@ -8173,7 +8220,7 @@ function jobDrawer(m){
           <div class="col" style="gap:4px">
             <span class="lbl">留出集指标</span>
             <div class="col" style="gap:2px">
-              ${row('排序准确度',Number.isFinite(m.rho)?'Spearman ρ '+m.rho.toFixed(3):'—')}
+              ${row('排序相关性',Number.isFinite(m.rho)?'Spearman ρ '+m.rho.toFixed(3)+(Number.isFinite(m.nTest)?'　留出集 '+m.nTest+' 条'+(m.nTest<8?'（条数少，这个数只能当参考）':''):''):'—')}
               ${row('预测误差',Number.isFinite(m.rmse)?'RMSE '+m.rmse.toFixed(3):'—')}
               ${row('误差水平',m.sd&&Number.isFinite(m.rmse)?(m.rmse/m.sd).toFixed(2)+'　（RMSE ÷ 留出集标准差，小于 1 才比猜均值准）':'—')}
               ${row('正则强度','λ = '+m.lam+(m.lamBy?'　'+esc(m.lamBy):''))}
@@ -8196,7 +8243,7 @@ function jobDrawer(m){
             ${m.prosp?`<div class="tbl-wrap is-prev"><table>
               <caption class="vh">留出集与前瞻的对比</caption>
               <thead><tr><th scope="col">在哪一批上</th><th scope="col">样本</th>
-                <th scope="col">排序准确度</th><th scope="col">预测误差</th>
+                <th scope="col">排序相关性 ρ</th><th scope="col">预测误差</th>
                 <th scope="col">误差水平</th></tr></thead>
               <tbody>
                 <tr><td class="t-sm">留出集（同一批里随机切的）</td>
@@ -8247,7 +8294,7 @@ function mdlEval(){
       <caption class="vh">每个模型在留出集上的指标</caption>
       <thead><tr><th scope="col" class="c-nm">模型名称/ID</th>
         <th scope="col">关联课题</th><th scope="col">状态</th>
-        <th scope="col">排序准确度</th><th scope="col">预测误差</th>
+        <th scope="col">排序相关性 ρ</th><th scope="col">预测误差</th>
         <th scope="col">误差水平</th><th scope="col">评测集</th>
         <th scope="col">前瞻测试</th><th scope="col">操作</th></tr></thead>
       <tbody>${L.map(m=>`<tr>
@@ -8269,7 +8316,7 @@ function mdlEval(){
           {n:'下载报告',attr:`data-mrep="${esc(m.id)}"`}
         ])})()}
       </tr>`).join('')}</tbody></table></div>
-      <span class="t-xs mut2">「排序准确度」为 Spearman ρ；「预测误差」为 RMSE，单位与预测目标相同；「误差水平」为 RMSE ÷ 留出集标准差，小于 1 表示优于直接预测均值。与基线的对比见「查看报告」。
+      <span class="t-xs mut2">「排序相关性 ρ」为留出集上的 Spearman ρ（−1 到 1，负数表示排反了）；「预测误差」为 RMSE，单位与预测目标相同；「误差水平」为 RMSE ÷ 留出集标准差，小于 1 表示优于直接预测均值。与基线的对比见「查看报告」。
         「前瞻测试」是另一回事：留出集是从同一批数据里随机切的，分布和训练集一样；
         下一轮的候选是模型自己挑出来的，分布不一样。
         留出集上好看、下一轮崩掉，是定向进化里最常见的翻车方式——
@@ -11535,8 +11582,10 @@ function pjOpener(p){
   if(running.length)bits.push(running.length+' 个批次在跑');
   if(waitMe.length)bits.push(waitMe.length+' 个批次等你处理（'+esc(waitMe[0].id)+'　'+esc((nextStep(waitMe[0])||{}).act||'')+'）');
   if(best)bits.push('有一个能用的打分器 '+esc(best.name||best.id)
-    +'（留出 ρ '+best.rho.toFixed(3)+(best.rho<=0?'，排序方向相反，暂不建议用于筛选':
-      best.rho<0.3?'，偏弱':'')+'）');
+    /* ρ 必须和留出集条数一起说：n=6 的 0.943 和 n=24 的 0.943 不是一回事 */
+    +'（留出 ρ '+best.rho.toFixed(3)+(Number.isFinite(best.nTest)?'，留出集 '+best.nTest+' 条':'')
+    +(best.rho<=0?'，排序方向相反，暂不建议用于筛选':
+      best.rho<0.3?'，偏弱':Number.isFinite(best.nTest)&&best.nTest<8?'，条数少，这个数只能当参考':'')+'）');
   const asks=[];
   if(waitMe.length)asks.push('把 '+waitMe[0].id+' 的结果导进来');
   if(meas>=8)asks.push('R'+r+' 这批里挑 24 条送去测'+((FIELD[fs[0]]||{}).n?'　'+FIELD[fs[0]].n:''));
@@ -11917,27 +11966,30 @@ function docPreview(d){
 
 /* M9 假设页。一轮从「这一轮要回答什么问题」开始。 */
 const BATCHES=[
- {id:'B-2409',pid:'p1',round:3,vendor:'自动化蛋白表征平台',status:'done',results:'all',n:72,
+ {id:'B-2409',pid:'p1',name:'亲和力与热稳定性表征 · 第 3 轮',round:3,vendor:'自动化蛋白表征平台',status:'done',results:'all',n:72,
   log:[['draft','2026-09-16 10:20'],['quote_sent','2026-09-17 15:40'],
        ['waiting_for_materials','2026-09-18 09:05'],['in_queue','2026-09-22 11:30'],
        ['in_production','2026-09-26 08:15'],['data_analysis','2026-10-05 17:40'],
        ['in_review','2026-10-08 10:00'],['done','2026-10-09 16:25']],
-  ctx:{host:'CHO',assay:['SPR','DSF'],reps:'n = 3',buffer:'HBS-EP+',temp:'25℃'}},
- {id:'B-2411',pid:'p1',round:4,vendor:'自动化蛋白表征平台',status:'done',results:'partial',n:96,
+  ctx:{host:'大肠杆菌 E. coli',assay:['SPR','DSF'],reps:'n = 3',buffer:'HBS-EP+',temp:'25℃'}},
+ {id:'B-2411',pid:'p1',name:'亲和力与热稳定性表征 · 第 4 轮首批',round:4,vendor:'自动化蛋白表征平台',status:'done',results:'partial',n:96,
   log:[['draft','2026-10-12 14:10'],['quote_sent','2026-10-13 09:30'],
        ['waiting_for_materials','2026-10-14 10:00'],['in_queue','2026-10-20 13:45'],
        ['in_production','2026-10-26 09:20'],['data_analysis','2026-11-06 18:05'],
        ['in_review','2026-11-10 11:15'],['done','2026-11-11 13:50']],
-  ctx:{host:'CHO',assay:['SPR','DSF'],reps:'n = 3',buffer:'PBS pH 7.4',temp:'25℃'}},
+  ctx:{host:'大肠杆菌 E. coli',assay:['SPR','DSF'],reps:'n = 3',buffer:'HBS-EP+',temp:'25℃'}},
+ /* 同一轮的第二个批次换了表达体系（barnase 对宿主有毒，这一批走无细胞体系）——这正是上下文不能挂在轮次上的理由。 */
+ /* 旧注释保留在下一行 */
  /* 同一轮的第二个批次换了宿主——这正是上下文不能挂在轮次上的理由。 */
- {id:'B-2412',pid:'p1',round:4,vendor:'自动化蛋白表征平台',status:'in_production',results:'none',n:96,
+ {id:'B-2412',pid:'p1',name:'亲和力表征 · 第 4 轮复测批',round:4,vendor:'自动化蛋白表征平台',status:'in_production',results:'none',n:96,
   log:[['draft','2026-10-28 16:00'],['quote_sent','2026-10-29 10:20'],
        ['waiting_for_materials','2026-10-30 09:00'],['in_queue','2026-11-03 14:30'],
        ['in_production','2026-11-07 08:40']],
-  ctx:{host:'HEK293',assay:['BLI'],reps:'n = 3',buffer:'PBS pH 7.4',temp:'25℃'}}];
+  ctx:{host:'无细胞体系',assay:['BLI'],reps:'n = 3',buffer:'PBS pH 7.4 + 0.02% Tween-20',temp:'25℃'}}];
 
 /* ---- 批次时间：全部从 log 算，不另记 ---- */
-const NOW=new Date('2026-11-12T19:00:00+08:00');
+/* 「已经走了多久」必须按真实当下算。写死一个时刻，过一天这个数就不对了。 */
+function nowDate(){return new Date();}
 function tParse(s){return new Date(String(s).replace(' ','T')+'+08:00')}
 function batchEnter(b,k){const e=(b.log||[]).find(x=>x[0]===k);return e?tParse(e[1]):null}
 function batchStart(b){const L=b.log||[];return L.length?tParse(L[0][1]):null}
@@ -11946,14 +11998,14 @@ function batchEnd(b){const d=batchEnter(b,'done');return d}
 function batchSpanDays(b){const a=batchStart(b),z=batchEnd(b);
   return (a&&z)?((z-a)/864e5):null}
 function batchAgeDays(b){const a=batchStart(b);
-  return a?((NOW-a)/864e5):null}
+  return a?((nowDate()-a)/864e5):null}
 /* 每一段花了多久：相邻两次状态变更之差；最后一段到现在。 */
 function batchLegs(b){const L=b.log||[];
   return L.map((x,i)=>{
     const st=EXP_STATUS.find(y=>y.k===x[0])||{n:x[0],phase:'—'};
     /* 终态没有「停留了多久」，它是终点不是一段。在途的最后一段算到现在。 */
     const term=st.phase==='终态';
-    const t0=tParse(x[1]), t1=i+1<L.length?tParse(L[i+1][1]):NOW;
+    const t0=tParse(x[1]), t1=i+1<L.length?tParse(L[i+1][1]):nowDate();
     return {k:x[0],n:st.n,phase:st.phase,at:x[1],
       days:term?null:(t1-t0)/864e5, open:i===L.length-1&&!term}})}
 const fmtDays=d=>d==null?'—':(d<1?Math.max(1,Math.round(d*24))+' 小时':(d<10?d.toFixed(1):Math.round(d))+' 天');
@@ -12194,9 +12246,9 @@ const CLAIMS=[
    {k:'代码',t:'ΔΔG 计算与显著性检验脚本',repo:'inkpool/analysis',commit:'7c2f1ab'},
    {k:'工具调用',t:'ThermoMPNN 推理，单卡，种子固定',tool:'ThermoMPNN',ver:'v3.0.1'},
    {k:'计算',t:'ThermoMPNN ΔΔG −1.42 kcal/mol',task:'R4-038',model:'v3'},
-   {k:'实验',t:'DSF 实测 Tm +4.8℃',batch:'B-2411',n:3,host:'CHO'},
+   {k:'实验',t:'DSF 实测 Tm +4.8℃',batch:'B-2411',n:3,host:'大肠杆菌 E. coli'},
    {k:'实验',t:'SPR 实测 KD 0.42 pM；野生型 0.011 pM 取文献停流值，SPR 测不到这个量级',
-    batch:'B-2411',n:3,host:'CHO'}]},
+    batch:'B-2411',n:3,host:'大肠杆菌 E. coli'}]},
  {id:'C-02',text:'W94 位点不可改',ev:[
    {k:'实验',t:'9 条变体全部表达失败',batch:'B-2409',n:1,host:'大肠杆菌 E. coli'}]}];
 
@@ -14235,7 +14287,9 @@ function ruleOk(r,c){const v=mv(c,r.k);if(v==null)return false;
   return r.cmp==='>='?v>=r.v:r.cmp==='<='?v<=r.v:v===r.v}
 function ruleText(r){return `${FIELD[r.k].n} ${CMP[r.cmp]} ${r.v}${FIELD[r.k].unit}`}
 function goalText(pr){const t=pr.tcp;if(!t)return pr.goal||'未设定';
-  return ruleText(t.primary)+(t.constraints.length?'，且 '+t.constraints.map(ruleText).join('、'):'')}
+  /* 「且」后面是西文才空一格；是中文空一格就成了排版错误 */
+  const cons=t.constraints.map(ruleText).join('、');
+  return ruleText(t.primary)+(cons?'，且'+(/^[A-Za-z0-9Δ]/.test(cons)?' ':'')+cons:'')}
 function tcpOf(pr){return (pr||PRJ()).tcp}
 function tcpEval(c,pr){const t=tcpOf(pr);if(!t)return null;
   return {primary:ruleOk(t.primary,c),
@@ -15399,7 +15453,7 @@ V.data=()=>{
       <div class="row" style="gap:var(--s2);align-items:baseline">
         <strong class="scard-n grow">${esc(d.n)}</strong>
         <span class="chip ${d.wired?'c-ok':'c-mut'}">${d.wired?'已接入':'未接入'}</span></div>
-      <span class="t-xs mut2 num">${esc(d.org)}</span>
+      <span class="t-xs mut2 num" title="把这条数据收录进来的平台，不是它的维护方">${esc(d.org)}</span>
       <p class="scard-d">${esc(d.s)}</p>
       <div class="scard-tags">
         <span class="tag tag-lead${d.cap==='wet'?' is-wet':''}">${esc(capShort(d.cap))}</span>
@@ -17710,7 +17764,7 @@ function inferSend(){
     /* 「我的模型」是这个平台上训出来的打分器：输入是候选、输出是分数，不做文本生成。
        选得到，但回的是它能做什么、怎么用——不假装它会聊天。 */
     if(c.sid==='mine'){const m=mdlFind(c.name);
-      c.a[t]={t:m?('「'+(m.name||m.id)+'」是打分模型，预测目标是 '+tgtName(m.target)+'，留出集排序准确度 '
+      c.a[t]={t:m?('「'+(m.name||m.id)+'」是打分模型，预测目标是 '+tgtName(m.target)+'，留出集排序相关性 ρ '
         +(typeof m.rho==='number'?m.rho.toFixed(3):'—')+'。它给候选打分，不做文本回答。'
         +'要用它，在对话里说「用 '+m.id+' 给本课题的候选打一遍分」。')
         :'该模型已不在「我的模型」中，请重新选择。',err:m?0:1};return null}
@@ -20800,7 +20854,7 @@ function act(a,el){
     toast(`已载入 ${B.acc.length} 条（${ORIGIN_NAME[IN.origin]}），请核对回显`);return}
   if(a==='clearsel'){IN.sel=new Set();IN.resErr=null;render();return}
   if(a==='ctxbatch'){const prev=(PRJ().rounds.find(x=>x.i===S.round-1)||{}).ctx;
-    Object.assign(roundCtx(),prev?{...prev}:{host:'CHO',assay:['SPR'],reps:'n = 3',buffer:'PBS pH 7.4',temp:'25℃'});
+    Object.assign(roundCtx(),prev?{...prev}:{host:'大肠杆菌 E. coli',assay:['SPR'],reps:'n = 3',buffer:'HBS-EP+',temp:'25℃'});
     render();toast('已套用 B-2411 的上下文');return}
   if(a==='toconfig'){go('config');return}
   if(a==='reuse'){IN.tab=0;IN.rawSeq='>R59_scaffold\n'+BUILTIN['1BRS'].chains[0].seq;render();
@@ -21030,7 +21084,7 @@ document.querySelectorAll('#side [data-go]').forEach(b=>b.onclick=()=>go(b.datas
    真行真列真指纹，不是造出来的数。一份发布（能拿去训），一份留草稿（演示锁定之前的状态）。 */
 (function seedDsets(){
   const was=S.pid;
-  DB.projects.forEach(p=>{
+  DB.projects.forEach((p,pi)=>{
     S.pid=p.id;
     const all=CANDS(), rN=p.rounds.length;
     const build=(list)=>{
@@ -21048,7 +21102,10 @@ document.querySelectorAll('#side [data-go]').forEach(b=>b.onclick=()=>go(b.datas
       const feats=q.nums.filter(c=>c!==x.col);
       if(!feats.length)return;
       const sp=makeSplit(q.rows.length,ratio,seed);
-      const d=addDset(p.id,{name:name,src:'本课题变体表',file:'variants.csv',
+      /* 种下来的记录不能都写「现在」：一张表十条写着同一分钟，一看就是造的。
+         已发布的那份早一天建，草稿是最近才存的。 */
+      const at=seedStamp(seedBase(pi)-(pub?2880:3600));
+      const d=addDset(p.id,{at:at,name:name,src:'本课题变体表',file:'variants.csv',
         rows:q.rows,cols:q.cols,target:x.col,feats:feats,task:'回归',
         split:sp,ratio:ratio.map(v=>+v.toFixed(2)),seed:seed,fp:q.fp});
       if(pub){d.st='pub';d.pubAt=d.at}
@@ -21076,8 +21133,8 @@ document.querySelectorAll('#side [data-go]').forEach(b=>b.onclick=()=>go(b.datas
    所以三个项目的数字各不相同，差的项目就是差。 */
 (function seedModels(){
   const was=S.pid;
-  const savedTimes=LS.get('seed_model_times_v1',{})||{},nextTimes={};
-  DB.projects.forEach(p=>{
+  const nextTimes={};/* 结果指纹仍然存一份，便于下次判断这次重建和上次是不是同一个结果 */
+  DB.projects.forEach((p,pi)=>{
     S.pid=p.id;
     const pub=DSETS(p.id).filter(d=>d.st==='pub');
     const fs=projFields(p).filter(k=>CANDS().filter(c=>mv(c,k)!=null).length>=8);
@@ -21096,8 +21153,9 @@ document.querySelectorAll('#side [data-go]').forEach(b=>b.onclick=()=>go(b.datas
          实际训练仍由 addModel 使用本次时间，结果修订也会生成不同的指纹。 */
       const timeKey=p.id+':'+tgt+':'+seed;
       const version=fp32(JSON.stringify({ds:d?{id:d.id,fp:d.fp}:null,result:r}));
-      const previous=savedTimes[timeKey];
-      const at=previous?.version===version&&typeof previous.at==='string'?previous.at:nowStamp();
+      /* 时间按「离现在多久」算，不取当下这一分钟：九个模型写着同一时刻一眼就是假的，
+         和数据集、实验的先后关系也对不上。savedTimes 仍然留着，用来看结果变没变。 */
+      const at=seedStamp(seedBase(pi)-3240-i*60);
       nextTimes[timeKey]={version,at};
       addModel(p.id,Object.assign({at,target:tgt,ds:(d?d.id:null),
         /* 种子和数据来源要跟着模型走。少了它们，这个模型就复现不了，
@@ -21855,7 +21913,7 @@ const LAB_STAGES={
  qc:{title:'浓度与样品质控',input:'纯化蛋白及空白对照',data:'蛋白消光系数／定量方法、缓冲液、质控接受标准',output:'浓度／吸收光谱、质控判定；放行样本与独立表征分样（纯度可附加电泳等证据）'},
  affinity:{title:'亲和力表征',input:'质控放行的独立分样、配体／分析物、传感器或芯片',data:'浓度系列、对照／参考通道、固定方法、拟合模型与适用量程',output:'结合曲线、拟合与质控记录；在方法有效范围内得到 ka、kd、KD'},
  stability:{title:'稳定性表征',input:'质控放行的独立蛋白分样与兼容耗材',data:'样本浓度、缓冲条件、升温方法、重复与对照',output:'荧光比值／散射曲线、转变温度、聚集相关指标及质控判定'},
- activity:{title:'蛋白／酶活性表征',input:'质控放行的独立分样、底物与对照',data:'反应方法、标准曲线、板图、读取模式与时间序列',output:'原始光学信号／时间曲线；按分析方法计算的相对活性等结果'},
+ activity:{title:'酶活性表征',input:'质控放行的独立分样、底物与对照',data:'反应方法、标准曲线、板图、读取模式与时间序列',output:'原始光学信号／时间曲线；按分析方法计算的相对活性等结果'},
  review:{title:'数据复核与实验结论',input:'各表征环节的有效结果；无需新增实体样品',data:'原始数据、样本映射、质控与拟合记录、项目判据',output:'支持假设／不支持假设／证据不足的结论及证据索引'}
 };
 const LAB_DEVICES=[
@@ -21865,7 +21923,7 @@ const LAB_DEVICES=[
  {id:'q700',name:'超声波破碎仪',model:'Q700 Sonicator',brand:'Qsonica',type:'样品处理',stages:['lysis'],desc:'通过超声处理细胞样品，支持振幅、脉冲与处理时间配置。',why:'适合兼容样品的细胞裂解；探头、容器及温控需要核对。',native:'运行参数及温控记录按配置或人工记录保存。',url:'https://www.sonicator.com/products/q700-sonicator'},
  {id:'5810r',name:'冷冻离心机',model:'Centrifuge 5810 R',brand:'Eppendorf',type:'样品处理',stages:['harvest','clarify'],desc:'使用兼容转子处理离心管或板，用于样品分离和澄清。',why:'用于裂解后澄清；转子、适配器及样品条件需匹配。',native:'运行条件／转子信息与分离后组分由操作者记录。',url:'https://www.eppendorf.com/product-media/doc/en/2283284/Centrifugation_Operating-manual_Centrifuge-5804-R_5810-R-compliant-2017-746-EC.pdf'},
  {id:'akta25',name:'蛋白层析纯化系统',model:'ÄKTA pure 25',brand:'Cytiva',type:'纯化质控',stages:['purify'],desc:'通过色谱方法完成蛋白分离、纯化与组分收集。',why:'适合蛋白纯化；色谱柱、流路、方法和收集条件应单独配置。',native:'UNICORN 原生方法、色谱数据及分馏记录；归一化文件由适配层生成。',url:'https://cdn.cytivalifesciences.com/api/public/content/digi-16276-pdf'},
- {id:'akta150',name:'蛋白层析纯化系统',model:'ÄKTA pure 150',brand:'Cytiva',type:'纯化质控',stages:['purify'],desc:'与 pure 25 同系列、具有不同流量范围的纯化参考型号。',why:'按样品规模和方法选择；型号建议不代表已有设备可用。',native:'UNICORN 原生结果与组分记录，具体导出格式需按软件核对。',url:'https://cdn.cytivalifesciences.com/api/public/content/digi-17730-pdf'},
+ {id:'akta150',name:'蛋白层析纯化系统',model:'ÄKTA pure 150',brand:'Cytiva',type:'纯化质控',stages:['purify'],desc:'同系列的更大流量机型，适合体积更大的纯化与中试放大。',why:'按样品规模和方法选择；型号建议不代表已有设备可用。',native:'UNICORN 原生结果与组分记录，具体导出格式需按软件核对。',url:'https://cdn.cytivalifesciences.com/api/public/content/digi-17730-pdf'},
  {id:'nanodrop',name:'微量分光光度计',model:'NanoDrop One',brand:'Thermo Scientific',type:'纯化质控',stages:['qc'],desc:'测量吸收光谱与蛋白浓度，为后续表征确认样品输入。',why:'推荐用于浓度检测；UV 定量不能单独证明纯度或样品合格。',native:'吸收光谱与浓度结果；格式随软件版本，需绑定空白和定量方法。',url:'https://www.thermofisher.cn/order/catalog/product/ND-ONE-W/faqs'},
  {id:'octet',name:'生物层干涉分析仪',model:'Octet R8 · BLI',brand:'Sartorius',type:'亲和力表征',stages:['affinity'],desc:'基于 BLI 获取实时结合曲线，用于亲和力与结合动力学分析。',why:'用于无标记结合表征；超紧结合目标需复核量程、解离窗口及方法适用性。',native:'传感曲线、拟合参数与质控结果；不能将拟合输出直接当作可靠结论。',url:'https://www.sartorius.com/en/products/biolayer-interferometry/octet-r8'},
  {id:'biacore',name:'表面等离子体共振系统',model:'Biacore 8K · SPR',brand:'Cytiva',type:'亲和力表征',stages:['affinity'],desc:'基于 SPR 进行分子相互作用、亲和力与动力学表征。',why:'作为 SPR 方法参考；芯片、固定方法、浓度范围与拟合有效性需要确认。',native:'控制软件原始数据与 Insight 分析结果；平台归一化另行适配。',url:'https://cdn.cytivalifesciences.com/api/public/content/digi-18070-pdf'},
@@ -22009,7 +22067,7 @@ function labApplyExceptionExample(b){
 function labInit(){
  // Explicitly illustrative stage records, never inferred from vendor status logs.
  BATCHES.forEach((b,i)=>{if(!['B-2409','B-2411','B-2412'].includes(b.id))return;const steps=labPlan();steps.forEach(s=>{s.state=i<2?'done':['prep','qc'].includes(s.id)?'done':['affinity','stability'].includes(s.id)?'running':'pending';s.result=s.state==='done'?'演示：该环节已完成记录':'演示：等待后续记录';s.evidence=s.state==='done'?'演示记录（无真实测量文件）':'';});b.workflow={schema:1,source:'demo',phase:'ready',template:'characterize',mode:'parallel',assays:['affinity','stability'],sampleIds:['DEMO-SAMPLE'],sampleSource:'演示样本清单；未绑定真实样品',aliquot:'演示：亲和力与稳定性使用独立分样',steps,conclusion:i<2?{published:true,verdict:i===0?'支持假设':'证据不足',text:i===0?'演示：候选需要结合亲和力与稳定性证据继续复核。':'演示：部分样本的数据不足，需要补充验证。',evidence:'演示结论，不用于科研判断',by:'演示数据'}:null,events:[]};});
- if(!BATCHES.some(b=>b.id==='B-DEMO-EX')){const steps=labPlan('full');steps.forEach((s,i)=>{s.state=i<steps.findIndex(x=>x.id==='qc')?'done':s.id==='qc'?'exception':'pending';if(i<steps.findIndex(x=>x.id==='qc')){s.result='演示：环节完成';s.evidence='演示记录（无真实文件）';}if(s.id==='qc')s.result='演示：样品浓度记录与交接清单不一致，暂停后续表征并核对样本。';});BATCHES.push({id:'B-DEMO-EX',pid:'p2',round:2,name:'蛋白纯化与表征 · 流路检查',n:24,vendor:'演示流程',status:'in_production',results:'none',ctx:{assay:['BLI','nanoDSF']},log:[['示例数据初始化','2026-11-20 00:00']],workflow:{schema:1,source:'demo',phase:'ready',template:'full',mode:'parallel',assays:['affinity','stability'],sampleSource:'演示样品交接清单',sampleIds:['DEMO-EX'],aliquot:'质控放行后再分样',steps,conclusion:null,events:[]}});}
+ if(!BATCHES.some(b=>b.id==='B-DEMO-EX')){const steps=labPlan('full');steps.forEach((s,i)=>{s.state=i<steps.findIndex(x=>x.id==='qc')?'done':s.id==='qc'?'exception':'pending';if(i<steps.findIndex(x=>x.id==='qc')){s.result='演示：环节完成';s.evidence='演示记录（无真实文件）';}if(s.id==='qc')s.result='演示：样品浓度记录与交接清单不一致，暂停后续表征并核对样本。';});BATCHES.push({id:'B-DEMO-EX',pid:'p2',round:2,name:'蛋白纯化与表征 · 流路检查',n:24,vendor:'演示流程',status:'in_production',results:'none',ctx:{host:'大肠杆菌 E. coli',assay:['BLI','nanoDSF'],reps:'n = 3',buffer:'PBS pH 7.4 + 0.02% Tween-20',temp:'25℃'},log:[['示例数据初始化','2026-11-20 00:00']],workflow:{schema:1,source:'demo',phase:'ready',template:'full',mode:'parallel',assays:['affinity','stability'],sampleSource:'演示样品交接清单',sampleIds:['DEMO-EX'],aliquot:'质控放行后再分样',steps,conclusion:null,events:[]}});}
  const saved=LS.get('lab_workflow_v1',null);if(saved?.schema===1&&Array.isArray(saved.batches))saved.batches.forEach(x=>{if(!x||!x.id||!x.workflow||!Array.isArray(x.workflow.steps))return;const b=BATCHES.find(b=>b.id===x.id);if(b)b.workflow=x.workflow;else if(x.localLab&&DB.projects.some(p=>p.id===x.pid))BATCHES.unshift(x);});
  // Materialize the requested sample fixtures; never rewrite user sample lists or shared versions.
  BATCHES.forEach(b=>{const w=b.workflow;if(w?.source==='demo'&&w.sampleIds?.length===1&&/^DEMO-(SAMPLE|EX)$/.test(w.sampleIds[0]))w.sampleIds=Array.from({length:b.n},(_,i)=>'R'+b.round+'-S'+String(i+1).padStart(3,'0'));});
@@ -22207,25 +22265,27 @@ async function rsFile(id){return new Promise((resolve,reject)=>{const r=RS.db.tr
 function rsBlankProject(name,desc,owner='me'){const T=PTYPES[0],D=DOMAINS[0];return {id:rsId('p'),name,target:T.n,ptype:T.k,dom:D.k,fields:T.f.slice(),tcp:null,desc,state:'active',model:'—',variants:0,returned:0,ink:0,owner:owner==='me'?'我':owner,ownerId:owner,updated:'刚刚',kb:[],tools:[],dsets:[],models:[],rounds:[{i:1,state:'open',v:0,r:0,mb:'—',ma:'—',note:'还没有开始',ctrl:0,failed:0,plan:{host:'',assay:[],reps:'n = 3',buffer:'',temp:''}}]};}
 function rsCandidates(pid){
  const p=rsProject(pid);if(!p)return [];const out=[];
- const add=(kind,id,name,snapshot,description,version='v1')=>{const fingerprint=fp32(JSON.stringify(snapshot));out.push({id:'a-'+fp32([pid,kind,id,version,fingerprint].join('|')),kind,sourceId:id,name,description,version,fingerprint,snapshot:rsClone(snapshot),sourceProject:pid,contributor:'me',at:nowStamp()});return out[out.length-1];};
+ const add=(kind,id,name,snapshot,description,version='v1',at)=>{const fingerprint=fp32(JSON.stringify(snapshot));out.push({id:'a-'+fp32([pid,kind,id,version,fingerprint].join('|')),kind,sourceId:id,name,description,version,fingerprint,snapshot:rsClone(snapshot),sourceProject:pid,contributor:'me',at:at||nowStamp()});return out[out.length-1];};
  /* 知识库候选 = 资料空间里这个课题名下的全部文件（上传件、任务产物、知识库条目），能带正文的带正文，
     带不了的（PDF 引用、还没生成的产物）只带引用。之前只拿 p.kb 的名字，组员导入后拿到的是一个空壳。 */
  const kbRows=typeof materialsRows==='function'?materialsRows().filter(x=>x.pid===pid&&!x.sharedId&&x.kind!=='import'):[];
- if(kbRows.length)kbRows.forEach(x=>{let content=x.content||(typeof KBTEXT!=='undefined'?KBTEXT[pid+'|'+x.name]:null)||null;const url=x.url||null;if(!content){const mk=typeof fileMake==='function'?fileMake(x):null;if(mk){try{const d=mk();if(typeof d==='string')content=d.slice(0,200000);}catch(e){}}}add('knowledge',x.id,x.name,{name:x.name,type:typeof fileExt==='function'?fileExt(x):'',bytes:x.bytes??null,content,url,metadataOnly:!content&&!url},content?'资料空间文件':url?'资料空间链接':'资料引用，未附原始文件');});
+ if(kbRows.length)kbRows.forEach(x=>{let content=x.content||(typeof KBTEXT!=='undefined'?KBTEXT[pid+'|'+x.name]:null)||null;const url=x.url||null;if(!content){const mk=typeof fileMake==='function'?fileMake(x):null;if(mk){try{const d=mk();if(typeof d==='string')content=d.slice(0,200000);}catch(e){}}}add('knowledge',x.id,x.name,{name:x.name,type:typeof fileExt==='function'?fileExt(x):'',bytes:x.bytes??null,content,url,metadataOnly:!content&&!url},content?'资料空间文件':url?'资料空间链接':'资料引用，未附原始文件','v1',x.at);});
  else (p.kb||[]).forEach((n,i)=>add('knowledge','kb-'+i,typeof n==='string'?n:n.name||'知识条目',{name:typeof n==='string'?n:n.name,metadataOnly:true},'知识库目录条目，未附原始文件'));
- (p.tools||[]).forEach(n=>add('tool',n,n,{name:n},'项目使用的工具引用'));
- (p.dsets||[]).filter(d=>d.st==='pub').forEach(d=>add('dataset',d.id,d.n||d.name||d.id,d,'已发布的数据集快照',d.version||'v1'));
+ /* 工具只是个引用，没有自己的时刻，跟课题最近更新走 */
+ (p.tools||[]).forEach(n=>add('tool',n,n,{name:n},'项目使用的工具引用','v1',(typeof seedStamp==='function'?seedStamp(4500):null)));
+ (p.dsets||[]).filter(d=>d.st==='pub').forEach(d=>add('dataset',d.id,d.n||d.name||d.id,d,'已发布的数据集快照',d.version||'v1',d.pubAt||d.at));
  const modelRecords=workbenchData({pid}).modelTasks.filter(t=>t.kind==='train');
  (p.models||[]).filter(m=>modelRecords.some(t=>t.id===m.id&&t.status==='done')&&inLib(m)).forEach(raw=>{
   const record=modelRecords.find(t=>t.id===raw.id),m=Object.assign({},raw,{imported:!!record.imported});
-  const modelAsset=add('model',m.id,m.name||((typeof tgtName==='function'?tgtName(m.target):m.target||'蛋白')+' 打分器'),m,m.imported?'导入的模型产物，非本机训练':'训练完成的模型产物',m.version||'v1');
-  if(Number.isFinite(m.rho)||Number.isFinite(m.rmse))add('evaluation','eval-'+m.id,(m.name||((typeof tgtName==='function'?tgtName(m.target):m.target||'蛋白')+' 打分器'))+' · 评测',{modelId:m.id,modelAssetId:modelAsset.id,rho:m.rho,rmse:m.rmse,nTest:m.nTest,imported:!!m.imported},'已保存的评测指标，不是新执行的评测');
+  const modelAsset=add('model',m.id,m.name||((typeof tgtName==='function'?tgtName(m.target):m.target||'蛋白')+' 打分器'),m,m.imported?'导入的模型产物，非本机训练':'训练完成的模型产物',m.version||'v1',m.at);
+  if(Number.isFinite(m.rho)||Number.isFinite(m.rmse))add('evaluation','eval-'+m.id,(m.name||((typeof tgtName==='function'?tgtName(m.target):m.target||'蛋白')+' 打分器'))+' · 评测',{modelId:m.id,modelAssetId:modelAsset.id,rho:m.rho,rmse:m.rmse,nTest:m.nTest,imported:!!m.imported},'已保存的评测指标，不是新执行的评测','v1',m.at);
  });
- BATCHES.filter(b=>b.pid===pid).forEach(b=>{const w=b.workflow,st=labSummary(b);const experimentAsset=add('experiment',b.id,b.name||b.id,b,st.label+' · '+st.current);
-  if(w?.sampleIds?.length)add('sampleSheet','samples-'+b.id,b.id+' · 实验样本清单',{experimentAssetId:experimentAsset.id,sampleIds:w.sampleIds,source:w.sampleSource,aliquot:w.aliquot,demo:w.source==='demo'},'样本编号与来源登记，不含测量结果');
-  if(w?.conclusion?.published)add('conclusion','conclusion-'+b.id,b.id+' · 实验结论',Object.assign({},w.conclusion,{experimentAssetId:experimentAsset.id}),w.conclusion.verdict+' · '+w.conclusion.text);
+ BATCHES.filter(b=>b.pid===pid).forEach(b=>{const w=b.workflow,st=labSummary(b);const bAt=(b.log||[]).slice(-1)[0]?.[1]||(w?.events||[]).slice(-1)[0]?.at||null;
+  const experimentAsset=add('experiment',b.id,b.name||b.id,b,st.label+' · '+st.current,'v1',bAt);
+  if(w?.sampleIds?.length)add('sampleSheet','samples-'+b.id,b.id+' · 实验样本清单',{experimentAssetId:experimentAsset.id,sampleIds:w.sampleIds,source:w.sampleSource,aliquot:w.aliquot,demo:w.source==='demo'},'样本编号与来源登记，不含测量结果','v1',bAt);
+  if(w?.conclusion?.published)add('conclusion','conclusion-'+b.id,b.id+' · 实验结论',Object.assign({},w.conclusion,{experimentAssetId:experimentAsset.id}),w.conclusion.verdict+' · '+w.conclusion.text,'v1',w.conclusion.at||bAt);
  });
- workbenchData({pid}).modelTasks.filter(t=>t.kind==='infer'&&t.type==='batch').forEach(t=>add('inference',t.id,t.name,t,t.detail));return out;
+ workbenchData({pid}).modelTasks.filter(t=>t.kind==='infer'&&t.type==='batch').forEach(t=>add('inference',t.id,t.name,t,t.detail,'v1',t.at));return out;
 }
 function rsAssetLabel(k){return {knowledge:'知识条目',tool:'工具',dataset:'数据集',model:'模型',evaluation:'评测报告',experiment:'实验记录',conclusion:'实验结论',sampleSheet:'样本清单',inference:'推理记录'}[k]||k;}
 async function rsCreateShared(input){
@@ -22508,7 +22568,12 @@ function rsMarketTabs(kind){return '<div class="rs-market-tabs" role="group" ari
 function rsMarketPage(kind,scope=RS.marketTab){const isTool=kind==='tool',personal=S.route==='tools',noun=isTool?'工具':'数据库',title=personal?'工具':isTool?'科研工具':'数据库',create='<button class="btn btn-pri" type="button" data-rs-new-resource="'+kind+'">新建'+noun+'</button>';
  if(scope==='mine'){const items=RS.data.resources.filter(r=>r.kind===kind&&r.owner==='me');return '<div class="page rs">'+rsHeader(title,'管理自己的文件、版本与发布状态。',create)+(personal?'':rsMarketTabs(kind))+(items.length?'<div class="rs-project-grid">'+items.map(rsResourceCard).join('')+'</div>':'<div class="rs-empty"><h2>创建你的第一个'+noun+'</h2><p>上传文件、完善信息，建立可以复用的资源版本。</p>'+create+'</div>')+'</div>';}
  let html=(isTool?rsBuiltinShelf:rsBuiltinData)();html=html.replace('<h1>'+title+'</h1>','<h1>'+title+'</h1>');
- html=html.replace(isTool?'<label class="fbar-q">':'<div class="field" style="width:auto">',create+(isTool?'<label class="fbar-q">':'<div class="field" style="width:auto">'));
+ /* 主按钮放在搜索框右边：全站别的页面都是「次要按钮…搜索…主按钮」这个顺序，
+    这里原来把黑实心按钮插在搜索框左边，一眼就看出来不是一套。 */
+ {const head=document.createElement('template');head.innerHTML=html;
+  const anchor=head.content.querySelector(isTool?'.fbar-q':'.field');
+  if(anchor){anchor.insertAdjacentHTML('afterend',create);html=head.innerHTML;}
+  else html=html.replace(isTool?'<label class="fbar-q">':'<div class="field" style="width:auto">',create+(isTool?'<label class="fbar-q">':'<div class="field" style="width:auto">'));}
  /* 科研工具的筛选收成了一条 .tl-bar；数据库仍是 .fltrow。「市场 / 我的」插在它们前面 */
  {const bar=isTool?'<div class="tl-bar">':'<div class="fltrow">';html=html.replace(bar,rsMarketTabs(kind)+bar);}
  const query=String(isTool?S.tq||'':S.dq||'').toLowerCase();const pick=isTool?S.shcap:S.dcap;const items=RS.data.resources.filter(r=>r.kind===kind).map(rsPublishedResource).filter(Boolean).filter(r=>!pick||pick==='全部'||r.cap===pick).filter(r=>!query||[r.name,r.slug,r.description,...r.tags].join(' ').toLowerCase().includes(query));
@@ -22895,7 +22960,9 @@ labV2Bind=function(root){
 /* Collaboration examples are additive, versioned and idempotent. Existing assets stay immutable. */
 async function iterationSeedWorkspace(){
  if(RS.data.iterationSeed||LS.get('examples_disabled',false))return;
- const next=rsClone(RS.data),li='example-li',at=nowStamp();
+ /* 共享课题和成员的加入时间也要落在过去：里面的资产是 11-24 共享的，
+    外面的课题却写着「刚刚创建」，两头对不上。 */
+ const next=rsClone(RS.data),li='example-li',at=(typeof seedStamp==='function'?seedStamp(4440):nowStamp());
  const target=(id,name,owner)=>{let p=next.projects.find(p=>p.id===id);if(!p){p=rsBlankProject(name,'独立复核已获授权的课题资产',owner);p.id=id;next.projects.push(p);}return p;};
  const mine=target('example-personal-review','蛋白候选复核','me'),theirs=target('example-li-review','稳定性复核',li);
  let own=next.shared.find(s=>s.projectId==='p1'&&s.owner==='me'),fresh=!own;
@@ -23164,7 +23231,7 @@ labCardV2=function(b){
  const methods=workflow?.source==='autonomous'?alTaskMethods(workflow):b.ctx?.assay?.join('、');
  const context=summary.status==='exception'?summary.detail:summary.status==='conclusion'?workflow?.conclusion?.verdict:summary.current;
  return `<article class="lv-exp is-${summary.status}" role="button" tabindex="0" data-labgo="${esc(b.id)}" aria-label="${action}：${esc(title)}">
-  <div class="row" style="justify-content:space-between;gap:10px">${labBadge(summary.status,summary.label)}<span class="lv-tags">${typeof ceSharedTag==='function'?ceSharedTag('experiment',b.id,b.pid):''}${b.id.includes('DEMO')?'':`<span class="lv-id-tag num">${esc(b.id)}</span>`}</span></div>
+  <div class="row" style="justify-content:space-between;gap:10px">${labBadge(summary.status,summary.label)}<span class="lv-tags">${typeof ceSharedTag==='function'?ceSharedTag('experiment',b.id,b.pid):''}${b.id.includes('DEMO')?'<span class="lv-tag">示例</span>':`<span class="lv-id-tag num">${esc(b.id)}</span>`}</span></div>
   <h2 class="lv-exp-title">${esc(title)}</h2>
   <p class="lv-small">${esc(pnOf(b.pid))} · ${b.n} 个${workflow?.source==='autonomous'?'候选':''}样本</p>
   ${methods?`<p class="lv-small lv-card-summary">${esc(methods)}</p>`:''}
@@ -23219,6 +23286,15 @@ labV2Act=function(action){if(action==='labnew')LABUI.selected='setup';return ite
 })();
 
 /* Additive presentation fixtures. Synthetic measurements stay marked in data; no service runs. */
+/* 示例记录的时间不能都取「现在」：一屏十几条写着同一分钟，一眼就是假的。
+   这里按「离现在多少分钟」给每条记录一个固定的过去时刻，先后顺序和研究流程一致：
+   取序列/建库 → 建数据集 → 训练 → 推理 → 实验 → 结论。 */
+function seedStamp(minutesAgo){
+ const d=new Date(Date.now()-Math.max(1,minutesAgo)*60000),z=n=>String(n).padStart(2,'0');
+ return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+' '+z(d.getHours())+':'+z(d.getMinutes());
+}
+/* 每个课题错开 2 小时，课题之间不会撞在同一分钟上 */
+function seedBase(index){return 4320+index*120;}
 const PROJECT_FIXTURE_SCHEMA=1;
 function fixtureProfile(p){
  const enzyme=(p.fields||[]).includes('kcat')||/核酸酶/.test(p.name);
@@ -23233,9 +23309,12 @@ function fixtureDataset(p,index,profile){
  const head=['variant','sequence','iptm','rmsd','expression',...measurements],rand=rng(4100+index);
  const lines=Array.from({length:48},(_,i)=>{const pos=(i*7+index*11)%sequence.length,to=AA20[(AA20.indexOf(sequence[pos])+1+i%19)%20],variantSequence=sequence.slice(0,pos)+to+sequence.slice(pos+1);const a=.65+rand()*.3,b=.5+rand()*1.3,c=.75+rand()*.5,noise=(rand()-.5)*.45,values={'dTm_℃':1.8+4*a-.6*b+.4*c+noise,'kd_pM':Math.max(.05,1.9-1.5*a+.15*b+noise*.2),'kcat_s⁻¹':2+6*a-.4*b+noise,'km_μM':50+15*b-10*a+noise};return ['P'+(index+1)+'-V'+String(i+1).padStart(3,'0'),variantSequence,a.toFixed(4),b.toFixed(4),c.toFixed(4),...measurements.map(k=>values[k].toFixed(4))].join(',');});
  const parsed=parseTable([head.join(','),...lines].join('\n'),'protein-measurements.csv');
- return {id:'DS-P'+(index+1)+'-001',pid:p.id,name:p.name+' · 候选表征数据',desc:'候选序列、表征特征与'+profile.label+' 测定值',src:'课题示例测定记录',file:'protein-measurements.csv',rows:parsed.rows,cols:parsed.cols,target:profile.target,feats:['iptm','rmsd','expression'],task:'回归',split:makeSplit(48,[.75,.125,.125],4100+index),ratio:[.75,.125,.125],seed:4100+index,fp:parsed.fp,version:'v1.0.0',st:'pub',at:nowStamp(),pubAt:nowStamp(),example:true,fixtureSchema:PROJECT_FIXTURE_SCHEMA};
+ return {id:'DS-P'+(index+1)+'-001',pid:p.id,name:p.name+' · 候选表征数据',desc:'候选序列、表征特征与'+profile.label+' 测定值',src:'课题示例测定记录',file:'protein-measurements.csv',rows:parsed.rows,cols:parsed.cols,target:profile.target,feats:['iptm','rmsd','expression'],task:'回归',split:makeSplit(48,[.75,.125,.125],4100+index),ratio:[.75,.125,.125],seed:4100+index,fp:parsed.fp,version:'v1.0.0',st:'pub',at:seedStamp(seedBase(index)-180),pubAt:seedStamp(seedBase(index)-180),example:true,fixtureSchema:PROJECT_FIXTURE_SCHEMA};
 }
 function fixtureExperiment(p,index,status,dataset,profile){
+ /* 四种状态的实验不是同一时刻建的：已出结论的最早，刚存的方案最新 */
+ const mins=seedBase(index)-({conclusion:420,exception:700,normal:900,draft:1020}[status]||420);
+ const at=seedStamp(mins),atDone=seedStamp(mins+30);
  const id='B-P'+(index+1)+'-'+({normal:'001',exception:'002',conclusion:'003',draft:'004'}[status]);
  const sampleIds=dataset.rows.slice(0,24).map((r,i)=>String(r.variant||r.id||id+'-S'+(i+1)));
  const median=key=>{const values=dataset.rows.slice(0,24).map(r=>+r[key]).filter(Number.isFinite).sort((a,b)=>a-b);return values.length?((values[(values.length-1)>>1]+values[values.length>>1])/2).toFixed(2):'—';};
@@ -23247,25 +23326,25 @@ function fixtureExperiment(p,index,status,dataset,profile){
   s.result=s.state==='done'?(s.stage==='review'?conclusion:s.stage==='affinity'?'结合曲线与重复测量已复核，KD 中位值 '+median('kd_pM')+' pM。':s.stage==='stability'?'热转变曲线已复核，ΔTm 中位值 '+median('dTm_℃')+' ℃。':s.stage==='activity'?'活性测定完成，kcat 中位值 '+median('kcat_s⁻¹')+' s⁻¹；Km 中位值 '+median('km_μM')+' μM。':'样本与质控记录已复核，输入输出交接完整。'):s.state==='exception'?'样本浓度与交接清单不一致，已暂停后续表征，等待补测浓度。':s.state==='running'?'已完成样本装载，正在采集表征曲线。':'';
   s.evidence=['done','exception'].includes(s.state)?'ELN/'+id+'/'+s.id+'/v1':'';
  });
- const workflow={schema:1,source:'demo',phase:status==='draft'?'draft':'ready',template:profile.template,mode:'parallel',assays:profile.assays.slice(),sampleIds,sampleSource:dataset.id+' · '+dataset.name+' · v1',aliquot:'同一份样本清单，各表征分支使用独立分样，完成后汇总结果。',steps,conclusion:status==='conclusion'?{published:true,verdict:'支持假设',text:conclusion,evidence:'ELN/'+id+'/analysis-v1',by:'ZHANG',at:nowStamp()}:null,events:[{at:nowStamp(),by:'ZHANG',text:status==='conclusion'?'已复核表征结果并发布实验结论':status==='exception'?'质控异常，等待样本浓度复核':status==='draft'?'保存实验编排草稿':'前处理完成，进入并行表征'}]};
- const batch={id,pid:p.id,name:(profile.label==='kcat'?'酶活与稳定性表征':'亲和力与稳定性表征')+' · '+({normal:'第 2 批',exception:'质控复核',conclusion:'第 1 批',draft:'下一批方案'}[status]),resultRows:dataset.rows.slice(0,24).map(r=>rsClone(r)),resultCsv:[dataset.cols.map(c=>c.k).join(','),...dataset.rows.slice(0,24).map(r=>dataset.cols.map(c=>'"'+String(r[c.k]??'').replace(/"/g,'""')+'"').join(','))].join('\n'),round:p.rounds.slice(-1)[0]?.i||1,n:sampleIds.length,vendor:'蛋白实验平台',status:status==='conclusion'?'done':status==='draft'?'draft':'in_production',results:status==='conclusion'?'all':'none',ctx:{host:profile.label==='kcat'?'E. coli':'HEK293',assay:profile.label==='kcat'?['酶活测定','nanoDSF']:['BLI','nanoDSF'],reps:'n = 3',buffer:profile.label==='kcat'?'Tris pH 8.0':'PBS pH 7.4',temp:profile.label==='kcat'?'37℃':'25℃'},log:[['draft',nowStamp()],...(status==='conclusion'?[['done',nowStamp()]]:[])],workflow,localLab:true,example:true,fixtureSchema:PROJECT_FIXTURE_SCHEMA,datasetId:dataset.id};
+ const workflow={schema:1,source:'demo',phase:status==='draft'?'draft':'ready',template:profile.template,mode:'parallel',assays:profile.assays.slice(),sampleIds,sampleSource:dataset.id+' · '+dataset.name+' · v1',aliquot:'同一份样本清单，各表征分支使用独立分样，完成后汇总结果。',steps,conclusion:status==='conclusion'?{published:true,verdict:'支持假设',text:conclusion,evidence:'ELN/'+id+'/analysis-v1',by:'ZHANG',at:at}:null,events:[{at:atDone,by:'ZHANG',text:status==='conclusion'?'已复核表征结果并发布实验结论':status==='exception'?'质控异常，等待样本浓度复核':status==='draft'?'保存实验编排草稿':'前处理完成，进入并行表征'}]};
+ const batch={id,pid:p.id,name:(profile.label==='kcat'?'酶活与稳定性表征':'亲和力与稳定性表征')+' · '+({normal:'第 2 批',exception:'质控复核',conclusion:'第 1 批',draft:'下一批方案'}[status]),resultRows:dataset.rows.slice(0,24).map(r=>rsClone(r)),resultCsv:[dataset.cols.map(c=>c.k).join(','),...dataset.rows.slice(0,24).map(r=>dataset.cols.map(c=>'"'+String(r[c.k]??'').replace(/"/g,'""')+'"').join(','))].join('\n'),round:p.rounds.slice(-1)[0]?.i||1,n:sampleIds.length,vendor:'蛋白实验平台',status:status==='conclusion'?'done':status==='draft'?'draft':'in_production',results:status==='conclusion'?'all':'none',ctx:{host:'大肠杆菌 E. coli',assay:profile.label==='kcat'?['酶活测定','nanoDSF']:['BLI','nanoDSF'],reps:'n = 3',buffer:profile.label==='kcat'?'Tris pH 8.0':'PBS pH 7.4 + 0.02% Tween-20',temp:profile.label==='kcat'?'37℃':'25℃'},log:[['draft',atDone],...(status==='conclusion'?[['done',at]]:[])],workflow,localLab:true,example:true,fixtureSchema:PROJECT_FIXTURE_SCHEMA,datasetId:dataset.id};
  return status==='exception'?labApplyExceptionExample(batch):batch;
 }
 function fixtureTraining(p,index,dataset,profile){
  const trained=dsTrain(dataset,{seed:dataset.seed});if(!trained.ok)throw new Error('示例训练数据不完整：'+p.name+' '+trained.why);
- const common={pid:p.id,target:dataset.target,ds:dataset.id,seed:dataset.seed,kind:'ds',base:BASE_MODELS[0].n,method:TRAIN_METHOD[0].n,upd:'—',src:dataset.id+' · '+dataset.name,example:true,fixtureSchema:PROJECT_FIXTURE_SCHEMA,at:nowStamp()};
+ const common={pid:p.id,target:dataset.target,ds:dataset.id,seed:dataset.seed,kind:'ds',base:BASE_MODELS[0].n,method:TRAIN_METHOD[0].n,upd:'—',src:dataset.id+' · '+dataset.name,example:true,fixtureSchema:PROJECT_FIXTURE_SCHEMA,at:seedStamp(seedBase(index)-300)};
  const done=Object.assign({},trained,common,verdictOf(trained),{id:'M-P'+(index+1)+'-001',name:profile.label+' 候选评分器',desc:'基于本课题固定数据版本的候选评分与留出集复核',st:'done',lib:true,ms:38+index*7,bl:trained.base});delete done.ok;delete done.base;done.base=common.base;
- const active=Object.assign({},common,{id:'M-P'+(index+1)+'-002',name:profile.label+' 评分器 · 交叉验证',desc:'以新回流数据复核特征与正则强度',st:'running',lib:false,pg:42,nTrain:trained.nTrain,nTest:trained.nTest,n:trained.n,stage:'数据标准化与交叉验证',why:'训练进行中，完成后生成可用模型',trainingLog:[['数据读取','完成'],['固定切分','完成'],['交叉验证','进行中'],['留出集评测','待开始']],w:[],rho:null,rmse:null});
+ const active=Object.assign({},common,{at:seedStamp(seedBase(index)-600),id:'M-P'+(index+1)+'-002',name:profile.label+' 评分器 · 交叉验证',desc:'以新回流数据复核特征与正则强度',st:'running',lib:false,pg:42,nTrain:trained.nTrain,nTest:trained.nTest,n:trained.n,stage:'数据标准化与交叉验证',why:'训练进行中，完成后生成可用模型',trainingLog:[['数据读取','完成'],['固定切分','完成'],['交叉验证','进行中'],['留出集评测','待开始']],w:[],rho:null,rmse:null});
  return [done,active];
 }
 function fixtureInference(p,index,dataset,model){
  const out=dataset.rows.map((row,i)=>{const x=[1,...model.featK.map(k=>+row[k])],pred=x.reduce((sum,v,k)=>sum+(k?(v-model.mu[k])/model.sg[k]:1)*model.w[k],0);return {i,ok:true,t:JSON.stringify({variant:row.variant||row.id||'S'+(i+1),target:model.target,prediction:+pred.toFixed(4),model:model.id}),ms:120+i*7,pt:0,ct:0,tries:1};});
- return {id:'I-P'+(index+1)+'-001',pid:p.id,name:p.name.replace(/[–\s]/g,'_')+'_候选预测',desc:'用 '+model.name+' 对本课题候选逐条评分',sid:'local-scoring',mdl:model.name,ds:dataset.id,col:(dataset.cols.find(c=>c.k==='sequence')||dataset.cols[0]).k,modelId:model.id,sys:'按候选记录返回结构化预测结果。',par:'{"temperature":0}',conc:4,tmo:60,retry:3,st:'done',at:nowStamp(),ms:18400+index*1200,n:dataset.rows.length,out,example:true};
+ return {id:'I-P'+(index+1)+'-001',pid:p.id,name:p.name.replace(/[–\s]/g,'_')+'_候选预测',desc:'用 '+model.name+' 对本课题候选逐条评分',sid:'local-scoring',mdl:model.name,ds:dataset.id,col:(dataset.cols.find(c=>c.k==='sequence')||dataset.cols[0]).k,modelId:model.id,sys:'按候选记录返回结构化预测结果。',par:'{"temperature":0}',conc:4,tmo:60,retry:3,st:'done',at:seedStamp(seedBase(index)-360),ms:18400+index*1200,n:dataset.rows.length,out,example:true};
 }
 function fixtureTasks(p,index,profile,experiment){
  const count=CANDS(p.id).length||24;
  const names={seq:'参考序列与注释整理',str:'候选结构复核',func:'候选性质分析',des:'下一轮候选设计',wet:'实验样本交接'};
- return Object.entries(names).filter(([cap])=>!TASKS.some(t=>t.pid===p.id&&t.cap===cap)).map(([cap,name],j)=>({id:'T-P'+(index+1)+'-'+String(j+1).padStart(3,'0'),pid:p.id,r:p.rounds.slice(-1)[0]?.i||1,cap,n:name,st:'done',pg:100,at:nowStamp(),in:p.name+' · 候选与表征数据',out:cap==='wet'?experiment.id+' · '+experiment.n+' 个样本':cap==='seq'?'1 条参考序列':cap==='des'?count+' 条候选序列':cap==='str'?count+' 条结构复核记录':count+' 条已复核记录',ref:profile.reference,took:'2 分 18 秒',params:cap==='wet'?[['批次',experiment.id],['样本数',String(experiment.n)]]:[['来源课题',p.name],['参考结构',profile.reference],[cap==='seq'?'参考序列数':'候选数',String(cap==='seq'?1:count)]],out2:[['已完成',cap==='seq'?'1 / 1':cap==='wet'?experiment.n+' / '+experiment.n:count+' / '+count],['来源','课题固定版本']],example:true}));
+ return Object.entries(names).filter(([cap])=>!TASKS.some(t=>t.pid===p.id&&t.cap===cap)).map(([cap,name],j)=>({id:'T-P'+(index+1)+'-'+String(j+1).padStart(3,'0'),pid:p.id,r:p.rounds.slice(-1)[0]?.i||1,cap,n:name,st:'done',pg:100,at:seedStamp(seedBase(index)-60-j*25),in:p.name+' · 候选与表征数据',out:cap==='wet'?experiment.id+' · '+experiment.n+' 个样本':cap==='seq'?'1 条参考序列':cap==='des'?count+' 条候选序列':cap==='str'?count+' 条结构复核记录':count+' 条已复核记录',ref:profile.reference,took:'2 分 18 秒',params:cap==='wet'?[['批次',experiment.id],['样本数',String(experiment.n)]]:[['来源课题',p.name],['参考结构',profile.reference],[cap==='seq'?'参考序列数':'候选数',String(cap==='seq'?1:count)]],out2:[['已完成',cap==='seq'?'1 / 1':cap==='wet'?experiment.n+' / '+experiment.n:count+' / '+count],['来源','课题固定版本']],example:true}));
 }
 function restoreProjectFixtures(fixtures){
  for(const row of fixtures.projects){
@@ -23754,12 +23833,16 @@ function rhIcon(kind){ /* 本模块自己的图标集；不要叫 researchIcon�
 }
 function researchTime(value){return String(value||'未记录时间').replace(/^\d{4}-/,'');}
 function researchProjectState(p){
- const scope=workbenchData({pid:p.id}),pending=wbAttentionTasks(scope.tasks||[]),failed=pending.filter(t=>t.status==='failed'||t.needsAction),done=pending.filter(t=>t.status==='done'),active=pending.filter(t=>t.status==='active');
+ /* 角标和「待办」面板用同一套分档（wbTodoBuckets），两处的数必须对得上：
+    角标写的是这个课题要我处理和要我看的总数，不是其中某一档。 */
+ const scope=workbenchData({pid:p.id}),pending=wbAttentionTasks(scope.tasks||[]);
+ const b=typeof wbTodoBuckets==='function'?wbTodoBuckets(pending):{act:pending,read:[],run:[]};
+ const failed=b.act,done=b.read,active=b.run,waiting=failed.length+done.length;
  const task=failed[0]||done[0]||active[0];
  const draft=(scope.experiments||[]).find(t=>t.status==='draft');
  const latest=task||(scope.tasks||[]).filter(t=>t.isTask!==false)[0];
  const tone=failed.length?'alert':done.length?'ready':draft?'confirm':'quiet';
- const badge=failed.length?failed.length+' 项待处理':done.length?done.length+' 份结果待查看':active.length?active.length+' 项进行中':draft?'实验方案待完善':'暂无待处理事项';
+ const badge=waiting?waiting+' 项待办':active.length?active.length+' 项进行中':draft?'实验方案待完善':'暂无待处理事项';
  const next=failed.length?'处理'+(task.kind==='experiment'?'实验异常':'任务异常'):done.length?'查看'+(task.kind==='experiment'?'实验结论':'候选评测结果'):active.length?'查看任务进度':draft?'完善实验方案':'查看课题记录';
  const description=latest?dashboardDescription(latest).description||latest.name:'尚无研究记录，进入课题开始研究。';
  return {tone,badge,next,description,task,draft,latest};
@@ -23911,7 +23994,7 @@ function materialsTime(value){const s=String(value||'');if(!s||s==='—')return 
 function materialsRows(){const local=MATERIALS.records.filter(x=>x.pid?materialsProject(x.pid)&&materialsVisible(materialsProject(x.pid)):x.owner===materialsActor());const uploaded=new Set(local.map(x=>x.pid+'|'+x.name));const base=FILES().filter(x=>x.pid&&materialsProject(x.pid)&&materialsVisible(materialsProject(x.pid))&&!uploaded.has(x.pid+'|'+x.name)).map(x=>({...x,id:'source:'+fileKey(x),owner:materialsProject(x.pid).ownerId||'me'}));/* 从共享课题导入到我课题里的件：导入即出现在目标课题的文件夹里 */
 const imported=((RS.data&&RS.data.imports)||[]).filter(x=>x.target&&materialsProject(x.target)&&materialsVisible(materialsProject(x.target))).map(x=>({id:'import:'+x.id,name:x.name,pid:x.target,kind:x.copy&&x.copy.url?'link':'import',url:x.copy&&x.copy.url||null,content:x.copy&&x.copy.content||null,bytes:x.copy&&x.copy.bytes||null,at:x.at,owner:materialsProject(x.target).ownerId||'me',from:'从共享课题导入',importId:x.id}));
 /* 别人共享给我的课题里的资产：挂在「与你共享」下，点开去共享课题详情 */
-const sharedRows=((RS.data&&RS.data.shared)||[]).filter(s=>s.owner!==materialsActor()&&rsCan(s,'read')).flatMap(s=>s.assets.map(a=>({id:'shared:'+s.id+'|'+a.id,name:a.name,pid:null,sharedId:s.id,assetId:a.id,spaceName:s.name,kind:'shared',bytes:null,at:a.at,owner:s.owner})));
+const sharedRows=((RS.data&&RS.data.shared)||[]).filter(s=>s.owner!==materialsActor()&&rsCan(s,'read')).flatMap(s=>s.assets.map(a=>({id:'shared:'+s.id+'|'+a.id,name:a.name,pid:null,sharedId:s.id,assetId:a.id,spaceName:s.name,kind:'shared',assetKind:a.kind,bytes:null,at:a.at,owner:s.owner})));
 return [...local,...base,...imported,...sharedRows];}
 function materialsSpace(x){return x.sharedId?(x.spaceName||'共享课题')+'（共享）':x.pid?(materialsProject(x.pid)?.name||'课题已移除'):'公共资料';}
 function materialsFiltered(rows=materialsRows()){const m=MATERIALS,p=materialsPrefs();return rows.filter(x=>{const own=x.owner===materialsActor();return (m.tab==='trash'?p.trash.includes(x.id):!p.trash.includes(x.id))&&(m.tab!=='mine'||own)&&(m.tab!=='shared'||!!x.sharedId||x.pid&&!!rsProjectShared(x.pid)&&!materialsOwn(materialsProject(x.pid)))&&(m.tab!=='stars'||p.stars.includes(x.id))&&(!m.space||(m.space==='public'?!x.pid&&!x.sharedId:x.pid===m.space))&&(m.type==='all'||materialsType(x)===m.type)&&(!m.query||(x.name+' '+materialsSpace(x)+' '+(x.content||'')).toLowerCase().includes(m.query.toLowerCase()));}).sort((a,b)=>m.sort==='name'?a.name.localeCompare(b.name,'zh-CN'):materialsTime(b.at)-materialsTime(a.at));}
@@ -23921,7 +24004,16 @@ function materialsSubtitle(){const m=MATERIALS;if(m.space==='public')return '操
 /* 时间统一成一种写法：今天只给时分，其余给 月-日 时:分；原值留在 title 里 */
 function materialsWhen(at){const t=String(at||'');if(!t||t==='—')return '—';const today=nowStamp().slice(0,10);if(t.startsWith(today))return '今天 '+t.slice(11,16);if(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(t))return t.slice(5,16);return t;}
 function materialsNav(label,tab,count){return '<button type="button" class="ms-nav '+(MATERIALS.tab===tab&&!MATERIALS.space?'selected':'')+'" data-ms-tab="'+tab+'">'+materialsIcon(tab==='shared'?'users':tab==='stars'?'star':tab==='trash'?'trash':'file')+'<span>'+label+'</span><small>'+count+'</small></button>';}
-function materialsRow(x){const star=materialsPrefs().stars.includes(x.id),trash=MATERIALS.tab==='trash';return '<article class="ms-file" data-ms-row="'+esc(x.id)+'"><button class="ms-file-main" type="button" data-ms-open="'+esc(x.id)+'">'+fileIc(fileExt(x))+'<span><strong>'+esc(x.name)+(typeof ceSharedTag==='function'?ceSharedTag('knowledge',x.id,x.pid):'')+'</strong><small>'+esc(x.kind==='link'?'链接':fileExt(x).toUpperCase())+' · '+(x.kind==='import'?'从共享课题导入':x.kind==='shared'?'共享资产':x.bytes==null?'资料引用':fmtBytes(x.bytes))+'</small></span></button><span class="ms-cell">'+esc(materialsSpace(x))+'</span><time class="ms-cell" title="'+esc(x.at||'')+'">'+esc(materialsWhen(x.at))+'</time><div class="ms-row-actions">'+(trash?'<button type="button" data-ms-restore="'+esc(x.id)+'">恢复</button>':'<button type="button" aria-label="'+(star?'取消收藏':'收藏')+' '+esc(x.name)+'" aria-pressed="'+star+'" data-ms-star="'+esc(x.id)+'">'+(star?'已收藏':'收藏')+'</button>'+(x.sharedId?'':'<button type="button" aria-label="共享 '+esc(x.name)+'" data-ms-share="'+esc(x.id)+'">共享</button>')+'<button type="button" aria-label="复制文件名 '+esc(x.name)+'" data-ms-copy="'+esc(x.id)+'">复制</button>'+(!x.sharedId&&materialsEditable(x.pid)?'<button type="button" class="is-danger" aria-label="删除 '+esc(x.name)+'" data-ms-del="'+esc(x.id)+'">删除</button>':''))+'</div></article>';}
+/* 共享资产多半没有扩展名，fileExt 会把整个名字当成扩展名返回，
+   于是副标题变成「R1–R2 实测变体表 · 共享资产」——把标题抄了一遍。
+   没有扩展名就写它是哪一类资产。 */
+const MS_ASSET_CN={knowledge:'文件',dataset:'数据集',model:'模型',evaluation:'评测',experiment:'实验',sampleSheet:'样本清单',conclusion:'实验结论',inference:'推理结果',tool:'工具'};
+function materialsTypeLabel(x){
+ if(x.kind==='link')return '链接';
+ if(/\.[A-Za-z0-9]{1,6}$/.test(String(x.name||'')))return fileExt(x).toUpperCase();
+ return MS_ASSET_CN[x.assetKind]||'资产';
+}
+function materialsRow(x){const star=materialsPrefs().stars.includes(x.id),trash=MATERIALS.tab==='trash';return '<article class="ms-file" data-ms-row="'+esc(x.id)+'"><button class="ms-file-main" type="button" data-ms-open="'+esc(x.id)+'">'+fileIc(fileExt(x))+'<span><strong>'+esc(x.name)+(typeof ceSharedTag==='function'?ceSharedTag('knowledge',x.id,x.pid):'')+'</strong><small>'+esc(materialsTypeLabel(x))+' · '+(x.kind==='import'?'从共享课题导入':x.kind==='shared'?'共享资产':x.bytes==null?'资料引用':fmtBytes(x.bytes))+'</small></span></button><span class="ms-cell">'+esc(materialsSpace(x))+'</span><time class="ms-cell" title="'+esc(x.at||'')+'">'+esc(materialsWhen(x.at))+'</time><div class="ms-row-actions">'+(trash?'<button type="button" data-ms-restore="'+esc(x.id)+'">恢复</button>':'<button type="button" aria-label="'+(star?'取消收藏':'收藏')+' '+esc(x.name)+'" aria-pressed="'+star+'" data-ms-star="'+esc(x.id)+'">'+(star?'已收藏':'收藏')+'</button>'+(x.sharedId?'':'<button type="button" aria-label="共享 '+esc(x.name)+'" data-ms-share="'+esc(x.id)+'">共享</button>')+'<button type="button" aria-label="复制文件名 '+esc(x.name)+'" data-ms-copy="'+esc(x.id)+'">复制</button>'+(!x.sharedId&&materialsEditable(x.pid)?'<button type="button" class="is-danger" aria-label="删除 '+esc(x.name)+'" data-ms-del="'+esc(x.id)+'">删除</button>':''))+'</div></article>';}
 /* 行尾「更多」：分享（放进我能发布的共享课题）；菜单点外面即关 */
 function materialsMoreMenu(btn,id){
  document.querySelector('.ms-menu')?.remove();
@@ -24003,6 +24095,8 @@ function stNext(f,now=Date.now()){
  }return null;
 }
 function stWhen(at,zone){return at?new Intl.DateTimeFormat('zh-CN',{timeZone:zone,month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(at)):'无后续安排';}
+/* 「每周」不说星期几等于没说。列表里的短标签也要带上。 */
+function stPeriodLabel(t){return t.period==='weekly'?'每周'+['日','一','二','三','四','五','六'][t.weekday]:t.period==='monthly'?'每月 '+t.monthday+' 日':ST_PERIODS[t.period];}
 function stPlan(t){return (t.period==='weekly'?'每周'+['日','一','二','三','四','五','六'][t.weekday]:t.period==='monthly'?'每月 '+t.monthday+' 日':t.period==='once'?t.date:ST_PERIODS[t.period])+' '+t.time;}
 function stPreview(f){const next=stNext(f);return '<strong>'+esc(stPlan(f))+'</strong><p>'+(next?'下次执行：'+esc(stWhen(next,f.zone)):'请选择一个将来的时间')+'</p>'+(f.period==='monthly'&&f.monthday>28?'<p>当月没有这一天时跳过。</p>':'');}
 function stStart(index,task){ST.form=task?{...task}:{...stBlank(),...(index!=null?{name:ST_TEMPLATES[index][1],content:ST_TEMPLATES[index][2],period:index===1||index===3?'weekly':'daily'}:{})};ST.errors=[];stOpenDialog();}
@@ -24011,7 +24105,7 @@ function stSidebar(){
  const rows=ST.items.filter(t=>t.name.toLowerCase().includes(ST.query.toLowerCase()));
  return '<aside class="st-list ms-sidebar" aria-label="定时任务列表"><button class="ms-back" type="button" data-go="workbench"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>工作台</button><div class="st-list-head"><h1>定时任务</h1><button class="st-icon-button" data-st-action="search" aria-label="搜索任务" aria-expanded="'+ST.search+'">'+stIcon('search')+'</button></div>'+
  (ST.search?'<input class="input st-search" id="st-search" placeholder="搜索任务名称" aria-label="搜索任务名称" value="'+esc(ST.query)+'">':'')+
- '<button class="st-new ms-nav" data-st-action="new">'+stIcon('plus')+'新建任务</button>'+[true,false].map(on=>'<h2>'+(on?'已开启':'已暂停')+'</h2>'+ (rows.filter(t=>t.enabled===on).map(t=>'<button class="st-row ms-nav" data-st-pick="'+esc(t.id)+'" aria-current="'+(S.route==='scheduledetail'&&ST.pick===t.id)+'">'+stIcon('clock')+'<span class="st-row-copy"><strong title="'+esc(t.name)+'">'+esc(t.name)+'</strong><small>'+(on?esc(stWhen(stNext(t),t.zone)):'已暂停')+' · '+esc(ST_PERIODS[t.period])+(t.example?' · 示例':'')+'</small></span></button>').join('')||'<p class="st-empty">'+(ST.query?'没有匹配的任务':on?'暂无已开启任务':'暂无已暂停任务')+'</p>')).join('')+'</aside>';
+ '<button class="st-new ms-nav" data-st-action="new">'+stIcon('plus')+'新建任务</button>'+[true,false].map(on=>'<h2>'+(on?'已开启':'已暂停')+'</h2>'+ (rows.filter(t=>t.enabled===on).map(t=>'<button class="st-row ms-nav" data-st-pick="'+esc(t.id)+'" aria-current="'+(S.route==='scheduledetail'&&ST.pick===t.id)+'">'+stIcon('clock')+'<span class="st-row-copy"><strong title="'+esc(t.name)+'">'+esc(t.name)+'</strong><small>'+(on?esc(stWhen(stNext(t),t.zone)):'已暂停')+' · '+esc(stPeriodLabel(t))+(t.example?' · 示例':'')+'</small></span></button>').join('')||'<p class="st-empty">'+(ST.query?'没有匹配的任务':on?'暂无已开启任务':'暂无已暂停任务')+'</p>')).join('')+'</aside>';
 }
 function stHome(){return '<main class="st-main st-home"><div class="st-intro"><img src="assets/tasks/hero-clock.svg" alt="" width="62" height="62"><h2>安排任务</h2><p>让端砚按计划追踪文献、整理数据，持续跟进科研进展。</p></div><div class="st-grid">'+ST_TEMPLATES.map(([icon,name,desc],i)=>'<button class="st-card" data-st-template="'+i+'">'+stIcon(icon)+'<span><strong>'+name+'</strong><p>'+desc+'</p></span></button>').join('')+'</div></main>';}
 function stField(label,key,value,type='text',extra=''){return '<label class="st-field"><span>'+label+'</span><input class="input" name="'+key+'" type="'+type+'" value="'+esc(value||'')+'" '+extra+'></label>';}
@@ -24239,7 +24333,8 @@ function stSampleOutput(task){
 /* Global navigation groups and settings routes. */
 Object.assign(NAV_PARENT,{shared:'projects',sharednew:'projects',shareddetail:'projects',me:'settings',set:'shelf',files:'materials',chats:'chat',project:'projects',pw:'projects'});
 Object.assign(NAVNAME,{projects:'课题项目',shared:'共享课题',dsets:'数据集',mdl:'模型制备',tools:'我的工具',data:'数据库',materials:'资料空间',devices:'设备管理',schedules:'定时任务',shelf:'科研工具',data:'公共数据库',settings:'设置'});
-Object.assign(BACKNAME,{projects:'课题项目',settings:'设置'});
+/* 返回键上的名字要用这一版的词：全站说「课题」「资料空间」，别留下旧版的「项目」「文件管理」 */
+Object.assign(BACKNAME,{projects:'课题项目',settings:'设置',project:'课题',files:'资料空间',materials:'资料空间',lab:'实验管理',devices:'设备管理',schedules:'定时任务'});
 NAV_ROUTE.shared=1;
 NAV_ROUTE.settings=NAV_ROUTE.me=NAV_ROUTE.set=1;
 const navigationProjectViews={projects:V.projects,shared:V.shared};
@@ -24256,13 +24351,15 @@ function navigationProjectProgress(p,shared){
   const tasks=(workbenchData({pid:p.id}).tasks||[]).filter(t=>t.pid===p.id&&t.isTask!==false&&!['canceled'].includes(t.status));
   const member=shared?.members.find(m=>m.id==='me'&&m.status==='active');
   const editable=shared?['owner','admin','editor'].includes(member?.role):can('edit')&&(p.ownerId||'me')==='me';
-  /* 与工作台卡片同一口径：先过 wbAttentionTasks（已读回执等），再取失败/待动作 */
+  /* 与工作台角标、「待办」面板同一口径：先过 wbAttentionTasks（已读回执等），
+     再用 wbTodoBuckets 分档，取「需要处理」＋「结果待确认」两档。三处的数必须一样。 */
   const attention=typeof wbAttentionTasks==='function'?wbAttentionTasks(tasks):tasks;
-  const pending=editable?attention.filter(t=>t.needsAction||t.status==='failed'):[];
+  const buckets=typeof wbTodoBuckets==='function'?wbTodoBuckets(attention):{act:attention,read:[],run:[]};
+  const pending=editable?buckets.act.concat(buckets.read):[];
   const active=tasks.filter(t=>['active','queued'].includes(t.status));
   const completed=tasks.filter(t=>t.status==='done').sort((a,b)=>String(b.at||'').localeCompare(String(a.at||'')));
   if(pending.length){
-   task=pending[0];kind='confirm';label='待我处理';title=pending.length+' 项任务待处理';pendingCount=pending.length;
+   task=pending[0];kind='confirm';label='待我处理';title=pending.length+' 项待办';pendingCount=pending.length;
    detail=(task.name||task.id)+' · '+(task.detail||task.label||'请查看并处理');action='查看并处理';
   }else if(active.length){
    task=active[0];kind='running';label='正在执行';title=task.name||task.id;
@@ -24280,7 +24377,7 @@ function navigationProjectProgress(p,shared){
   }else return '';
   if(task)at=task.at||'';
  }
- if(kind==='confirm')return '<div class="navigation-progress project-update is-confirm is-mini"><span class="project-update-mini-label"><b class="project-update-count">'+pendingCount+'</b> 项待处理</span><button class="project-update-action" type="button" data-project-progress-pending="'+esc(p.id)+'" aria-label="处理 '+pendingCount+' 项待处理" title="处理 '+pendingCount+' 项待处理">处理</button></div>';
+ if(kind==='confirm')return '<div class="navigation-progress project-update is-confirm is-mini"><span class="project-update-mini-label"><b class="project-update-count">'+pendingCount+'</b> 项待办</span><button class="project-update-action" type="button" data-project-progress-pending="'+esc(p.id)+'" aria-label="处理 '+pendingCount+' 项待办" title="处理 '+pendingCount+' 项待办">处理</button></div>';
  const attrs=kind==='confirm'?'data-project-progress-pending="'+esc(p.id)+'"':task?'data-project-progress-task="'+esc(task.key)+'"':p?'data-project-progress-pid="'+esc(p.id)+'"':'data-project-progress-shared="'+esc(shared.id)+'"';
  return '<div class="navigation-progress project-update is-'+kind+'"><div class="project-update-head"><span>'+label+'</span>'+(at?'<time>'+esc(at)+'</time>':'')+'</div><strong>'+esc(title)+'</strong><p>'+esc(detail)+'</p>'+(percent!==null?'<div class="project-task-progress"><span>当前任务进度 '+percent+'%</span><progress value="'+percent+'" max="100" aria-label="当前任务进度 '+percent+'%"></progress></div>':'')+'<button class="project-update-action" type="button" '+attrs+'>'+action+' →</button></div>';
 }
@@ -24439,7 +24536,7 @@ wbBind=function(root){
  navigationTeamBind(root);
  /* 待处理角标放进标签行右侧：原来的迷你块只留作数据与处理入口，不再占位 */
  root.querySelectorAll('.project-card-wrap').forEach(w=>{const mini=w.querySelector(':scope > .project-update.is-mini'),labels=w.querySelector('.pcard-labels');if(!mini||!labels||labels.querySelector('[data-pending-pill]'))return;
-  const n=mini.querySelector('.project-update-count')?.textContent||'';const pill=document.createElement('span');pill.className='project-update-mini-label';pill.setAttribute('data-pending-pill','');pill.setAttribute('role','button');pill.tabIndex=0;pill.title='处理 '+n+' 项待处理';pill.innerHTML='<b class="project-update-count">'+esc(n)+'</b> 项待处理';labels.appendChild(pill);
+  const n=mini.querySelector('.project-update-count')?.textContent||'';const pill=document.createElement('span');pill.className='project-update-mini-label';pill.setAttribute('data-pending-pill','');pill.setAttribute('role','button');pill.tabIndex=0;pill.title='处理 '+n+' 项待办';pill.innerHTML='<b class="project-update-count">'+esc(n)+'</b> 项待办';labels.appendChild(pill);
   const fire=e=>{e.stopPropagation();e.preventDefault();mini.querySelector('.project-update-action')?.click();};pill.addEventListener('click',fire);pill.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')fire(e);});});
  /* 课题卡整张可点：点到底栏或迷你卡的空白处也进课题，点到里面的按钮/链接则各归各 */
  root.querySelectorAll('.project-card-wrap:not(.is-shared-project)').forEach(w=>{if(w.dataset.wrapBound)return;w.dataset.wrapBound='1';w.addEventListener('click',e=>{if(e.target.closest('button,a,[data-act],select,input,label'))return;w.querySelector('.pcard')?.click();});});
@@ -24448,11 +24545,13 @@ wbBind=function(root){
  const pid=button.dataset.projectProgressPending;
  /* 与角标同一口径：先过 wbAttentionTasks，再取失败/待动作，弹窗里的条数才和角标上的数一致 */
  const base=(workbenchData({pid}).tasks||[]).filter(t=>t.pid===pid&&t.isTask!==false&&t.status!=='canceled');
- const tasks=(typeof wbAttentionTasks==='function'?wbAttentionTasks(base):base).filter(t=>t.needsAction||t.status==='failed');
+ const att=(typeof wbAttentionTasks==='function'?wbAttentionTasks(base):base);
+ const bk=typeof wbTodoBuckets==='function'?wbTodoBuckets(att):{act:att,read:[],run:[]};
+ const tasks=bk.act.concat(bk.read);
  if(tasks.length===1){workbenchOpenTask(tasks[0].key);return;}/* 只有一项就直接进去，不用多点一层 */
  /* 待处理弹窗：一行一项，整行可点；不再每项配一个「查看并处理」按钮，页脚只留一个关闭 */
  const brief=t=>String(t.detail||t.label||'').replace(/\s*·\s*演示流程\s*$/,'').trim();
- modal(tasks.length+' 项待处理','<ul class="pending-list">'+tasks.map(t=>'<li><button class="pending-row" type="button" data-project-pending-task="'+esc(t.key)+'"><span class="pending-main"><strong>'+esc(t.name||t.id)+'</strong>'+(brief(t)?'<small title="'+esc(brief(t))+'">'+esc(brief(t))+'</small>':'')+'</span><span class="chip '+(t.status==='failed'?'c-err':'c-mut')+'">'+(t.status==='failed'?'异常':'待确认')+'</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></li>').join('')+'</ul>','关闭',()=>{});
+ modal(tasks.length+' 项待办','<ul class="pending-list">'+tasks.map(t=>'<li><button class="pending-row" type="button" data-project-pending-task="'+esc(t.key)+'"><span class="pending-main"><strong>'+esc(t.name||t.id)+'</strong>'+(brief(t)?'<small title="'+esc(brief(t))+'">'+esc(brief(t))+'</small>':'')+'</span><span class="chip '+(t.status==='failed'?'c-err':'c-mut')+'">'+(t.status==='failed'?'异常':'待确认')+'</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></li>').join('')+'</ul>','关闭',()=>{});
  (()=>{const d=document.getElementById('dlg'),c=d.querySelector('button[value="cancel"]'),ok=d.querySelector('button[value="ok"]');if(c)c.hidden=true;if(ok)ok.classList.remove('btn-pri');})();
  document.querySelectorAll('#dlg [data-project-pending-task]').forEach(item=>item.onclick=()=>{document.getElementById('dlg').close();workbenchOpenTask(item.dataset.projectPendingTask);});
  });
@@ -25630,20 +25729,37 @@ const WB_TODO_GROUPS=[
  {id:'read',name:'结果待确认',hint:'已经有结论，还没人看过',tone:'ready'},
  {id:'run',name:'进行中',hint:'正在跑，不用现在动手',tone:'quiet'},
 ];
+/* 分档必须把 wbAttentionTasks 选出的每一条都装进去：
+   漏一条，按钮上的数就和课题卡片的角标对不上。课题卡片用的是同一个函数。 */
+function wbTodoBuckets(tasks){
+ const out={act:[],read:[],run:[]};
+ (tasks||[]).forEach(t=>{
+  if(t.status==='failed'||(t.needsAction&&t.status!=='done'))out.act.push(t);
+  else if(t.status==='done')out.read.push(t); /* 已出结论、还没人看过 */
+  else out.run.push(t);                       /* 其余都在跑 */
+ });
+ return out;
+}
 function wbTodoItems(){
  const data=(typeof workbenchData==='function')?workbenchData():null;
  if(!data)return {act:[],read:[],run:[]};
  const tasks=(typeof wbAttentionTasks==='function'?wbAttentionTasks(data.tasks||[]):(data.tasks||[]));
  const name=pid=>(data.projects||[]).find(p=>p.id===pid)?.name||'';
- const row=t=>({key:t.key,name:t.name||t.id,project:name(t.pid),pid:t.pid,at:t.at||'',
-  /* 卡片上写过的「演示流程」后缀在这里不重复 */
-  brief:String(t.detail||t.label||'').replace(/\s*·\s*演示流程\s*$/,'').trim()});
- const out={act:[],read:[],run:[]};
- tasks.forEach(t=>{
-  if(t.status==='failed'||(t.needsAction&&t.status!=='done'))out.act.push(row(t));
-  else if(t.status==='done'&&t.needsAction)out.read.push(row(t));
-  else if(t.status==='active')out.run.push(row(t));
- });
+ /* 训练任务的 detail 里带着本机耗时（「4 ms」，有的是「0 ms」），
+    在待办里既看不懂又像坏数据。换成这个模型真正的结果：留出集上的 ρ 和条数。 */
+ const brief=t=>{
+  let s=String(t.detail||t.label||'').replace(/\s*·\s*演示流程\s*$/,'').trim();
+  if(t.kind==='train'){
+   s=s.replace(/\s*·\s*\d+(\.\d+)?\s*ms\b/,'');
+   let m=null;try{m=(typeof mdlFind==='function'&&t.modelId)?mdlFind(t.modelId):null;}catch(e){}
+   const rho=m&&Number.isFinite(m.rho)?m.rho:(m&&m.m&&Number.isFinite(m.m.rho)?m.m.rho:null);
+   const nT=m&&Number.isFinite(m.nTest)?m.nTest:(m&&m.m&&Number.isFinite(m.m.nTest)?m.m.nTest:null);
+   if(rho!=null)s+='　留出 ρ '+rho.toFixed(3)+(nT!=null?'（n='+nT+'）':'');
+  }
+  return s;
+ };
+ const row=t=>({key:t.key,name:t.name||t.id,project:name(t.pid),pid:t.pid,at:t.at||'',brief:brief(t)});
+ const b=wbTodoBuckets(tasks),out={act:b.act.map(row),read:b.read.map(row),run:b.run.map(row)};
  const late=(a,b)=>String(b.at||'').localeCompare(String(a.at||''));
  out.act.sort(late);out.read.sort(late);out.run.sort(late);
  return out;

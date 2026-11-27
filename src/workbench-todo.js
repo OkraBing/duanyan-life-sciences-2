@@ -9,20 +9,37 @@ const WB_TODO_GROUPS=[
  {id:'read',name:'结果待确认',hint:'已经有结论，还没人看过',tone:'ready'},
  {id:'run',name:'进行中',hint:'正在跑，不用现在动手',tone:'quiet'},
 ];
+/* 分档必须把 wbAttentionTasks 选出的每一条都装进去：
+   漏一条，按钮上的数就和课题卡片的角标对不上。课题卡片用的是同一个函数。 */
+function wbTodoBuckets(tasks){
+ const out={act:[],read:[],run:[]};
+ (tasks||[]).forEach(t=>{
+  if(t.status==='failed'||(t.needsAction&&t.status!=='done'))out.act.push(t);
+  else if(t.status==='done')out.read.push(t); /* 已出结论、还没人看过 */
+  else out.run.push(t);                       /* 其余都在跑 */
+ });
+ return out;
+}
 function wbTodoItems(){
  const data=(typeof workbenchData==='function')?workbenchData():null;
  if(!data)return {act:[],read:[],run:[]};
  const tasks=(typeof wbAttentionTasks==='function'?wbAttentionTasks(data.tasks||[]):(data.tasks||[]));
  const name=pid=>(data.projects||[]).find(p=>p.id===pid)?.name||'';
- const row=t=>({key:t.key,name:t.name||t.id,project:name(t.pid),pid:t.pid,at:t.at||'',
-  /* 卡片上写过的「演示流程」后缀在这里不重复 */
-  brief:String(t.detail||t.label||'').replace(/\s*·\s*演示流程\s*$/,'').trim()});
- const out={act:[],read:[],run:[]};
- tasks.forEach(t=>{
-  if(t.status==='failed'||(t.needsAction&&t.status!=='done'))out.act.push(row(t));
-  else if(t.status==='done'&&t.needsAction)out.read.push(row(t));
-  else if(t.status==='active')out.run.push(row(t));
- });
+ /* 训练任务的 detail 里带着本机耗时（「4 ms」，有的是「0 ms」），
+    在待办里既看不懂又像坏数据。换成这个模型真正的结果：留出集上的 ρ 和条数。 */
+ const brief=t=>{
+  let s=String(t.detail||t.label||'').replace(/\s*·\s*演示流程\s*$/,'').trim();
+  if(t.kind==='train'){
+   s=s.replace(/\s*·\s*\d+(\.\d+)?\s*ms\b/,'');
+   let m=null;try{m=(typeof mdlFind==='function'&&t.modelId)?mdlFind(t.modelId):null;}catch(e){}
+   const rho=m&&Number.isFinite(m.rho)?m.rho:(m&&m.m&&Number.isFinite(m.m.rho)?m.m.rho:null);
+   const nT=m&&Number.isFinite(m.nTest)?m.nTest:(m&&m.m&&Number.isFinite(m.m.nTest)?m.m.nTest:null);
+   if(rho!=null)s+='　留出 ρ '+rho.toFixed(3)+(nT!=null?'（n='+nT+'）':'');
+  }
+  return s;
+ };
+ const row=t=>({key:t.key,name:t.name||t.id,project:name(t.pid),pid:t.pid,at:t.at||'',brief:brief(t)});
+ const b=wbTodoBuckets(tasks),out={act:b.act.map(row),read:b.read.map(row),run:b.run.map(row)};
  const late=(a,b)=>String(b.at||'').localeCompare(String(a.at||''));
  out.act.sort(late);out.read.sort(late);out.run.sort(late);
  return out;

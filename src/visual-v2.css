@@ -181,3 +181,30 @@
  #view .wb-workstation .rh-project header .rh-badge{order:3;flex:0 0 auto;margin:2px 0 0 42px!important}
  #view .wb-workstation .rh-project-symbol{order:1}
 }
+
+/* ── 待办角标：课题项目页和工作台必须长一个样 ────────────────────────
+   原来课题项目页是「红边框＋红字」，工作台是「浅灰底＋墨色字＋一颗红点」。
+   同一个数两种画法，而且一页五张卡全是红框，优先级反而看不出来。
+   统一成工作台那一版：状态色只落在那颗 6px 的点上。 */
+.pcard-labels .project-update-mini-label,
+#view .project-update-mini-label{
+ border:0!important;background:var(--surface-2)!important;color:var(--ink-2)!important;
+ border-radius:999px;padding:3px 10px 3px 9px;line-height:18px}
+.pcard-labels [data-pending-pill]:hover{background:var(--line)!important}
+
+/* ── 定时任务：双栏页铺满，不要只在右边留一条空带 ────────────────────
+   它和资料空间是同一类「列表＋详情」页，却套着通用的 1180px 上限并且靠左，
+   1440 下右边空出 188px，看着像没加载完。里面的模板网格（908）和详情（800）
+   本来就各有自己的宽度上限，撑开不会把正文行拉长。 */
+#view .st-layout{max-width:none!important;width:100%}
+
+/* ── 待办浮层：窗口矮的时候要能滚 ──────────────────────────────────
+   22 条待办时浮层高 674px；窗口高 700 时底部有 55px 够不着，
+   「还有 N 项」那一行就按不到。 */
+#view .rh-todo-pop{max-height:calc(100vh - 112px);overflow-y:auto;overscroll-behavior:contain}
+
+/* ── 设置页的行内动作：和全站的 .lnk 对齐 ──────────────────────────
+   别处的 .lnk 是墨色无下划线，只有设置页这三个（更换 / 更换 / 修改）
+   是蓝色带下划线，像网页超链接，不像产品里的动作。 */
+#view .lnk.me-l{color:var(--ink-2)!important;text-decoration:none!important}
+#view .lnk.me-l:hover{color:var(--ink)!important;text-decoration:underline!important}
