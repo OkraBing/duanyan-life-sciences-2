@@ -18,6 +18,7 @@
     "test:tricky20": "node build.mjs && node review/tricky20.cjs",
     "test:project-fixtures": "node build.mjs && node review/project-fixtures.cjs",
     "test:components": "node build.mjs && node review/interaction-components.cjs",
+    "test:visual60": "node build.mjs && node review/v60-visual.cjs",
     "test:visual-style": "node build.mjs && node review/visual-style.cjs",
     "test:attention": "node build.mjs && node review/workbench-attention.cjs",
     "test:tricky10": "node build.mjs && node review/tricky10.cjs",

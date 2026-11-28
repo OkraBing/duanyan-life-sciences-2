@@ -4805,6 +4805,335 @@ body[data-route="mdl"] #view .pg-hd,body[data-route="dsets"] #view .pg-hd{paddin
 #view .lnk.me-l{color:var(--ink-2)!important;text-decoration:none!important}
 #view .lnk.me-l:hover{color:var(--ink)!important;text-decoration:underline!important}
 
+/* 收口层：把散在十几个文件里、同一件东西的多种写法合成一种。
+   排在所有样式最后，只做「归一」，不引入新的颜色、新的形状、新的层级。
+
+   为什么是一个单独的文件而不是逐条去改源头：那些写法分布在 index.html
+   和九个 css 里，很多是早几代页面留下的；逐条改要动十几处、互相还会打架。
+   这里按「看得见的那一项」收口，每条写清它在收什么，下次有人想加新值，
+   先会看到这里已经定了几档。
+
+   —— 跑 review/v60-visual.cjs 可以逐条核对这层有没有生效。 */
+
+/* ========== 1. 字体族 ==========
+   定时任务整页用的是 Noto Sans SC，其余 25 个页面是 Geist。
+   同一个产品里换字体，是翻页时最容易被认出来的那种不一致。 */
+#view .st-layout{font-family:var(--sans)}
+
+/* ========== 2. 页面标题与页头说明 ==========
+   上一版把 h1 的字距归零，但只写给了六种页头壳子（.rh-header/.pg-hd/
+   .iteration-head/.lv-head/.al-page-head/.rs-header）。用第七种壳子的页面
+   （对话、课题详情、资料空间、与你共享、新建工具、新建数据库）漏在外面，
+   还带着 -.01em，标题比别处紧一点。这里按 h1 本身写，不再点名壳子。 */
+#view h1{letter-spacing:0!important}
+/* 页头说明是「h1 紧跟着的那一段」，同样不该按壳子点名：
+   课题项目、新建数据集、新建训练任务、模型接入用的是 .mut.t-md，
+   颜色落在 --ink-2，比别处深一档。 */
+#view h1+p{font-size:13px!important;line-height:1.6!important;color:var(--ink-3)!important;margin:4px 0 0!important}
+
+/* ========== 3. 字号台阶 ==========
+   全站只留 11 / 12 / 13 / 14 / 16 / 18 / 22 七档。
+   原来还有 15、17、19、20 四个半档，夹在相邻两档中间，
+   单看一页看不出来，两页并排就是「这页的字好像大一点」。
+
+   3a. 区块标题与卡片标题一律 16px。 */
+#view .al-page h3,
+#view .ms-spaces h2,#view .ms-list-heading h2,
+#view .device-section h2,#view .asset-section h3,
+#view .wb-workstation .rh-project header h3,
+#view .rh-activity-copy strong,
+#view .rh-section-heading h2,#view .rh-discover-heading h2,#view .rh-project-toolbar h2,
+#view .page .lv-exp h3,#view .page .lv-exp .lv-t,
+#view .rs h3,#view .lv-stage-head strong,
+#view .tl-card h2,#view .lv-device h2,#view .rs-created-catalog h2,
+#view .shared-asset-workspace>h2,#view .shared-detail h2{font-size:16px!important;line-height:1.5!important}
+/* 3b. 空态标题、第二栏的栏目名这类「一屏里唯一的大字」留 18px。 */
+#view .rs-empty h2,#view .ms-empty h2,#view .ms-sidebar h2{font-size:18px!important}
+/* 3c. 定时任务原来自带一套 15/17 的正文尺度（表单标签、列表行、卡片说明），
+   跟全站的 13/12 对不上。归队。 */
+#view .st-subtitle,#view .st-field,#view .st-period legend,#view .st-check,
+#view .st-card p,#view .st-new,#view .st-empty,#view .st-sample h5{font-size:13px!important}
+#view .st-row strong{font-size:13px!important}
+#view .st-row small,#view .st-list h2{font-size:12px!important}
+
+/* ========== 4. 次按钮 ==========
+   同一个 .btn 在九个页面上有九个样子：字号 11/12/13/14、字重 400/500、
+   字色 墨/墨二/墨三、圆角 6/8。一个「导出」按钮在两页上一眼就能看出不一样大。
+   收口成一种：13px / 500 / 圆角 8 / 墨色。危险操作保留它的红。 */
+#view .btn{font-size:13px!important;font-weight:500!important;border-radius:8px!important}
+#view .btn:not(.btn-pri):not(.btn-danger):not(.is-danger):not([class*=danger]){color:var(--ink)!important}
+/* 禁用的按钮统一弱化成「浅墨色 + 不可点」，不保留实心黑——
+   黑实心是「这一屏最该点的那个」的标记，禁用了还穿着它会让人一直去点。 */
+#view .btn:disabled,#view .btn[aria-disabled=true]{
+ background:var(--surface-2)!important;border-color:var(--line)!important;
+ color:var(--ink-4)!important;box-shadow:none!important;cursor:not-allowed}
+#view .alnk:disabled,#view .lnk:disabled{color:var(--ink-4)!important}
+
+/* ========== 5. 表格 ==========
+   资料空间与「与你共享」的文件表比全站其他表小一号：
+   表头 11px/400/38 高，单元格 11px；模型制备那几张表是 12px/600/40 高。
+   翻过去会觉得字忽然变了。按后者归一。 */
+#view .ms-table-head{font-size:12px!important;font-weight:600!important;min-height:40px}
+#view .ms-cell,#view .ms-row-actions button,#view .ms-link{font-size:12px!important}
+
+/* ========== 6. 徽标与标签 ==========
+   原来有 11/12/13/14px 四种字号。统一 11px、药丸形。 */
+#view .pill,#view .chip,#view .tag,#view .rs-tag,#view .lv-tag,#view .shared-tag,
+#view .rh-badge,#view .request-status{font-size:11px!important}
+#view .shared-req-badge{border-radius:999px!important}
+
+/* ========== 7. 圆角 ==========
+   只留 6 / 8 / 12 / 16 和药丸形。原来全站有 4/5/6/7/8/8.8/9/10/12/14/20 十一种，
+   其中 8.8px 是 .55rem 算出来的，没有人会这样设计。 */
+#view .lv-ref,#view .lv-tag,#view .al-number,#view .al-flow-device-image,
+#view .device-state,#view .navigation-tooltip{border-radius:6px!important}
+#view .al-dialog fieldset,#view .al-node,#view .al-preflight-state,
+#view .tl-seg-b,#view .tl-seg,#view .rs-tag-choice,#view .lv-share,
+#view .lab-flow-map .lab-map-node,#view .projects-page .project-update,
+#view .lv-current,#view .lv-flow-node,#view .lv-io>div,
+#view .rs-choice,#view .rs-copy-option,#view .rs-cover-choice,#view .rs-local-note,
+#view .composer-plan-node,#view .research-home .ctl-go{border-radius:8px!important}
+#view .inbox-list,#view .lv-device,#view .lv-exp,#view .page .pcard,
+#view .rs-resource-card,#view .rs-side-card,#view .ask,
+#view .research-composer{border-radius:12px!important}
+dialog{border-radius:12px}
+
+/* ========== 8. 输入框与下拉 ==========
+   带框的输入、自绘下拉是同一类控件，应该同高、同圆角、同字号。
+   原来下拉有 28 和 32 两种高度、6 和 8 两种圆角、12/13/14 三种字号。 */
+#view .input:not(textarea),#view .ctl-dd{font-size:13px!important;border-radius:8px!important}
+#view .ctl-dd{min-height:32px!important;height:32px!important}
+#view textarea.input{font-size:13px!important;border-radius:8px!important}
+/* 窄屏和触屏下一起放大到 40px，手指点得到。 */
+@media(max-width:860px),(pointer:coarse){
+ #view .input:not(textarea),#view .ctl-dd{min-height:40px!important;height:auto!important}
+ #view .ctl-dd{height:40px!important}
+}
+
+/* ========== 9. 返回入口 ==========
+   二级页的「← 上一页」有两种写法：一种是 12px 墨二的描边小按钮（.pg-back），
+   一种是 13px 墨蓝的文字链（.rs-link / .lv-link）。
+   返回是导航不是操作，不该长成按钮，所以统一成安静的文字链；
+   字号跟全站正文一致，颜色用中性墨二——墨蓝在这套里表示「可点的主动作」。 */
+#view .pg-hd>.pg-back,#view .outbar-back,#view [data-act=goback],#view [data-act=seekback]{
+ border:0!important;background:none!important;box-shadow:none!important;
+ padding-left:0!important;padding-right:8px!important}
+#view .pg-hd>.pg-back,#view .outbar-back,#view [data-act=goback],#view [data-act=seekback],
+#view .rs-link[data-go],#view .lv-link[data-go]{font-size:13px!important;color:var(--ink-2)!important}
+#view .rs-link[data-go]:hover,#view .lv-link[data-go]:hover,
+#view .pg-hd>.pg-back:hover{color:var(--ink)!important}
+
+/* ========== 10. 实心按钮只有黑的一种 ==========
+   对话页的发送键是墨蓝实心，是全站唯一一个非黑的实心按钮。
+   定稿里实心黑表示「这一屏的主动作」，发送就是主动作，用同一个标记。 */
+#view .research-home .ctl-go{background:var(--ink)!important;border-color:var(--ink)!important;color:var(--on-pri)!important}
+#view .research-home .ctl-go:hover:not(:disabled){background:var(--ink-2)!important;border-color:var(--ink-2)!important}
+
+/* ========== 11. 状态词一词一色 ==========
+   同一个状态词在不同页面用了不同的颜色，等于这个产品对同一件事有两种说法。
+   收口：异常 / 失败 = 红；已完成 / 已接入 = 绿；草稿 / 排队 = 墨三。 */
+#view .lv-state.is-exception,#view .c-err,#view .is-failed{color:var(--err)!important}
+#view .lv-state.is-draft,#view .lv-state.is-pending{color:var(--ink-3)!important}
+#view .chip.c-ok,#view .c-ok{color:var(--ok-ink)!important}
+
+/* ========== 12. 等宽只给机器可读的内容 ==========
+   等宽字体里混中文，字距会散开，一眼就不对。
+   .num 这类格子里有中文时退回正文字体。 */
+#view .scard-slug,#view .t-xs.mut2.num,#view .lv-model{font-family:var(--sans)!important}
+
+/* ========== 13. 收口层第二轮 ==========
+   第一轮跑完 60 轮之后剩下的几处。 */
+
+/* 13a. 卡片标题也归到 16px：课题卡、工具卡、数据库卡的标题原来是 15px，
+   和区块标题（16px）差一档看不出来，和正文（13px）又差得太近。 */
+#view .pcard-t strong,#view .pcard-t>strong,#view .pcard h3,
+#view .scard-n,#view .rs-resource-body>.rs-card-top strong,
+#view .st-card strong{font-size:16px!important;line-height:1.5!important}
+/* 对话正文是 15px，整个产品里只有这一处。归到 14px——它比正文大一档，
+   仍然是「这一段是要读的」，但不再自成一档。 */
+#view .turn-p{font-size:14px!important}
+
+/* 13b. 行高：按钮和标签用行高把文字顶到中间是常见做法，但 13px 的字配 30px 行高
+   会在换行时裂开。改成按高度居中，行高回到正常比例。 */
+#view .btn,#view .ms-table-head,#view .st-list h2{line-height:1.5!important}
+
+/* 13c. 圆角补齐：9px（工作台的「进入对话」、新建工具的选项卡片、两个计数角标）
+   和 7px（模型接入的来源标记）。 */
+#view .rh-new,#view .toolnew-option,#view .tool-option,
+#view .rs-option,#view .rs-pick-option{border-radius:8px!important}
+#view .rh-todo-n,#view .rh-sched-n{border-radius:999px!important}
+#view .prov-mk{border-radius:6px!important}
+#view .tag,#view .lv-ref{border-radius:6px!important}
+#view .shared-tag{border-radius:6px!important}
+
+/* 13d. 图标：对话页的 19px 和新建数据库的 21px 各只出现一次，
+   夹在 18 和 20 之间，放在一起看就是「这个比旁边大一点点」。 */
+#view .research-home .ctl svg,#view .rs-form-card .rs-field svg{width:20px!important;height:20px!important}
+
+/* 13e. 「已共享」这类状态标签原来是墨蓝的。墨蓝在这套里表示「可点」或「进行中」，
+   已共享既不可点也不在进行，用中性。资料空间一屏有三十多个这样的标签，
+   改成中性之后整张表安静很多，名字才是该先看到的东西。 */
+#view .shared-tag{background:var(--surface-2)!important;color:var(--ink-3)!important}
+
+/* 13f. 设置页的头像是 72px 的墨蓝实心圆，还带一圈墨蓝辉光——
+   全站唯一的大块纯色和唯一的彩色投影。跟其他头像（.rs-avatar）用同一种做法。 */
+#view .me-av{background:var(--dry-soft)!important;color:var(--dry-ink)!important;box-shadow:none!important}
+
+/* 13g. 窄屏 / 触屏：按钮也要跟着放大到 40px，原来只有输入框放大了，
+   一排里按钮比输入框矮一截。 */
+@media(max-width:860px),(pointer:coarse){
+ #view .btn{min-height:40px!important}
+}
+
+/* ========== 14. 收口层第三轮 ========== */
+
+/* 14a. 圆角剩下的两处。 */
+#view .rs-tag,#view .tool-wizard-nav button,#view .tool-wizard-nav>*{border-radius:6px!important}
+#view .tool-wizard-nav button{border-radius:8px!important}
+
+/* 14b. 新建数据库那颗 21px 的图标：夹在 20 和 22 之间，全站只有它一个。 */
+#view .rs-icon .wb-icon,#view .rs-icon svg{width:20px!important;height:20px!important}
+
+/* 14c. 定时任务的页面标题原来是 18px，全站别处都是 22px。
+   它是这一页的标题，不是面板名，按页面标题写。
+   右边那块空态的大字跟着降到 18px，不然两处都 22px，分不出谁是谁。 */
+#view .st-list-head h1{font-size:22px!important;line-height:1.35!important}
+#view .st-intro h2{font-size:18px!important}
+
+/* 14d. 禁用态：原来有五种弱化法（--line / 墨 / 墨二 / 墨蓝 / 墨四）。
+   统一成墨四——它就是这套色里「在，但现在不能用」的那一档。 */
+#view :disabled,#view [aria-disabled=true]{color:var(--ink-4)!important}
+#view :disabled svg,#view [aria-disabled=true] svg{color:var(--ink-4)!important}
+
+/* ========== 15. 收口层第四轮 ========== */
+
+/* 15a. 图标台阶：14 / 16 / 18 / 20 / 22。15px 和 17px 夹在中间，
+   在同一排图标里就是「这个比旁边小一点点」。 */
+#view .tool-ic svg,#view .ctl-ic svg{width:16px!important;height:16px!important}
+#view .rh-link svg,#view .rh-next>.rh-icon,#view .rh-discovery-row>.wb-icon,
+#view .wb-workstation .rh-project .rh-next>.rh-icon{width:16px!important;height:16px!important}
+#view .research-home .qk svg,#view .research-home .research-domain svg{width:16px!important;height:16px!important}
+#view .gs-row svg,#view .rh-todo-pop svg{width:16px!important;height:16px!important}
+
+/* 15b. 「待审批 / 待导入」这两个状态标签还留着 5px 圆角。 */
+#view .request-status{border-radius:6px!important}
+
+/* 15c. 同一个字段组件在两页上的行间距差了 6px（设计实验 8px，实验详情 2px）。 */
+#view .al-field{gap:8px!important}
+
+/* 15d. 页面左右留白：绝大多数页面是 36px，对话页是 40px，课题详情是 20px。
+   翻页时内容会横向挪一下。统一 36px。 */
+#view .research-home,#view .pjx-page,#view .page.chat{padding-left:36px!important;padding-right:36px!important}
+
+/* ========== 16. 收口层第五轮 ========== */
+
+/* 16a. 工作台页头上的两颗工具按钮挨在一起，一颗有描边一颗没有——
+   并排放着最容易看出来。都按全站次按钮的样子来。 */
+#view .rh-sched-btn{background:var(--surface)!important;border-color:var(--line)!important}
+#view .rh-sched-btn:hover{background:var(--surface-2)!important}
+
+/* 16b. 工作台「发现」那一列的图标是 15 / 17px，整站别处没有这两档。 */
+#view .rh-discovery-icon svg,#view .rh-aide-fab svg,
+#view .rh-discovery-row>svg{width:16px!important;height:16px!important}
+
+/* 16c. 「流程预览 · 2 项重点待处理」这行是说明，不是链接；墨蓝在这套里表示可点。 */
+#view .al-flow-preview header p{color:var(--ink-3)!important}
+
+/* 16d. 课题详情的左右留白是 20px，别的页是 36px。 */
+#view .pjx{padding-left:36px!important;padding-right:36px!important}
+
+/* ========== 17. 收口层第六轮 ========== */
+
+/* 17a. 工作台「发现」那一列的 17px / 15px 图标。上一层用的是
+   #view .wb-workstation … 这种更长的选择器，这里写得一样长才压得住。 */
+#view .wb-workstation .rh-discovery-icon .rh-icon,
+#view .wb-workstation .rh-discovery-icon .wb-icon{width:16px!important;height:16px!important}
+#view .wb-workstation .rh-discovery-row>.wb-icon{width:16px!important;height:16px!important}
+#view .rh-aide-fab .rh-icon,#view .rh-aide-fab .wb-icon,#view .rh-aide-fab svg{width:16px!important;height:16px!important}
+
+/* 17b. 课题详情的标题挂在 .pjx-title-row 上，留白在更外面那层。 */
+#view .pjx>.pjx-hd,#view .pjx-title,#view .pjx-main,#view .page.pjx{padding-left:36px!important;padding-right:36px!important}
+
+/* ========== 18. 收口层第七轮 ========== */
+
+/* 18-0. 投影先在 token 上收口，规则里只引用 token——
+   这样下次换皮肤或调深浅只改这两行，不用再去找每一条规则。
+   贴在页面上的一档（--sh-1）和浮起来的一档（--sh-3）。 */
+:root{
+ --sh-1:0 1px 2px rgb(23 26 31 / .05);
+ --sh-2:var(--sh-1);
+ --sh-3:0 2px 6px -2px rgb(23 26 31 / .08),0 12px 32px -16px rgb(23 26 31 / .18);
+}
+
+/* 18a. 选中态。原来有五种画法：页签只加粗、页签加 2px 下划线、胶囊黑实心
+   （字重还分 400 和 600 两种）、分段控件反过来用白块。
+   收到两种：能并排选的（胶囊、分段）用黑实心，分区页签用 2px 下划线。 */
+#view .pill,#view .lv-filter{font-weight:600!important}
+#view .tl-seg-b[aria-pressed=true],#view .tl-seg-b.is-on{
+ background:var(--ink)!important;color:var(--on-pri)!important;box-shadow:none!important}
+#view .pjx-tab{border-bottom:2px solid transparent!important}
+#view .pjx-tab[aria-current=page],#view .pjx-tab.is-on{border-bottom-color:var(--ink)!important}
+
+/* 18b. 一个结果一种颜色。「已完成」在实验详情是中性灰、在打分器列表是绿；
+   「已接入」在设备管理和数据库用的是深浅不同的两种绿。
+   绿在这套色里就是「跑完了 / 接上了」，统一到 --ok-ink。 */
+#view .lv-state.is-done,#view .device-state.connected{color:var(--ok-ink)!important}
+
+/* 18c. 搜索框的字号：资料空间与「与你共享」是 14px，别处 13px。
+   框是画在外面那层 label 上的，所以字号得写到 input 上。 */
+#view .ms-search input,#view .fbar-q input,#view .sr+input{font-size:13px!important}
+
+/* 18d. 「待我审批 / 我的申请」这两个区块标题是 14px，别处的区块标题是 16px。 */
+#view .inbox-group>h2{font-size:16px!important}
+
+/* 18e. 投影统一。原来有五种几乎一样、但底色分别取 rgb(19,24,38)、rgb(23,26,31)、
+   rgb(14,17,22) 的 1–2px 投影，叠在一起会让同一排卡片看着深浅不一。
+   贴在页面上的一档 + 浮起来的一档，就这两种。 */
+#view .btn,#view .rh-activities,#view .rh-project,#view .rh-discoveries,
+#view .al-card,#view .outbar-b,#view .tl-seg-b,#view .project-card-wrap,
+#view .lv-exp,#view .dcard,#view .rs-node,#view .lv-form-actions{
+ box-shadow:var(--sh-1)!important}
+#view .rh-aide-fab,#view .rh-aide,#view .ctl-pop,#view .gs-dlg{
+ box-shadow:var(--sh-3)!important}
+
+/* 18f. 对话里的卡片只有底色没有描边，别处的卡片都是白底加一条线。 */
+#view .chcard{border:1px solid var(--line)!important}
+
+/* 18g. 对话建议、「未接入」这类词用了等宽——等宽排中文字距会散。 */
+#view .ch,#view .num.dim{font-family:var(--sans)!important}
+
+/* 18h. 下拉展开后的浮层要有投影：它浮在页面上，不是嵌在页面里。 */
+#view .ctl-pop,#view .ctl-menu,#view [role=listbox]{box-shadow:var(--sh-3)!important}
+
+/* 18i. 新建打分器那颗输入框是墨蓝描边，全站别处是 --line。 */
+#view .field>.input,#view .field input.input{border-color:var(--line)!important}
+#view .field>.input:focus,#view .field input.input:focus{border-color:var(--dry)!important}
+
+/* 18j. 过渡只写在真的会变的属性上。原来有几处写了 transition:all，
+   于是鼠标扫过去时，行内的标签、小字也跟着一起动。 */
+#view .lv *,#view .tl-card *,#view .scard *{transition-property:background-color,border-color,color,box-shadow,opacity!important}
+
+/* ========== 19. 收口层第八轮 ========== */
+
+/* 19a. 课题卡整张可点，却没有悬停反馈——鼠标移上去没有任何动静，
+   看不出它是能点的。和实验卡、设备卡一样，给一条很短的边框过渡。 */
+#view .project-card-wrap{transition:border-color .14s ease-out,box-shadow .14s ease-out}
+#view .project-card-wrap:hover{border-color:var(--dry-dim)}
+
+/* 19b. 投影再收一次：分段控件用的是两层叠起来的那版 --sh-1，
+   和别处一层的那版深浅不一样，并排时看得出来。 */
+#view .ctl-segi,#view .ctl-seg,#view .chcard,#view .rs-form-card,
+#view .shared-asset-workspace{box-shadow:var(--sh-1)!important}
+
+/* ========== 20. 眉题 ==========
+   定稿里禁止眉题：标题上方那行拉开字距的小标签。两处还留着：
+   - 数据库卡封面左下角的 UNIPROT / AFDB-ALL。它其实是这份数据源的 id，
+     跟全站别处的 id 一样用等宽就够了；拉开字距才让它变成眉题。
+   - 设备详情弹窗里「Eppendorf · 参考型号」那一行，挂在 h2 上面。
+   id 和出处本身该留着，去掉的是「拉开字距」这个让它变成眉题的做法。 */
+#view .dcard-ab{letter-spacing:0!important;font-weight:500!important}
+#view .lv-eyebrow{letter-spacing:0!important;font-weight:400!important;color:var(--ink-3)!important}
+
 
 /* 项目卡标题被挤成两行、断在「结合界 / 面」：标题被写死 max-width:calc(100% - 55px)，
    而右边那枚「共享」角标其实只有 40px 宽，行上还开了 flex-wrap。
@@ -7317,7 +7646,7 @@ V.labnew=()=>{
   const cur=P.find(x=>x.n===E.proto)||P[0]||{};
   return `<div class="page">
   <div class="pg-hd">
-    <button class="btn btn-gh pg-back" type="button" data-go="lab">← 实验管理</button>
+    <button class="lnk pg-back" type="button" data-go="lab">← 实验管理</button>
     <div class="col" style="gap:6px">
       <h1>发起新实验</h1>
       <p class="mut t-md" style="margin:0;max-width:60ch">提交到自主实验网络后生成一个批次，可在实验管理中跟踪排期、执行进度与结果。</p></div>
@@ -7942,10 +8271,13 @@ V.mdl=(activeTab=S.mtab)=>{
         ${tab==='infer'?inferHd():''}
         <!-- 写 width 不写 max-width：.input 是 width:100%，只封上限的话它的基准宽仍是 100%，
              这一排放不下，于是搜索框和按钮各占一行。 -->
+        <!-- 这一格的主操作指向另一页时才是主按钮。人已经站在那一页上（比如
+             「新建批量推理」对应的 bnew），它指的就是当前页，还穿着黑实心的话
+             这一屏就有两颗主按钮，真正要点的「提交任务」反而不突出。 -->
         ${act?(act[1].charAt(0)==='@'
           ?`<button class="btn btn-pri" type="button" data-act="${esc(act[1].slice(1))}"${
               tab==='cur'?' title="读入本产品导出的打分器 JSON"':''}>${esc(act[0])}</button>`
-          :`<button class="btn btn-pri" type="button" data-nav="${esc(act[1])}">${esc(act[0])}</button>`):''}
+          :`<button class="btn${act[1]===S.route?'':' btn-pri'}" type="button" data-nav="${esc(act[1])}">${esc(act[0])}</button>`):''}
       </div>
     </div>
     ${mdlTabsBar(selected)}
@@ -16300,7 +16632,13 @@ const NAVNAME=(function(){const m={};NAV.forEach(g=>g[2].forEach(([k,n])=>m[k]=n
   Object.assign(m,{results:'结果',wetlab:'送检与回流',loop:'设计',round:'轮次概览',
     hypo:'假设',intake:'新建任务',config:'任务配置',files:'文件管理',project:'项目',
     chats:'全部对话',labnew:'发起新实验',labdet:'实验详情',
-    dsnew:'新建数据集',trainnew:'新建训练任务',bnew:'新建批量推理任务',me:'系统设置'});return m})();
+    dsnew:'新建数据集',trainnew:'新建训练任务',bnew:'新建批量推理任务',me:'系统设置',
+    /* 返回按钮拿不到中文名时会把路由名原样显示出来——界面上出现过「← databasenew」。
+       这几个是后加的页，当时漏在表外。 */
+    databasenew:'新建数据库',toolnew:'新建工具',sharednew:'新建共享课题',
+    schedulenew:'新建定时任务',scheduledetail:'定时任务',schedules:'定时任务',
+    devicedetail:'设备详情',resdetail:'资源详情',shareddetail:'共享课题',
+    set:'模型接入',settings:'系统设置'});return m})();
 
 /* ---- 文件管理：卡片 + 三条筛选 ----
    表格把每份文件压成一行七格，于是最该一眼看到的三件事
@@ -18187,7 +18525,7 @@ function batchBody(){
         让模型逐条处理一份已发布的数据集，适合批量注释、分类或改写。</p>
       <div class="row wrap" style="gap:var(--s3);justify-content:center">
         ${bDsets().length
-          ?'<button class="btn btn-pri" type="button" data-nav="bnew">新建批量推理任务</button>'
+          ?'<button class="btn" type="button" data-nav="bnew">新建批量推理任务</button>'
           :'<button class="btn btn-pri" type="button" data-go="dsets">去建数据集</button>'}
       </div>
     </div></div></div>`}
@@ -18736,7 +19074,8 @@ function addBack(p,hd){
   if(own)return;
   const pv=backPrev();if(!pv)return;
   const b=document.createElement('button');
-  b.className='btn btn-gh pg-back';b.type='button';
+  /* 返回是导航不是操作：它不该长成一颗按钮，也就不该混进「次按钮有几种」里。 */
+  b.className='lnk pg-back';b.type='button';
   b.setAttribute('data-act','goback');
   b.textContent='← '+pv.n;
   hd.insertBefore(b,hd.firstChild);
@@ -25903,6 +26242,50 @@ document.addEventListener('keydown',e=>{if(e.key!=='Escape'||S.route!=='workbenc
  if(RESEARCH_HOME.todoOpen){e.preventDefault();RESEARCH_HOME.todoOpen=false;render();setTimeout(()=>view.querySelector('[data-rh-todo-pop]')?.focus(),20);return}
  if(RESEARCH_HOME.aideOpen){e.preventDefault();RESEARCH_HOME.aideOpen=false;render();setTimeout(()=>view.querySelector('[data-rh-aide-pop]')?.focus(),20);}
 },true);
+
+/* 收口层里 CSS 做不了的两件事——它们都取决于内容，不取决于选择器。
+   跟 visual-converge.css 是一对，排在所有渲染之后跑。 */
+(function(){
+ const prev=render;
+
+ /* 1) 被省略号截掉的文字，补一个 title。
+    表格里的名字、来源、ID 经常比列宽长，截了之后看不全又没处看全文；
+    逐个模板去写 title 要改十几处，而且下次新加一列又会漏。
+    按「量出来真的被截了」补，漏不掉也不会多补。 */
+ function titleTruncated(root){
+  for(const e of root.querySelectorAll('*')){
+   if(e.children.length)continue;
+   const t=e.textContent.trim();
+   if(!t||t.length<6)continue;
+   if(e.getAttribute('title'))continue;
+   if(e.scrollWidth-e.clientWidth<=1)continue;
+   const c=getComputedStyle(e);
+   if(c.textOverflow!=='ellipsis'&&c.whiteSpace!=='nowrap')continue;
+   if(c.overflowX==='auto'||c.overflowX==='scroll'||c.overflowX==='visible')continue;
+   e.setAttribute('title',t);
+  }
+ }
+
+ /* 2) .num 的意思是「用等宽排，数字才对得齐」。
+    但有些地方把中文也放进了 .num（「上海人工智能实验室」「未接入」「本课题实测」）——
+    等宽排中文字距会散开，一眼就不对。按内容判：含中文就退回正文字体。
+    不去各模板里摘 class，是因为同一个类名在别处是对的，摘了会把真的数字也弄歪。 */
+ const CJK=/[一-龥]/;
+ function sansForCJK(root){
+  for(const e of root.querySelectorAll('.num,.mono')){
+   const t=e.textContent;
+   if(!CJK.test(t))continue;
+   e.style.fontFamily='var(--sans)';
+  }
+ }
+
+ render=function(){
+  const r=prev.apply(this,arguments);
+  const root=document.getElementById('view');
+  if(root){try{sansForCJK(root);titleTruncated(root)}catch(e){}}
+  return r;
+ };
+})();
 
 
 keepLoad();

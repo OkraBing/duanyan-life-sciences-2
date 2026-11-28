@@ -6,7 +6,9 @@ const {chromium}=require('../test-browser.cjs');
 const {blockExternalNetwork}=require('./offline-network.cjs');
 const path=require('node:path');
 const FILE='file://'+path.resolve(__dirname,'..','index.html');
-const ONLY=process.argv[2]||'';
+/* 第二个参数是轮次，不是路径。传路径时当成「没写过滤」——
+   上一轮踩过这个坑：传了 index.html，一轮都没匹配上，却打印「53 条全部通过」。 */
+const ONLY=(/[\\/]|\.html?$/i.test(process.argv[2]||''))?'':(process.argv[2]||'');
 const ROUNDS=[];const R=(n,title,checks)=>ROUNDS.push({n,title,checks});
 const res=[];
 async function fresh(b,vp={width:1440,height:900},init){const p=await b.newPage({viewport:vp});p.__errs=[];p.on('pageerror',e=>p.__errs.push(String(e).slice(0,160)));

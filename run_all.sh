@@ -19,7 +19,7 @@ run(){ local n="$1"; shift
   else FAIL=$((FAIL+1)); FAILED="$FAILED $n"; echo "❌ $n"; echo "$out" | tail -7 | sed 's/^/      /'; fi }
 
 # 评审脚本：渲染 / 空态 / 响应式 / 组件状态 / 数据闭环 / 全量点击 / 极端数据 / 端到端 / 模型接入 / 自由问答
-for f in product-iteration workbench lab-workflow research-workspace workbench-tricky project-fixtures interaction-components visual-style workbench-attention workbench-reference new-pages-walkthrough tricky10-edge-states; do
+for f in product-iteration workbench lab-workflow research-workspace workbench-tricky project-fixtures interaction-components visual-style v60-visual workbench-attention workbench-reference new-pages-walkthrough tricky10-edge-states; do
   [ -f "review/$f.cjs" ] && run "review/$f" node "review/$f.cjs" "$P"
 done
 for f in a_render b_empty c_resp d_state e_loop f_click g_extreme h_flows i_set j_ask k_comp; do

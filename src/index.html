@@ -3035,6 +3035,7 @@ dialog.rs-copy-dialog{width:min(600px,calc(100vw - 32px));max-width:600px;overfl
 /* @include global-search.css */
 /* @include theme-bootcamp.css */
 /* @include visual-v2.css */
+/* @include visual-converge.css */
 
 /* 项目卡标题被挤成两行、断在「结合界 / 面」：标题被写死 max-width:calc(100% - 55px)，
    而右边那枚「共享」角标其实只有 40px 宽，行上还开了 flex-wrap。
@@ -5547,7 +5548,7 @@ V.labnew=()=>{
   const cur=P.find(x=>x.n===E.proto)||P[0]||{};
   return `<div class="page">
   <div class="pg-hd">
-    <button class="btn btn-gh pg-back" type="button" data-go="lab">← 实验管理</button>
+    <button class="lnk pg-back" type="button" data-go="lab">← 实验管理</button>
     <div class="col" style="gap:6px">
       <h1>发起新实验</h1>
       <p class="mut t-md" style="margin:0;max-width:60ch">提交到自主实验网络后生成一个批次，可在实验管理中跟踪排期、执行进度与结果。</p></div>
@@ -6172,10 +6173,13 @@ V.mdl=(activeTab=S.mtab)=>{
         ${tab==='infer'?inferHd():''}
         <!-- 写 width 不写 max-width：.input 是 width:100%，只封上限的话它的基准宽仍是 100%，
              这一排放不下，于是搜索框和按钮各占一行。 -->
+        <!-- 这一格的主操作指向另一页时才是主按钮。人已经站在那一页上（比如
+             「新建批量推理」对应的 bnew），它指的就是当前页，还穿着黑实心的话
+             这一屏就有两颗主按钮，真正要点的「提交任务」反而不突出。 -->
         ${act?(act[1].charAt(0)==='@'
           ?`<button class="btn btn-pri" type="button" data-act="${esc(act[1].slice(1))}"${
               tab==='cur'?' title="读入本产品导出的打分器 JSON"':''}>${esc(act[0])}</button>`
-          :`<button class="btn btn-pri" type="button" data-nav="${esc(act[1])}">${esc(act[0])}</button>`):''}
+          :`<button class="btn${act[1]===S.route?'':' btn-pri'}" type="button" data-nav="${esc(act[1])}">${esc(act[0])}</button>`):''}
       </div>
     </div>
     ${mdlTabsBar(selected)}
@@ -14530,7 +14534,13 @@ const NAVNAME=(function(){const m={};NAV.forEach(g=>g[2].forEach(([k,n])=>m[k]=n
   Object.assign(m,{results:'结果',wetlab:'送检与回流',loop:'设计',round:'轮次概览',
     hypo:'假设',intake:'新建任务',config:'任务配置',files:'文件管理',project:'项目',
     chats:'全部对话',labnew:'发起新实验',labdet:'实验详情',
-    dsnew:'新建数据集',trainnew:'新建训练任务',bnew:'新建批量推理任务',me:'系统设置'});return m})();
+    dsnew:'新建数据集',trainnew:'新建训练任务',bnew:'新建批量推理任务',me:'系统设置',
+    /* 返回按钮拿不到中文名时会把路由名原样显示出来——界面上出现过「← databasenew」。
+       这几个是后加的页，当时漏在表外。 */
+    databasenew:'新建数据库',toolnew:'新建工具',sharednew:'新建共享课题',
+    schedulenew:'新建定时任务',scheduledetail:'定时任务',schedules:'定时任务',
+    devicedetail:'设备详情',resdetail:'资源详情',shareddetail:'共享课题',
+    set:'模型接入',settings:'系统设置'});return m})();
 
 /* ---- 文件管理：卡片 + 三条筛选 ----
    表格把每份文件压成一行七格，于是最该一眼看到的三件事
@@ -16417,7 +16427,7 @@ function batchBody(){
         让模型逐条处理一份已发布的数据集，适合批量注释、分类或改写。</p>
       <div class="row wrap" style="gap:var(--s3);justify-content:center">
         ${bDsets().length
-          ?'<button class="btn btn-pri" type="button" data-nav="bnew">新建批量推理任务</button>'
+          ?'<button class="btn" type="button" data-nav="bnew">新建批量推理任务</button>'
           :'<button class="btn btn-pri" type="button" data-go="dsets">去建数据集</button>'}
       </div>
     </div></div></div>`}
@@ -16966,7 +16976,8 @@ function addBack(p,hd){
   if(own)return;
   const pv=backPrev();if(!pv)return;
   const b=document.createElement('button');
-  b.className='btn btn-gh pg-back';b.type='button';
+  /* 返回是导航不是操作：它不该长成一颗按钮，也就不该混进「次按钮有几种」里。 */
+  b.className='lnk pg-back';b.type='button';
   b.setAttribute('data-act','goback');
   b.textContent='← '+pv.n;
   hd.insertBefore(b,hd.firstChild);
@@ -20862,6 +20873,7 @@ const rsBindShared=rsBind;rsBind=function(root){rsBindShared(root);root.querySel
 /* @include global-search.js */
 /* @include contextual-entries.js */
 /* @include workbench-todo.js */
+/* @include visual-polish.js */
 
 keepLoad();
 labInit();
